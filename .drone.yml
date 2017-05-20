@@ -1,0 +1,56 @@
+pipeline:
+  sftp_cache_restore:
+    image: plugins/sftp-cache
+    restore: true
+    mount:
+      - /drone/.ivy2
+      - /drone/.coursier-cache
+      - /drone/.sbt
+      - /drone/.git
+
+  tests:
+    image: scalaplatform/scala:0.6
+    pull: true
+    volumes:
+      - /platform:/keys
+    commands:
+      - git fetch --tags && git log | head -n 20
+      - ./bin/checkCLA.sh
+      - sbt ci-test
+
+  publish:
+    # different image than tests to avoid leaking secrets
+    image: olafurpg/scalafix:0.3.0
+    pull: true
+    volumes:
+      - /platform:/keys
+    commands:
+      - ./bin/bintray.sh
+    when:
+      event: [push, tag]
+      branch: [master]
+
+  sftp_cache_rebuild:
+    image: plugins/sftp-cache
+    rebuild: true
+    mount:
+      - /drone/.ivy2
+      - /drone/.coursier-cache
+      - /drone/.sbt
+      - /drone/.git
+
+matrix:
+  include:
+    - SCALA_VERSION: 0.1.1-bin-20170517-8a9aedc-NIGHTLY
+      DRONE_TEST: true
+      DRONE_PUBLISH: true
+    - SCALA_VERSION: 2.10.6
+      DRONE_TEST: true
+      DRONE_PUBLISH: true
+    - SCALA_VERSION: 2.11.11
+      DRONE_TEST: true
+      DRONE_PUBLISH: true
+    - SCALA_VERSION: 2.12.2
+      DRONE_TEST: true
+      DRONE_PUBLISH: true
+
