@@ -7,7 +7,7 @@ trait Pretty extends Product {
 }
 
 object Pretty {
-  implicit def prettySyntax[T <: Pretty]: Syntax[T] = Syntax{ (p, x) =>
+  implicit def prettySyntax[T <: Pretty]: Syntax[T] = Syntax { (p, x) =>
     x.render(p)
   }
 

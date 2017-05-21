@@ -19,11 +19,11 @@ import scala.meta.prettyprinters._
 // e.g. 2.0.0-707+51be4a51.1495325855697
 
 final case class Version(
-  major: Int,
-  minor: Int,
-  patch: Int,
-  snapshot: String,
-  commit: String
+    major: Int,
+    minor: Int,
+    patch: Int,
+    snapshot: String,
+    commit: String
 ) extends Pretty {
   protected def render(p: Prettyprinter): Unit = {
     p.stx(s"$major.$minor.$patch")

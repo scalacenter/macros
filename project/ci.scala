@@ -3,8 +3,7 @@ package build
 
 import sbt._
 
-trait Ci {
-  self: ScalametaBuild =>
+trait Ci { self: ScalametaBuild =>
 
   // NOTE: Invokes given commands in a CI environment, meaning:
   //   * Commands are invoked with scalaVersion set to ScalaVersion

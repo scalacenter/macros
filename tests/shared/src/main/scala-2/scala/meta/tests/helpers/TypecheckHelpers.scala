@@ -39,9 +39,8 @@ trait TypecheckHelpers {
 }
 
 object TypecheckHelpers {
-  def impl(c: Context)
-          (expected: c.Expr[String], code: c.Expr[String])(options: c.Expr[Options])
-          : c.Expr[Unit] = {
+  def impl(c: Context)(expected: c.Expr[String], code: c.Expr[String])(
+      options: c.Expr[Options]): c.Expr[Unit] = {
     import c.universe.{Position => _, _}
     val s_code = code match {
       case Expr(Literal(Constant(s_code: String))) => s_code

@@ -24,7 +24,10 @@ final class Prettyprinter {
 
   def rep[T](xs: List[T], sep: String = "")(fn: T => Unit): Prettyprinter = {
     if (xs.nonEmpty) {
-      xs.init.foreach{ x => fn(x); str(sep) }
+      xs.init.foreach { x =>
+        fn(x)
+        str(sep)
+      }
       fn(xs.last)
     }
     this

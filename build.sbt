@@ -87,7 +87,9 @@ lazy val publishableSettings = Def.settings(
   publishArtifact.in(Compile) := true,
   publishArtifact.in(Test) := false,
   publishMavenStyle := true,
-  pomIncludeRepository := { x => false },
+  pomIncludeRepository := { x =>
+    false
+  },
   licenses += "BSD" -> url("https://github.com/scalameta/scalameta/blob/master/LICENSE.md"),
   pomExtra := (
     <url>https://github.com/scalameta/scalameta</url>

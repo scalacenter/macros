@@ -13,31 +13,31 @@ object Structure {
     new Structure[T] { override def render(p: Prettyprinter, x: T): Unit = fn(p, x) }
   }
 
-  implicit def structureUnit[T <: Unit]: Structure[T] = Structure{ (p, x) =>
+  implicit def structureUnit[T <: Unit]: Structure[T] = Structure { (p, x) =>
     p.raw(x.toString)
   }
 
-  implicit def structureBoolean[T <: Boolean]: Structure[T] = Structure{ (p, x) =>
+  implicit def structureBoolean[T <: Boolean]: Structure[T] = Structure { (p, x) =>
     p.raw(x.toString)
   }
 
-  implicit def structureByte[T <: Byte]: Structure[T] = Structure{ (p, x) =>
+  implicit def structureByte[T <: Byte]: Structure[T] = Structure { (p, x) =>
     p.raw(x.toString).raw(".toByte")
   }
 
-  implicit def structureShort[T <: Short]: Structure[T] = Structure{ (p, x) =>
+  implicit def structureShort[T <: Short]: Structure[T] = Structure { (p, x) =>
     p.raw(x.toString).raw(".toShort")
   }
 
-  implicit def structureChar[T <: Char]: Structure[T] = Structure{ (p, x) =>
+  implicit def structureChar[T <: Char]: Structure[T] = Structure { (p, x) =>
     p.raw(enquote(x.toString, SingleQuotes))
   }
 
-  implicit def structureInt[T <: Int]: Structure[T] = Structure{ (p, x) =>
+  implicit def structureInt[T <: Int]: Structure[T] = Structure { (p, x) =>
     p.raw(x.toString)
   }
 
-  implicit def structureFloat[T <: Float]: Structure[T] = Structure{ (p, x) =>
+  implicit def structureFloat[T <: Float]: Structure[T] = Structure { (p, x) =>
     x match {
       case x if x.isNaN => p.raw("Float.NaN")
       case Float.PositiveInfinity => p.raw("Float.PositiveInfinity")
@@ -46,11 +46,11 @@ object Structure {
     }
   }
 
-  implicit def structureLong[T <: Long]: Structure[T] = Structure{ (p, x) =>
+  implicit def structureLong[T <: Long]: Structure[T] = Structure { (p, x) =>
     p.raw(x.toString).raw("L")
   }
 
-  implicit def structureDouble[T <: Double]: Structure[T] = Structure{ (p, x) =>
+  implicit def structureDouble[T <: Double]: Structure[T] = Structure { (p, x) =>
     x match {
       case x if x.isNaN => p.raw("Double.NaN")
       case Double.PositiveInfinity => p.raw("Double.PositiveInfinity")
@@ -59,16 +59,16 @@ object Structure {
     }
   }
 
-  implicit def structureString[T <: String]: Structure[T] = Structure{ (p, x) =>
+  implicit def structureString[T <: String]: Structure[T] = Structure { (p, x) =>
     if (x == null) p.raw("null")
     else p.raw(enquote(x, DoubleQuotes))
   }
 
-  implicit def structureSymbol[T <: Symbol]: Structure[T] = Structure{ (p, x) =>
+  implicit def structureSymbol[T <: Symbol]: Structure[T] = Structure { (p, x) =>
     p.raw(x.toString)
   }
 
-  implicit def structureNull: Structure[Null] = Structure{ (p, x) =>
+  implicit def structureNull: Structure[Null] = Structure { (p, x) =>
     p.raw("null")
   }
 

@@ -31,16 +31,14 @@ object Manual {
 class ClassifierSuite extends TypecheckHelpers {
   @Test
   def unclassifiableInheritance: Unit = {
-    assertTypecheckError(
-      "don't know how to classify scala.meta.tests.classifiers.Unclassifiable",
-      "(??? : Unclassifiable).is[Derived]")
+    assertTypecheckError("don't know how to classify scala.meta.tests.classifiers.Unclassifiable",
+                         "(??? : Unclassifiable).is[Derived]")
   }
 
   @Test
   def unclassifiableTypeclass: Unit = {
-    assertTypecheckError(
-      "don't know how to classify scala.meta.tests.classifiers.Unclassifiable",
-      "(??? : Unclassifiable).is[Manual]")
+    assertTypecheckError("don't know how to classify scala.meta.tests.classifiers.Unclassifiable",
+                         "(??? : Unclassifiable).is[Manual]")
   }
 
   @Test

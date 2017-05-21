@@ -5,8 +5,7 @@ import scala.compat.Platform.EOL
 import scala.io._
 import org.scalameta.os._
 
-trait Versions {
-  self: ScalametaBuild =>
+trait Versions { self: ScalametaBuild =>
 
   lazy val LanguageVersion = sys.env.getOrElse("SCALA_VERSION", LatestScala211)
   lazy val LanguageVersions = List(LatestScala210, LatestScala211, LatestScala212, LatestDotty)

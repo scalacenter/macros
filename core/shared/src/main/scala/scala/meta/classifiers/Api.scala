@@ -13,5 +13,4 @@ private[meta] trait Api {
   }
 }
 
-private[meta] trait Aliases {
-}
+private[meta] trait Aliases {}
