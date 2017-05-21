@@ -1,52 +1,15 @@
 package org.scalameta
 package build
 
+import scala.compat.Platform.EOL
 import scala.io._
+import org.scalameta.os._
 
 trait Versions {
   self: ScalametaBuild =>
 
   lazy val LanguageVersion = sys.env.getOrElse("SCALA_VERSION", LatestScala211)
   lazy val LanguageVersions = List(LatestScala210, LatestScala211, LatestScala212, LatestDotty)
-  lazy val LibraryVersion = sys.env.getOrElse("SCALAMETA_VERSION", computeLibraryVersionFromGit())
-  protected def computeLibraryVersionFromGit(): String = {
-    // TODO: uncomment this once we tag v2.0.0
-    // val currStableVersion: String = {
-    //   val stdout = shell.check_output(s"git tag -l v*")
-    //   val latestTag = stdout.split(EOL).last
-    //   val status = """^v(\d+)\.(\d+)\.(\d+)$""".r.unapplySeq(latestTag)
-    //   if (status.isEmpty) sys.error(s"unexpected latest tag $latestTag in$EOL$stdout")
-    //   latestTag.stripPrefix("v")
-    // }
-    // val nextStableVersion = {
-    //   def fail() = sys.error(s"unexpected version series $currStableVersion")
-    //   val rxKindaSemVer = """^(\d+)\.(\d+)\.(\d+)$""".r
-    //   currStableVersion match {
-    //     case rxKindaSemVer(s_currEpoch, s_currMajor, _) =>
-    //       val currMajor = {
-    //         try s_currMajor.toInt
-    //         catch { case ex: Exception => fail() }
-    //       }
-    //       val nextMajor = currMajor + 1
-    //       s"$s_currEpoch.$nextMajor.0"
-    //     case _ =>
-    //       fail()
-    //   }
-    // }
-    // val preReleasePrefix = nextStableVersion
-    val preReleasePrefix = "2.0.0"
-    val preReleaseSuffix = {
-      val gitDescribeSuffix = {
-        val distance = os.git.distance("v1.0.0", "HEAD")
-        val currentSha = os.git.currentSha().substring(0, 8)
-        s"$distance-$currentSha"
-      }
-      if (os.git.isStable()) gitDescribeSuffix
-      else gitDescribeSuffix + "." + os.time.stamp
-    }
-    preReleasePrefix + "-" + preReleaseSuffix
-  }
-
   lazy val LatestScala210 = readScalaVersionFromDroneYml("2.10.x")
   lazy val LatestScala211 = readScalaVersionFromDroneYml("2.11.x")
   lazy val LatestScala212 = readScalaVersionFromDroneYml("2.12.x")
@@ -61,5 +24,50 @@ trait Versions {
       case Nil => sys.error(s"no Scala version $series found in .drone.yml")
       case versions => sys.error("multiple Scala versions $series found in .drone.yml")
     }
+  }
+
+  lazy val CoreVersion = computeProductVersionFromGit("core")
+  protected def computeProductVersionFromGit(product: String): String = {
+    val currStableVersion: String = {
+      val prefix = product + "-"
+      val stdout = shell.check_output(s"git tag -l $prefix*").split(EOL).filter(_.nonEmpty).toList
+      val latestTag = stdout.lastOption.getOrElse(prefix + "1.0.0")
+      val latestVersion = latestTag.stripPrefix(prefix)
+      val status = """(\d+)\.(\d+)\.(\d+)$""".r.unapplySeq(latestVersion)
+      if (status.isEmpty) sys.error(s"unexpected latest tag $latestTag in $stdout")
+      latestVersion
+    }
+    val nextStableVersion = {
+      // TODO: It would be great to accommodate the difference between major and minor upgrades.
+      // I believe we can implement this in a particularly neat way:
+      //   * By default, bump the minor version of the product
+      //   * If there's any commit since the latest tag that says "[$product breaking change] ..."
+      //     then bump the major version of the product
+      //   * Use the CI to verify that breaking changes are reported and reported correctly
+      def fail() = sys.error(s"unexpected version series $currStableVersion")
+      val rxSemVer = """^(\d+)\.(\d+)\.(\d+)$""".r
+      currStableVersion match {
+        case rxSemVer(s_currMajor, _, _) =>
+          val currMajor = {
+            try s_currMajor.toInt
+            catch { case ex: Exception => fail() }
+          }
+          val nextMajor = currMajor + 1
+          s"$nextMajor.0.0"
+        case _ =>
+          fail()
+      }
+    }
+    val preReleasePrefix = nextStableVersion
+    val preReleaseSuffix = {
+      val gitDescribeSuffix = {
+        val distance = os.git.distance("v1.0.0", "HEAD")
+        val currentSha = os.git.currentSha().substring(0, 8)
+        s"$distance-$currentSha"
+      }
+      if (os.git.isStable()) gitDescribeSuffix
+      else gitDescribeSuffix + "." + os.time.stamp
+    }
+    preReleasePrefix + "-" + preReleaseSuffix
   }
 }

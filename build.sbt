@@ -5,14 +5,37 @@ import org.scalajs.sbtplugin.ScalaJSCrossVersion
 // Projects
 // ==========================================
 
-{
-  println(s"[info] Welcome to scalameta $LibraryVersion")
-  name := "scalametaRoot"
-}
-sharedSettings
+name := "scalametaRoot"
 nonPublishableSettings
 commands += CiCommand("ci-test", List("test"))
 commands += CiCommand("ci-publish", List("publish"))
+
+lazy val core = crossProject
+  .in(file("core"))
+  .enablePlugins(BuildInfoPlugin)
+  .settings(
+    publishableSettings,
+    version := CoreVersion,
+    description := "Platform-independent interfaces for syntactic and semantic APIs of Scalameta"
+  )
+lazy val coreJVM = core.jvm
+lazy val coreJS = core.js
+
+lazy val tests = crossProject
+  .in(file("tests"))
+  .enablePlugins(BuildInfoPlugin)
+  .settings(
+    nonPublishableSettings,
+    description := "Integration tests of Scalameta",
+    libraryDependencies += "junit" % "junit" % "4.12",
+    libraryDependencies ++= (
+      if (isDotty.value) Nil
+      else Seq("org.scala-lang" % "scala-reflect" % scalaVersion.value)
+    )
+  )
+  .dependsOn(core)
+lazy val testsJVM = tests.jvm
+lazy val testsJS = tests.js
 
 // ==========================================
 // Settings
@@ -25,19 +48,37 @@ lazy val sharedSettings = Def.settings(
     val bannedLanguageVersions = if (isScalaJSProject.value) List(LatestDotty) else Nil
     LanguageVersions.diff(bannedLanguageVersions)
   },
+  unmanagedSourceDirectories.in(Compile) += {
+    val main = CrossType.Full.sharedSrcDir(baseDirectory.in(Compile).value, "main").get
+    val epochSpecificName = if (isDotty.value) "scala-0" else "scala-2"
+    main / ".." / epochSpecificName
+  },
+  unmanagedSourceDirectories.in(Test) += {
+    val test = CrossType.Full.sharedSrcDir(baseDirectory.in(Test).value, "test").get
+    val epochSpecificName = if (isDotty.value) "scala-0" else "scala-2"
+    test / ".." / epochSpecificName
+  },
   crossVersion := {
     crossVersion.value match {
       case old @ ScalaJSCrossVersion.binary => old
       case _ => CrossVersion.binary
     }
   },
-  version := LibraryVersion,
   organization := "org.scalameta",
   scalacOptions ++= Seq("-deprecation", "-feature", "-unchecked", "-Xfatal-warnings"),
   logBuffered := false,
   incOptions := incOptions.value.withLogRecompileOnMacro(false),
   updateOptions := updateOptions.value.withCachedResolution(true),
-  triggeredMessage.in(ThisBuild) := Watched.clearWhenTriggered
+  triggeredMessage.in(ThisBuild) := Watched.clearWhenTriggered,
+  buildInfoKeys := Seq[BuildInfoKey](
+    scalaVersion,
+    version
+  ),
+  buildInfoPackage := "scala.meta.internal.config." + name.value,
+  buildInfoObject := "BuildInfo",
+  libraryDependencies += "junit" % "junit" % "4.12" % "test",
+  libraryDependencies += "com.novocode" % "junit-interface" % "0.11" % "test",
+  testOptions += Tests.Argument(TestFrameworks.JUnit, "-q", "-n")
 )
 
 lazy val publishableSettings = Def.settings(
