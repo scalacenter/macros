@@ -99,4 +99,8 @@ object Structure {
       raw(")")
     }
   }
+
+  implicit def structurePretty[T <: Pretty]: Structure[T] = Structure { (p, x) =>
+    Pretty.structure(x, p)
+  }
 }

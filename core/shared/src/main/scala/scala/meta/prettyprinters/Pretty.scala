@@ -2,15 +2,36 @@ package scala.meta
 package prettyprinters
 
 trait Pretty extends Product {
-  protected def render(p: Prettyprinter): Unit
+  protected def syntax(p: Prettyprinter): Unit
+
+  def syntax: String = {
+    val p = new Prettyprinter
+    syntax(p)
+    p.toString
+  }
+
+  protected def structure(p: Prettyprinter): Unit = {
+    val ev = Structure.structureProduct[Product]
+    val p = new Prettyprinter
+    ev.render(p, this)
+    p.toString
+  }
+
+  def structure: String = {
+    val p = new Prettyprinter
+    structure(p)
+    p.toString
+  }
+
   final override def toString = this.syntax
 }
 
-object Pretty {
-  implicit def prettySyntax[T <: Pretty]: Syntax[T] = Syntax { (p, x) =>
-    x.render(p)
+private[meta] object Pretty {
+  def syntax(pretty: Pretty, prettyprinter: Prettyprinter): Unit = {
+    pretty.syntax(prettyprinter)
   }
 
-  // NOTE: Pretty structure is provided via Structure.structureProduct.
-  // Pretty extends Product, and that allows it to use the standard infrastructure.
+  def structure(pretty: Pretty, prettyprinter: Prettyprinter): Unit = {
+    pretty.structure(prettyprinter)
+  }
 }

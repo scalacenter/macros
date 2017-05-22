@@ -25,7 +25,7 @@ final case class Version(
     snapshot: String,
     commit: String
 ) extends Pretty {
-  protected def render(p: Prettyprinter): Unit = {
+  protected def syntax(p: Prettyprinter): Unit = {
     p.stx(s"$major.$minor.$patch")
     if (snapshot.nonEmpty) p.stx(s"-$snapshot")
     if (commit.nonEmpty) p.stx(s"+$commit")
