@@ -75,7 +75,7 @@ final case class Dialect(
 object Dialect extends InternalDialect {
   // NOTE: Spinning up a macro just for this is too hard.
   // Using JVM reflection won't be portable to Scala.js.
-  private[meta] lazy val standards: Map[Dialect, String] = Map(
+  @volatile private[meta] lazy val standards: Map[Dialect, String] = Map(
     Scala210 -> "Scala210",
     Sbt0136 -> "Sbt0136",
     Sbt0137 -> "Sbt0137",
