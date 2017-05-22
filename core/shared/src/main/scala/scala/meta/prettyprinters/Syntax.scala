@@ -57,7 +57,8 @@ object Syntax {
 
   // NOTE: We intentionally don't provide an instance for Null.
 
-  implicit def syntaxPretty[T <: Pretty]: Syntax[T] = Syntax { (p, x) =>
-    Pretty.syntax(x, p)
-  }
+  implicit def syntaxPrettyprinted[T <: Prettyprinted]: Syntax[T] =
+    Syntax { (p, x) =>
+      Prettyprinted.syntax(x, p)
+    }
 }

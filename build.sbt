@@ -13,10 +13,14 @@ commands += CiCommand("ci-publish", List("publish"))
 lazy val core = crossProject
   .in(file("core"))
   .enablePlugins(BuildInfoPlugin)
+  .jsConfigure(_.enablePlugins(ScalaJSBundlerPlugin))
   .settings(
     publishableSettings,
     version := CoreVersion,
     description := "Platform-independent interfaces for syntactic and semantic APIs of Scalameta"
+  )
+  .jsSettings(
+    npmDependencies in Compile += "shelljs" -> "0.7.7"
   )
 lazy val coreJVM = core.jvm
 lazy val coreJS = core.js

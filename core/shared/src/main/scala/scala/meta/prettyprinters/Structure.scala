@@ -94,6 +94,7 @@ object Structure {
         case x: String => str(x)
         case x: Symbol => str(x)
         case null => str(null)
+        case x: Prettyprinted => str(x)
         case x: Product => str(x)
         case other => sys.error("don't know how to prettyprint ${x.getClass}")
       }
@@ -113,7 +114,11 @@ object Structure {
     }
   }
 
-  implicit def structurePretty[T <: Pretty]: Structure[T] = Structure { (p, x) =>
-    Pretty.structure(x, p)
-  }
+  implicit def structurePrettyprinted[T <: Prettyprinted]: Structure[T] =
+    Structure { (p, x) =>
+      Prettyprinted.structure(x, p)
+    }
+
+  implicit def structurePretty[T <: Pretty]: Structure[T] =
+    structurePrettyprinted[T]
 }

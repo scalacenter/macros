@@ -15,6 +15,7 @@ pipeline:
       - /platform:/keys
     commands:
       - git fetch --tags && git log | head -n 20
+      - apk add --no-cache nodejs
       - ./bin/checkCLA.sh
       - ./bin/scalafmt --test
       - sbt ci-test
@@ -26,6 +27,7 @@ pipeline:
     volumes:
       - /platform:/keys
     commands:
+      - apt-get install -y nodejs
       - ./bin/bintray.sh
     when:
       event: [push, tag]
