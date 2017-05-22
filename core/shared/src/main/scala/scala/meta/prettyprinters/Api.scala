@@ -1,7 +1,7 @@
 package scala.meta
 package prettyprinters
 
-private[meta] trait Api {
+private[scala] trait Api {
   implicit class XtensionSyntax[T](x: T) {
     def syntax(implicit syntax: Syntax[T]): String = {
       val p = new Prettyprinter
@@ -19,7 +19,7 @@ private[meta] trait Api {
   }
 }
 
-private[meta] trait Aliases {
+private[scala] trait Aliases {
   // NOTE: We don't expose any definitions inside scala.meta.prettyprinters
   // as part of this package's public API that will show up in scala.meta.
 }

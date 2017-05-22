@@ -25,6 +25,17 @@ lazy val core = crossProject
 lazy val coreJVM = core.jvm
 lazy val coreJS = core.js
 
+lazy val profilesMacros = crossProject
+  .in(file("profiles/macros"))
+  .settings(
+    publishableSettings,
+    version := CoreVersion,
+    description := "Platform-independent interfaces for new-style Scala macros"
+  )
+  .dependsOn(core)
+lazy val profilesMacrosJVM = profilesMacros.jvm
+lazy val profilesMacrosJS = profilesMacros.js
+
 lazy val tests = crossProject
   .in(file("tests"))
   .enablePlugins(BuildInfoPlugin)

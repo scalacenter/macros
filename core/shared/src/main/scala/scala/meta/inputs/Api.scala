@@ -1,9 +1,9 @@
 package scala.meta
 package inputs
 
-private[meta] trait Api {}
+private[scala] trait Api {}
 
-private[meta] trait Aliases {
+private[scala] trait Aliases {
   type Input = scala.meta.inputs.Input
   lazy val Input = scala.meta.inputs.Input
 

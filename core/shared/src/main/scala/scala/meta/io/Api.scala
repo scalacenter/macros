@@ -1,9 +1,12 @@
 package scala.meta
 package io
 
-private[meta] trait Api {}
+private[scala] trait Api {
+  // NOTE: We don't expose any extension methods
+  // as part of this package's public API that will show up in scala.meta.
+}
 
-private[meta] trait Aliases {
+private[scala] trait Aliases {
   type AbsolutePath = scala.meta.io.AbsolutePath
   lazy val AbsolutePath = scala.meta.io.AbsolutePath
 }
