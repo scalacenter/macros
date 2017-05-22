@@ -46,6 +46,11 @@ lazy val testsJS = tests.js
 // ==========================================
 
 lazy val sharedSettings = Def.settings(
+  initialize := {
+    val _ = initialize.value
+    val jdk = sys.props("java.specification.version")
+    assert(jdk == "1.8", "this build only supports JDK 1.8")
+  },
   scalaVersion := LanguageVersion,
   crossScalaVersions := {
     // NOTE: Scala.js doesn't support Dotty yet
