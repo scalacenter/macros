@@ -16,6 +16,7 @@ pipeline:
     commands:
       - git fetch --tags && git log | head -n 20
       - ./bin/checkCLA.sh
+      - ./bin/scalafmt --test
       - sbt ci-test
 
   publish:
