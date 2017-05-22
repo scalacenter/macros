@@ -74,10 +74,13 @@ object Structure {
 
   // TODO: This would be a perfect place for generic programming.
   // Unfortunately, we can't use Shapeless here, because bootstrapping.
+  private val tupleNames = 1.to(22).map(i => "Tuple" + i).toSet
   implicit def structureProduct[T <: Product]: Structure[T] = Structure { (p, x) =>
     import p._
-    raw(x.productPrefix)
-    if (x.productArity > 0 || !x.getClass.getName.endsWith("$")) {
+    def renderPrefix(): Unit = {
+      raw(x.productPrefix)
+    }
+    def renderComponents(xs: List[_]): Unit = {
       def loop(x: Any): Unit = x match {
         case x: Unit => str(x)
         case x: Boolean => str(x)
@@ -95,8 +98,18 @@ object Structure {
         case other => sys.error("don't know how to prettyprint ${x.getClass}")
       }
       raw("(")
-      rep(x.productIterator.toList, ", ")(loop)
+      rep(xs, ", ")(loop)
       raw(")")
+    }
+    x match {
+      case Nil => raw("Nil")
+      case List(List()) => raw("List(List())")
+      case other: List[_] => raw("List"); renderComponents(other)
+      case _ =>
+        val nonTrivial = !tupleNames(x.productPrefix)
+        val nonEmpty = x.productArity > 0 || !x.getClass.getName.endsWith("$")
+        if (nonTrivial) renderPrefix()
+        if (nonEmpty) renderComponents(x.productIterator.toList)
     }
   }
 

@@ -12,9 +12,7 @@ trait Pretty extends Product {
 
   protected def structure(p: Prettyprinter): Unit = {
     val ev = Structure.structureProduct[Product]
-    val p = new Prettyprinter
     ev.render(p, this)
-    p.toString
   }
 
   def structure: String = {

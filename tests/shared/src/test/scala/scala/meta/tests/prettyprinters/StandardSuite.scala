@@ -89,4 +89,30 @@ class StandardSuite extends TypecheckHelpers {
     assertTypecheckError("value syntax is not a member of Null", "null.syntax")
     assertTypecheckError("value structure is not a member of Null", "null.structure")
   }
+
+  @Test
+  def prettyOption: Unit = {
+    assertTypecheckError("don't know how to prettyprint syntax of None.type", "None.syntax")
+    assertEquals("None", None.structure)
+    assertTypecheckError("don't know how to prettyprint syntax of Some[Int]", "Some(1).syntax")
+    assertEquals("Some(1)", Some(1).structure)
+  }
+
+  @Test
+  def prettyList: Unit = {
+    assertTypecheckError(
+      "don't know how to prettyprint syntax of scala.collection.immutable.Nil.type",
+      "Nil.syntax")
+    assertEquals("Nil", Nil.structure)
+    assertTypecheckError("don't know how to prettyprint syntax of List[Int]", "List(1).syntax")
+    assertEquals("List(1)", List(1).structure)
+    assertTypecheckError("don't know how to prettyprint syntax of List[Int]", "List(1, 2).syntax")
+    assertEquals("List(1, 2)", List(1, 2).structure)
+  }
+
+  @Test
+  def prettyTuple: Unit = {
+    assertTypecheckError("don't know how to prettyprint syntax of (Int, Int)", "(1, 2).syntax")
+    assertEquals("(1, 2)", (1, 2).structure)
+  }
 }

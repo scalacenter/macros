@@ -26,7 +26,7 @@ final class Prettyprinter {
     if (xs.nonEmpty) {
       xs.init.foreach { x =>
         fn(x)
-        str(sep)
+        raw(sep)
       }
       fn(xs.last)
     }
