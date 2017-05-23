@@ -9,10 +9,10 @@ private[scala] trait Api {
     Version.parse(value).getOrElse(fail)
   }
   lazy val scalaVersion: Version = ensureVersion("scalaVersion", BuildInfo.scalaVersion)
-  lazy val coreVersion: Version = ensureVersion("version", BuildInfo.scalaVersion)
+  lazy val coreVersion: Version = ensureVersion("version", BuildInfo.version)
 }
 
 private[scala] trait Aliases {
-  // NOTE: We don't expose any definitions inside scala.meta.config
-  // as part of this package's public API that will show up in scala.meta.
+  type Version = scala.meta.config.Version
+  val Version = scala.meta.config.Version
 }

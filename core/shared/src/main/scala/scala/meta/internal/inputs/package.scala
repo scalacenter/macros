@@ -1,5 +1,4 @@
-package scala.meta
-package internal
+package scala.meta.internal
 
 import java.nio.charset._
 import java.nio.file._

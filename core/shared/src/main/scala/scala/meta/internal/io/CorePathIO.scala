@@ -1,5 +1,4 @@
-package scala.meta
-package internal
+package scala.meta.internal
 package io
 
 object CorePathIO {

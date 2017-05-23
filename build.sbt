@@ -27,6 +27,7 @@ lazy val coreJS = core.js
 
 lazy val profilesMacros = crossProject
   .in(file("profiles/macros"))
+  .enablePlugins(BuildInfoPlugin)
   .settings(
     publishableSettings,
     version := CoreVersion,
@@ -36,19 +37,43 @@ lazy val profilesMacros = crossProject
 lazy val profilesMacrosJVM = profilesMacros.jvm
 lazy val profilesMacrosJS = profilesMacros.js
 
+lazy val enginesScalac = project
+  .in(file("engines/scalac"))
+  .enablePlugins(BuildInfoPlugin)
+  .settings(
+    publishableSettings,
+    version := EngineScalacVersion,
+    crossScalaVersions := List(Scala211),
+    description := "Scalac implementation of interfaces for new-style Scala macros",
+    libraryDependencies += "org.scala-lang" % "scala-compiler" % scalaVersion.value
+  )
+  .dependsOn(profilesMacrosJVM)
+
+lazy val pluginsScalac = project
+  .in(file("plugins/scalac"))
+  .enablePlugins(BuildInfoPlugin)
+  .settings(
+    pluginSettings,
+    version := PluginScalacVersion,
+    crossScalaVersions := List(Scala211),
+    description := "Scalac integration for new-style Scala macros",
+    libraryDependencies += "org.scala-lang" % "scala-compiler" % scalaVersion.value
+  )
+  .dependsOn(enginesScalac)
+
 lazy val tests = crossProject
   .in(file("tests"))
   .enablePlugins(BuildInfoPlugin)
   .settings(
     nonPublishableSettings,
-    description := "Integration tests of Scalameta",
+    description := "Scalameta tests",
     libraryDependencies += "junit" % "junit" % "4.12",
     libraryDependencies ++= (
       if (isDotty.value) Nil
       else Seq("org.scala-lang" % "scala-reflect" % scalaVersion.value)
     )
   )
-  .dependsOn(core, profilesMacros)
+  .dependsOn(profilesMacros)
 lazy val testsJVM = tests.jvm
 lazy val testsJS = tests.js
 
@@ -65,7 +90,7 @@ lazy val sharedSettings = Def.settings(
   scalaVersion := LanguageVersion,
   crossScalaVersions := {
     // NOTE: Scala.js doesn't support Dotty yet
-    val bannedLanguageVersions = if (isScalaJSProject.value) List(LatestDotty) else Nil
+    val bannedLanguageVersions = if (isScalaJSProject.value) List(Dotty) else Nil
     LanguageVersions.diff(bannedLanguageVersions)
   },
   unmanagedSourceDirectories.in(Compile) += {
@@ -99,6 +124,36 @@ lazy val sharedSettings = Def.settings(
   libraryDependencies += "junit" % "junit" % "4.12" % "test",
   libraryDependencies += "com.novocode" % "junit-interface" % "0.11" % "test",
   testOptions += Tests.Argument(TestFrameworks.JUnit, "-q", "-n")
+)
+
+lazy val pluginSettings = Def.settings(
+  publishableSettings,
+  crossVersion := CrossVersion.full,
+  unmanagedSourceDirectories.in(Compile) += {
+    val base = sourceDirectory.in(Compile).value
+    base / ("scala-" + scalaVersion.value)
+  },
+  test.in(assembly) := {},
+  logLevel.in(assembly) := Level.Error,
+  assemblyJarName.in(assembly) := {
+    name.value + "_" + scalaVersion.value + "-" + version.value + "-assembly.jar"
+  },
+  assemblyOption.in(assembly) ~= { _.copy(includeScala = false) },
+  Keys.`package`.in(Compile) := {
+    val slimJar = Keys.`package`.in(Compile).value
+    val fatJar = new File(crossTarget.value + "/" + assemblyJarName.in(assembly).value)
+    val _ = assembly.value
+    IO.copy(List(fatJar -> slimJar), overwrite = true)
+    slimJar
+  },
+  packagedArtifact.in(Compile).in(packageBin) := {
+    val temp = packagedArtifact.in(Compile).in(packageBin).value
+    val (art, slimJar) = temp
+    val fatJar = new File(crossTarget.value + "/" + assemblyJarName.in(assembly).value)
+    val _ = assembly.value
+    IO.copy(List(fatJar -> slimJar), overwrite = true)
+    (art, slimJar)
+  }
 )
 
 lazy val publishableSettings = Def.settings(

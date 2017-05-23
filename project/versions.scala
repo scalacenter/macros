@@ -27,6 +27,8 @@ trait Versions { self: ScalametaBuild =>
   }
 
   lazy val CoreVersion = computeProductVersionFromGit("core")
+  lazy val EngineScalacVersion = computeProductVersionFromGit("engine-scalac")
+  lazy val PluginScalacVersion = computeProductVersionFromGit("plugin-scalac")
   protected def computeProductVersionFromGit(product: String): String = {
     val currStableVersion: String = {
       val prefix = product + "-"
