@@ -1,19 +1,24 @@
 package scala.macros
 
-import scala.meta._
+private[scala] trait Api {
+  def expandee(implicit expansion: Expansion): Tree = {
+    expansion.expandee
+  }
 
-private[scala] trait Api
-    extends classifiers.Api
-    with config.Api
-    with dialects.Api
-    with inputs.Api
-    with scala.meta.io.Api
-    with prettyprinters.Api
+  def abort(pos: Position, msg: String)(implicit expansion: Expansion): Nothing = {
+    expansion.abort(pos, msg)
+  }
 
-private[scala] trait Aliases
-    extends classifiers.Aliases
-    with config.Aliases
-    with dialects.Aliases
-    with inputs.Aliases
-    with scala.meta.io.Aliases
-    with prettyprinters.Aliases
+  def error(pos: Position, msg: String)(implicit expansion: Expansion): Unit = {
+    expansion.error(pos, msg)
+  }
+
+  def warning(pos: Position, msg: String)(implicit expansion: Expansion): Unit = {
+    expansion.warning(pos, msg)
+  }
+}
+
+private[scala] trait Aliases {
+  type Dialect = scala.meta.Dialect
+  val Dialect = scala.meta.Dialect
+}
