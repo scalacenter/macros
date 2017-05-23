@@ -56,4 +56,7 @@ matrix:
     - SCALA_VERSION: 2.12.2
       DRONE_TEST: true
       DRONE_PUBLISH: true
+    - SCALA_VERSION: 2.13.0-M1
+      DRONE_TEST: true
+      DRONE_PUBLISH: true
 

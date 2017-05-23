@@ -87,6 +87,7 @@ object Dialect extends InternalDialect {
     Typelevel212 -> "Typelevel212",
     Paradise212 -> "Paradise212",
     ParadiseTypelevel212 -> "ParadiseTypelevel212",
+    Scala213 -> "Scala213",
     Dotty -> "Dotty"
   )
 }
@@ -161,6 +162,8 @@ package object dialects {
     allowInlineIdents = true,
     allowInlineMods = true
   )
+
+  implicit val Scala213: Dialect = Scala212.copy()
 
   implicit val Dotty: Dialect = Scala211.copy(
     allowAndTypes = true, // New feature in Dotty

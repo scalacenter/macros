@@ -7,12 +7,13 @@ import org.scalameta.os._
 
 trait Versions { self: ScalametaBuild =>
 
-  lazy val LanguageVersion = sys.env.getOrElse("SCALA_VERSION", LatestScala211)
-  lazy val LanguageVersions = List(LatestScala210, LatestScala211, LatestScala212, LatestDotty)
-  lazy val LatestScala210 = readScalaVersionFromDroneYml("2.10.x")
-  lazy val LatestScala211 = readScalaVersionFromDroneYml("2.11.x")
-  lazy val LatestScala212 = readScalaVersionFromDroneYml("2.12.x")
-  lazy val LatestDotty = readScalaVersionFromDroneYml("0.1.x")
+  lazy val LanguageVersion = sys.env.getOrElse("SCALA_VERSION", Scala211)
+  lazy val LanguageVersions = List(Scala210, Scala211, Scala212, Scala213, Dotty)
+  lazy val Scala210 = readScalaVersionFromDroneYml("2.10.x")
+  lazy val Scala211 = readScalaVersionFromDroneYml("2.11.x")
+  lazy val Scala212 = readScalaVersionFromDroneYml("2.12.x")
+  lazy val Scala213 = readScalaVersionFromDroneYml("2.13.x")
+  lazy val Dotty = readScalaVersionFromDroneYml("0.1.x")
   private def readScalaVersionFromDroneYml(series: String): String = {
     val lines = Source.fromFile(".drone.yml")(Codec.UTF8).getLines.toList
     val rxVersion = series.replace(".", "\\.").replace("x", ".*")
