@@ -48,7 +48,7 @@ lazy val tests = crossProject
       else Seq("org.scala-lang" % "scala-reflect" % scalaVersion.value)
     )
   )
-  .dependsOn(core)
+  .dependsOn(core, profilesMacros)
 lazy val testsJVM = tests.jvm
 lazy val testsJS = tests.js
 
