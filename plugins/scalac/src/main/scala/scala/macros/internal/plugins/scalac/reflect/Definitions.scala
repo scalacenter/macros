@@ -12,25 +12,32 @@ trait Definitions { self: ReflectToolkit =>
   import treeBuilder._
 
   object pluginDefinitions {
-    def isScalaMacrosOnClasspath: Boolean = InlineAnnotation != NoSymbol
-    private lazy val InlineAnnotation = getClassIfDefined("scala.macros.internal.inline")
+    def isInlineMacrosAllowed: Boolean = {
+      InternalInline != NoSymbol
+    }
+
+    def isInlineAnnotationsAllowed: Boolean = {
+      isInlineMacrosAllowed && plugins.exists(_.name == "macroparadise")
+    }
+
+    private lazy val InternalInline = getClassIfDefined("scala.macros.internal.inline")
 
     implicit class XtensionDefinitionsModifiers(mods: Modifiers) {
       def markInline(pos: Position): Modifiers = {
-        if (InlineAnnotation == NoSymbol) mods
-        else mods.withAnnotations(List(atPos(pos)(New(InlineAnnotation))))
+        if (InternalInline == NoSymbol) mods
+        else mods.withAnnotations(List(atPos(pos)(New(InternalInline))))
       }
       def isInline: Boolean = mods.annotations.exists {
         case Apply(Select(New(tpt), nme.CONSTRUCTOR), Nil) =>
-          val isInline = tpt.tpe != null && tpt.tpe.typeSymbol == InlineAnnotation
-          InlineAnnotation != NoSymbol && isInline
+          val isInline = tpt.tpe != null && tpt.tpe.typeSymbol == InternalInline
+          InternalInline != NoSymbol && isInline
         case _ =>
           false
       }
     }
 
     implicit class XtensionDefinitionsSymbol(sym: Symbol) {
-      def isInline: Boolean = sym.annotations.exists(_.tpe.typeSymbol == InlineAnnotation)
+      def isInline: Boolean = sym.annotations.exists(_.tpe.typeSymbol == InternalInline)
     }
 
     lazy val ImportScalaLanguageExperimentalMacros: Tree = {

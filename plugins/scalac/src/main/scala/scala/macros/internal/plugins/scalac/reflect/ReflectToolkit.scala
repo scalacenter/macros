@@ -4,6 +4,6 @@ package reflect
 
 import scala.tools.nsc.Global
 
-trait ReflectToolkit extends Definitions with Names {
+trait ReflectToolkit extends Errors with Definitions with Names {
   val global: Global
 }

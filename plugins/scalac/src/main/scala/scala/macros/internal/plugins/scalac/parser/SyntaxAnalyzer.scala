@@ -59,20 +59,13 @@ abstract class SyntaxAnalyzer extends NscSyntaxAnalyzer with ReflectToolkit {
     private def flagTokens: Map[Int, Long] = {
       invoke("flagTokens").asInstanceOf[Map[Int, Long]]
     }
-    private def ensureScalaMacrosOnClasspath(): Unit = {
-      if (!isScalaMacrosOnClasspath) {
-        val version = "\"" + coreVersion.syntax + "\""
-        val dependency = s"a library dependency on org.scalamacros %% scalamacros % $version"
-        syntaxError(in.offset, s"new-style macros require $dependency")
-      }
-    }
     override def modifiers(): Modifiers = normalizeModifiers {
       def loop(mods: Modifiers): Modifiers = in.token match {
         case IDENTIFIER if isInlineDef =>
-          ensureScalaMacrosOnClasspath()
-          val offset = in.offset
+          val pos = r2p(in.offset)
+          ensureInlineMacrosAllowed(pos)
           in.nextToken()
-          loop(mods.markInline(r2p(offset)))
+          loop(mods.markInline(pos))
         case PRIVATE | PROTECTED =>
           loop(accessQualifierOpt(addMod(mods, flagTokens(in.token), tokenRange(in))))
         case ABSTRACT | FINAL | SEALED | OVERRIDE | IMPLICIT | LAZY =>
@@ -88,10 +81,10 @@ abstract class SyntaxAnalyzer extends NscSyntaxAnalyzer with ReflectToolkit {
     override def localModifiers(): Modifiers = {
       def loop(mods: Modifiers): Modifiers = {
         if (isInlineDef) {
-          ensureScalaMacrosOnClasspath()
-          val offset = in.offset
+          val pos = r2p(in.offset)
+          ensureInlineMacrosAllowed(pos)
           in.nextToken()
-          loop(mods.markInline(r2p(offset)))
+          loop(mods.markInline(pos))
         } else if (isLocalModifier) {
           loop(addMod(mods, flagTokens(in.token), tokenRange(in)))
         } else {
@@ -162,6 +155,7 @@ abstract class SyntaxAnalyzer extends NscSyntaxAnalyzer with ReflectToolkit {
         val hasTheRightName = name == InlineAnnotationMethodName
         isClass && extendsMacroAnnotation && hasTheRightName
       }
+      if (isMacroAnnotation) ensureInlineAnnotationsAllowed(tree.pos)
       val macroDef = atPos(tree.pos) {
         val mods1 = mods | Flags.MACRO
         def rhs1(tparams: List[Tree]) = {
