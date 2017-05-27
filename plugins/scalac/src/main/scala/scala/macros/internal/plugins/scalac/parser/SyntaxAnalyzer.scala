@@ -187,6 +187,8 @@ abstract class SyntaxAnalyzer extends NscSyntaxAnalyzer with ReflectToolkit {
         }
       }
       val shimDef = atPos(tree.pos) {
+        val name2 = name.inlineShimName
+        val tparams2 = tparams
         val cname = unit.freshTermName("c$")
         def cExprOf(tpt: Tree): Tree = atPos(tpt.pos) {
           tpt match {
@@ -225,13 +227,15 @@ abstract class SyntaxAnalyzer extends NscSyntaxAnalyzer with ReflectToolkit {
             }
           }
           val vparamss2 = List(List(c)) ++ vvparamss ++ vtparamss
-          val rhs2 = shimRhs(c, vvparamss.flatten, vtparamss.flatten, isMacroAnnotation)
+          val rhs2 = shimRhs(name, c, vvparamss.flatten, vtparamss.flatten, isMacroAnnotation)
           (vparamss2, atPos(rhs.pos)(rhs2))
         }
         val tpt2 = cExprOf(scalaDot(TypeName("Any")))
-        DefDef(NoMods, name.inlineShimName, tparams, vparamss2, tpt2, rhs2)
+        DefDef(NoMods, name2, tparams2, vparamss2, tpt2, rhs2)
       }
       val implDef = atPos(rhs.pos) {
+        val name3 = name.inlineImplName
+        val tparams3 = Nil
         val thisParamName = unit.freshTermName("prefix$")
         val vparamss3 = {
           val thisParam = atPos(tree.pos)(ValDef(NoMods, thisParamName, MacrosTerm, EmptyTree))
@@ -267,14 +271,15 @@ abstract class SyntaxAnalyzer extends NscSyntaxAnalyzer with ReflectToolkit {
             syntaxError(rhs.pos.point, s"implementation restriction: $restr")
             rhs
         }
-        DefDef(NoMods, name.inlineImplName, Nil, vparamss3, tpt3, rhs3)
+        DefDef(NoMods, name3, tparams3, vparamss3, tpt3, rhs3)
       }
       val stats = List(atPos(tree.pos)(ImportScalaLanguageExperimentalMacros), macroDef)
       val mstats = List(shimDef, implDef)
       (stats, mstats)
     }
 
-    private def shimRhs(c: ValDef,
+    private def shimRhs(name: TermName,
+                        c: ValDef,
                         vvparams: List[ValDef],
                         vtparams: List[ValDef],
                         isMacroAnnotation: Boolean): Tree = {
@@ -322,6 +327,7 @@ abstract class SyntaxAnalyzer extends NscSyntaxAnalyzer with ReflectToolkit {
       val otherArgNames = otherArgDefs.map(_.name)
       val dialectArgName = unit.freshTermName("dialect$")
       val expansionArgName = unit.freshTermName("expansion$")
+      val implName = name.inlineImplName
       q"""
         var foundEngine = "old-style " + _root_.scala.util.Properties.versionNumberString
         def failMacroEngine(ex: Exception): _root_.scala.Nothing = {
@@ -391,7 +397,7 @@ abstract class SyntaxAnalyzer extends NscSyntaxAnalyzer with ReflectToolkit {
               val message = "ScalacExpansion.apply returned " + className
               failMacroEngine(new _root_.java.lang.IllegalStateException(message))
           }
-          val result = apply($thisArgName, ..$otherArgNames)($dialectArgName, $expansionArgName)
+          val result = $implName($thisArgName, ..$otherArgNames)($dialectArgName, $expansionArgName)
           $cName.Expr[_root_.scala.Any](result.asInstanceOf[$cName.Tree])
         }
       """

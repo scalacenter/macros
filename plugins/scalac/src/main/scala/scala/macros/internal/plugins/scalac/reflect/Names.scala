@@ -9,7 +9,7 @@ trait Names { self: ReflectToolkit =>
     def inlineModuleName: TermName = TermName(name.toString + "$inline")
     def inlineMacroName: TermName = TermName(name.toString)
     def inlineShimName: TermName = TermName(name.toString + "$shim")
-    def inlineImplName: TermName = TermName(name.toString)
+    def inlineImplName: TermName = TermName(name.toString + "$macroExpandWithRuntime")
   }
 
   val InlineAnnotationParentName = TypeName("MacroAnnotation")
