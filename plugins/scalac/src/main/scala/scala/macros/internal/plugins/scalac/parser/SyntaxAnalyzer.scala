@@ -285,20 +285,36 @@ abstract class SyntaxAnalyzer extends NscSyntaxAnalyzer with ReflectToolkit {
           val List(defnParam) = vvparams
           val defnArgName = unit.freshTermName(defnParam.name.toString + "$")
           val defnArgDef = q"""
-            val $defnArgName = annottees.map(_.asInstanceOf[_root_.scala.macros.Stat]) match {
-              case _root_.scala.Seq(tree) => tree
-              case trees => _root_.scala.macros.Term.Block(trees.toList)
+            val $defnArgName = {
+              try {
+                annottees.map(_.asInstanceOf[_root_.scala.macros.Stat]) match {
+                  case _root_.scala.Seq(tree) => tree
+                  case trees => _root_.scala.macros.Term.Block(trees.toList)
+                }
+              } catch {
+                case ex: _root_.java.lang.ClassCastException => failMacroEngine(ex)
+              }
             }
           """
           List(defnArgDef)
         } else {
           val vargDefs = vvparams.map(vvparam => {
             val argName = unit.freshTermName(vvparam.name.toString + "$")
-            q"val $argName = ${vvparam.name}.asInstanceOf[_root_.scala.macros.Term]"
+            q"""
+              val $argName = {
+                try ${vvparam.name}.asInstanceOf[_root_.scala.macros.Term]
+                catch { case ex: _root_.java.lang.ClassCastException => failMacroEngine(ex) }
+              }
+            """
           })
           val targDefs = vtparams.map(vtparam => {
             val argName = unit.freshTermName(vtparam.name.toString.stripSuffix("typetag$") + "$")
-            q"val $argName = ${vtparam.name}.tpe.asInstanceOf[_root_.scala.macros.Type]"
+            q"""
+              val $argName = {
+                try ${vtparam.name}.tpe.asInstanceOf[_root_.scala.macros.Type]
+                catch { case ex: _root_.java.lang.ClassCastException => failMacroEngine(ex) }
+              }
+            """
           })
           vargDefs ++ targDefs
         }
@@ -308,11 +324,12 @@ abstract class SyntaxAnalyzer extends NscSyntaxAnalyzer with ReflectToolkit {
       val expansionArgName = unit.freshTermName("expansion$")
       q"""
         var foundEngine = "old-style " + _root_.scala.util.Properties.versionNumberString
-        def failMacroEngine(): _root_.scala.Nothing = {
+        def failMacroEngine(ex: Exception): _root_.scala.Nothing = {
           val requiredEngine = ${engineVersion.toString}
           var msg = "macro cannot be expanded, because it was compiled by an incompatible engine"
           msg += (_root_.scala.meta.internal.prettyprinters.EOL + " found   : " + foundEngine)
           msg += (_root_.scala.meta.internal.prettyprinters.EOL + " required: " + requiredEngine)
+          // ex.printStackTrace
           $cName.abort($cName.enclosingPosition, msg)
         }
         def invokeBackendMethod(
@@ -321,40 +338,58 @@ abstract class SyntaxAnalyzer extends NscSyntaxAnalyzer with ReflectToolkit {
             args: _root_.scala.AnyRef*): _root_.scala.AnyRef = {
           try {
             val pluginClassLoader = this.getClass.getClassLoader
-            val moduleClass = _root_.java.lang.Class.forName(moduleName, true, pluginClassLoader)
+            val moduleClass = pluginClassLoader.loadClass(moduleName + "$$")
             val moduleField = moduleClass.getDeclaredField("MODULE$$")
             val module = moduleField.get(null)
-            val methods = module.getClass.getDeclaredMethods.filter(_.getName == methodName).toList
+            var methods = module.getClass.getDeclaredMethods.filter(_.getName == methodName).toList
+            methods = methods.filter(m => !m.isBridge && !m.isSynthetic)
             methods match {
-              case List(method) => method.invoke(module, args: _*)
-              case _ => failMacroEngine()
+              case List(method) =>
+                method.invoke(module, args: _*)
+              case Nil =>
+                val message = moduleName + "." + methodName + " matches no methods"
+                failMacroEngine(new _root_.java.lang.IllegalStateException(message))
+              case other =>
+                val methods = other.toList.mkString(", ")
+                val message = moduleName + "." + methodName + " matches multiple methods " + methods
+                failMacroEngine(new _root_.java.lang.IllegalStateException(message))
             }
           } catch {
-            case _: _root_.java.lang.ClassNotFoundException => failMacroEngine()
-            case _: _root_.java.lang.NoSuchFieldException => failMacroEngine()
-            case _: _root_.java.lang.IllegalAccessException => failMacroEngine()
-            case _: _root_.java.lang.IllegalArgumentException => failMacroEngine()
+            case ex: _root_.java.lang.ClassNotFoundException => failMacroEngine(ex)
+            case ex: _root_.java.lang.NoSuchFieldException => failMacroEngine(ex)
+            case ex: _root_.java.lang.IllegalAccessException => failMacroEngine(ex)
+            case ex: _root_.java.lang.IllegalArgumentException => failMacroEngine(ex)
+            case ex: _root_.java.lang.reflect.InvocationTargetException => throw ex
           }
         }
         invokeBackendMethod("scala.macros.internal.config.package", "engineVersion") match {
-          case v: _root_.scala.macros.Version => foundEngine = v.toString
-          case _ => failMacroEngine()
+          case v: _root_.scala.macros.Version => foundEngine =
+            v.toString
+          case other =>
+            val className = if (other != null) other.getClass.getName else "null"
+            val message = "engineVersion returned " + className
+            failMacroEngine(new _root_.java.lang.IllegalStateException(message))
         }
 
         val ScalacUniverse = "scala.macros.internal.engines.scalac.Universe"
         val scalacUniverse = invokeBackendMethod(ScalacUniverse, "apply", $cName.universe)
         _root_.scala.macros.internal.withUniverse(scalacUniverse) {
-          val $thisArgName = $cName.macroApplication.asInstanceOf[_root_.scala.macros.Term]
+          val $thisArgName = {
+            try $cName.macroApplication.asInstanceOf[_root_.scala.macros.Term]
+            catch { case ex: _root_.java.lang.ClassCastException => failMacroEngine(ex) }
+          }
           ..$otherArgDefs
           val $dialectArgName = _root_.scala.macros.Dialect.current
-          val ScalacExpansion = "scala.macros.backends.scalac.Expansion"
+          val ScalacExpansion = "scala.macros.internal.engines.scalac.Expansion"
           val $expansionArgName = invokeBackendMethod(ScalacExpansion, "apply", $cName) match {
             // TODO: We can't say `expansion: _root_.scala.macros.Expansion`,
             // because it produces a pattern matcher warning in 2.12.x.
             case expansion if expansion.isInstanceOf[_root_.scala.macros.Expansion] =>
               expansion.asInstanceOf[_root_.scala.macros.Expansion]
-            case _ =>
-              failMacroEngine()
+            case other =>
+              val className = if (other != null) other.getClass.getName else "null"
+              val message = "ScalacExpansion.apply returned " + className
+              failMacroEngine(new _root_.java.lang.IllegalStateException(message))
           }
           val result = apply($thisArgName, ..$otherArgNames)($dialectArgName, $expansionArgName)
           $cName.Expr[_root_.scala.Any](result.asInstanceOf[$cName.Tree])

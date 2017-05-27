@@ -39,7 +39,7 @@ object main$inline {
         args: _root_.scala.AnyRef*): _root_.scala.AnyRef = {
       try {
         val pluginClassLoader = this.getClass.getClassLoader
-        val moduleClass = _root_.java.lang.Class.forName(moduleName, true, pluginClassLoader)
+        val moduleClass = pluginClassLoader.loadClass(moduleName + "$")
         val moduleField = moduleClass.getDeclaredField("MODULE$")
         val module = moduleField.get(null)
         val methods = module.getClass.getDeclaredMethods().filter(_.getName == methodName).toList
@@ -52,6 +52,7 @@ object main$inline {
         case _: _root_.java.lang.NoSuchFieldException => failMacroEngine()
         case _: _root_.java.lang.IllegalAccessException => failMacroEngine()
         case _: _root_.java.lang.IllegalArgumentException => failMacroEngine()
+        case ex: _root_.java.lang.reflect.InvocationTargetException => throw ex
       }
     }
     invokeBackendMethod("scala.macros.internal.config.package", "engineVersion") match {
