@@ -1,7 +1,7 @@
 package scala.meta
 package config
 
-import scala.meta.prettyprinters._
+import scala.meta.internal.prettyprinters._
 
 // NOTE: This class models the versioning strategy of scalameta.
 // It is important to have Version in core to have an explicitly defined

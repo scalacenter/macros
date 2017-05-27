@@ -3,7 +3,7 @@ package trees
 
 import scala.reflect._
 import scala.meta.inputs._
-import scala.meta.prettyprinters._
+import scala.meta.internal.prettyprinters._
 
 private[scala] trait Abstracts { self: Universe =>
   import companions._
@@ -12,15 +12,10 @@ private[scala] trait Abstracts { self: Universe =>
   private[scala] def abstracts: Abstracts
   private[scala] trait Abstracts {
     def treePos(tree: Tree): Position
-    def treeSyntax(p: Prettyprinter, tree: Tree): Unit
-    def treeStructure(p: Prettyprinter, tree: Tree): Unit
     def nameValue(name: Name): String
     def nameUnapply(tree: Tree): Option[String]
     def litValue(lit: Lit): String
     def litUnapply(tree: Tree): Option[Any]
-    def termFresh(prefix: String): Term.Name
-    def typeFresh(prefix: String): Type.Name
-    def patFresh(prefix: String): Pat.Var
     def memberName(member: Member): Name
     def NameAnonymous: NameAnonymousCompanion
     def NameIndeterminate: NameIndeterminateCompanion
@@ -33,7 +28,7 @@ private[scala] trait Abstracts { self: Universe =>
     def LitFloat: LitFloatCompanion
     def LitLong: LitLongCompanion
     def LitDouble: LitDoubleCompanion
-    def LitString: LitIntCompanion
+    def LitString: LitStringCompanion
     def LitSymbol: LitSymbolCompanion
     def LitNull: LitNullCompanion
     def TermThis: TermThisCompanion

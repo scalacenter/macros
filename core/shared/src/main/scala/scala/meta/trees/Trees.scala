@@ -74,7 +74,6 @@ private[scala] trait Trees extends Abstracts with Companions with Extensions { r
     def Eta = abstracts.TermEta
     def Repeated = abstracts.TermRepeated
     def Param = abstracts.TermParam
-    def fresh(prefix: String = "fresh") = abstracts.termFresh(prefix)
   }
 
   type Type >: Null <: Tree
@@ -106,7 +105,6 @@ private[scala] trait Trees extends Abstracts with Companions with Extensions { r
     def Repeated = abstracts.TypeRepeated
     def Var = abstracts.TypeVar
     def Param = abstracts.TypeParam
-    def fresh(prefix: String = "fresh") = abstracts.typeFresh(prefix)
   }
 
   type Pat >: Null <: Tree
@@ -125,7 +123,6 @@ private[scala] trait Trees extends Abstracts with Companions with Extensions { r
     def Interpolate = abstracts.PatInterpolate
     def Xml = abstracts.PatXml
     def Typed = abstracts.PatTyped
-    def fresh(prefix: String = "fresh") = abstracts.patFresh(prefix)
   }
 
   type Member >: Null <: Tree // Member.name

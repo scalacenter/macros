@@ -2,7 +2,7 @@ package scala.meta.internal
 package trees
 
 import scala.meta.Universe
-import scala.meta.prettyprinters._
+import scala.meta.internal.prettyprinters._
 
 trait TreeSyntax { self: Universe =>
 

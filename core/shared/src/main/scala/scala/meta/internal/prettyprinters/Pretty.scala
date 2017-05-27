@@ -1,4 +1,4 @@
-package scala.meta
+package scala.meta.internal
 package prettyprinters
 
 trait Pretty extends Prettyprinted with Product {

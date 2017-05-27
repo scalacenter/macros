@@ -1,7 +1,5 @@
-package scala.meta
+package scala.meta.internal
 package prettyprinters
-
-import scala.meta.internal.prettyprinters._
 
 @scala.annotation.implicitNotFound("don't know how to prettyprint structure of ${T}")
 trait Structure[T] {

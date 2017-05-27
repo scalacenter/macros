@@ -8,7 +8,7 @@ import java.nio.file._
 import scala.meta.internal.inputs._
 import scala.meta.internal.io._
 import scala.meta.io._
-import scala.meta.prettyprinters._
+import scala.meta.internal.prettyprinters._
 
 trait Input extends Pretty with InternalInput {
   def chars: Array[Char]

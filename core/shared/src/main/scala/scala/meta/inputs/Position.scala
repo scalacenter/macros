@@ -1,7 +1,7 @@
 package scala.meta
 package inputs
 
-import scala.meta.prettyprinters._
+import scala.meta.internal.prettyprinters._
 
 // NOTE: `start` and `end` are String.substring-style,
 // i.e. `start` is inclusive and `end` is not.

@@ -64,7 +64,7 @@ private[scala] trait Companions { self: Universe =>
 
     trait LitStringCompanion {
       def apply(value: String): Lit
-      def unapply(tree: Tree): Option[Int]
+      def unapply(tree: Tree): Option[String]
     }
 
     trait LitSymbolCompanion {
@@ -530,7 +530,8 @@ private[scala] trait Companions { self: Universe =>
     }
 
     trait CtorPrimaryCompanion {
-      def apply(mods: List[Mod],
+      def apply(
+        mods: List[Mod],
         name: Name,
         paramss: List[List[Term.Param]]): Ctor.Primary
       def unapply(tree: Tree): Option[(List[Mod], Name, List[List[Term.Param]])]

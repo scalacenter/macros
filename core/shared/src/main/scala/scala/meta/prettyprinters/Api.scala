@@ -1,6 +1,8 @@
 package scala.meta
 package prettyprinters
 
+import scala.meta.internal.prettyprinters._
+
 private[scala] trait Api {
   implicit class XtensionSyntax[T](x: T) {
     def syntax(implicit syntax: Syntax[T]): String = {

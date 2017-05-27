@@ -4,7 +4,7 @@ package io
 import java.io._
 import java.nio.file._
 import scala.meta.internal.io._
-import scala.meta.prettyprinters._
+import scala.meta.internal.prettyprinters._
 
 final class AbsolutePath private (value: String) extends Prettyprinted {
   protected def syntax(p: Prettyprinter): Unit = p.raw(value)

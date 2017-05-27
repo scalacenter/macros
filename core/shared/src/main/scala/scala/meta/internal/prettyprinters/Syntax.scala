@@ -1,4 +1,4 @@
-package scala.meta
+package scala.meta.internal
 package prettyprinters
 
 @scala.annotation.implicitNotFound("don't know how to prettyprint syntax of ${T}")

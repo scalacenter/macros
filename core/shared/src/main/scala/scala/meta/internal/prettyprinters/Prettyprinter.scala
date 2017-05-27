@@ -1,4 +1,4 @@
-package scala.meta
+package scala.meta.internal
 package prettyprinters
 
 // NOTE: This class is an evolution of Show from 1.x
