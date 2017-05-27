@@ -10,17 +10,23 @@ trait Abstracts extends scala.macros.trees.Abstracts with Positions { self: Univ
 
   val abstracts: TreeAbstracts
   trait TreeAbstracts extends super.TreeAbstracts {
-    def treePos(tree: Tree): Position = ???
+    def treePos(tree: Tree): Position = tree.pos
 
-    def nameValue(name: Name): String = ???
+    def nameValue(name: Name): String = nameUnapply(name).get
 
-    def nameUnapply(tree: Tree): Option[String] = ???
+    def nameUnapply(tree: Tree): Option[String] = tree match {
+      case tree: g.Ident => Some(tree.name.decoded)
+      case _ => None
+    }
 
-    def litValue(lit: Lit): Any = ???
+    def litValue(lit: Lit): Any = litUnapply(lit).get
 
-    def litUnapply(tree: Tree): Option[Any] = ???
+    def litUnapply(tree: Tree): Option[Any] = tree match {
+      case tree: g.Literal => Some(tree.value.value)
+      case _ => None
+    }
 
-    def memberName(member: Member): Name = ???
+    def memberName(member: Member): Name = g.Ident(member.name)
 
     object NameAnonymous extends NameAnonymousCompanion {
       def apply(): Name = ???
