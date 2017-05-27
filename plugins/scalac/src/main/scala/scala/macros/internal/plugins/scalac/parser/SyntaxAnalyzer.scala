@@ -159,12 +159,16 @@ abstract class SyntaxAnalyzer extends NscSyntaxAnalyzer with ReflectToolkit {
         if (!hasPluginDependencyOnParadise) MissingPluginDependencyOnParadise(tree.pos)
       }
       val macroDef = atPos(tree.pos) {
-        val mods1 = mods | Flags.MACRO
-        def rhs1(tparams: List[Tree]) = {
+        def rhs1(tparams1: List[TypeDef]) = {
           val result = Select(Ident(owner.name.inlineModuleName), name.inlineShimName)
-          atPos(tree.pos)(if (tparams.nonEmpty) TypeApply(result, tparams) else result)
+          atPos(tree.pos)({
+            val targs = tparams1.map(p => atPos(p.pos)(Ident(p.name)))
+            if (targs.nonEmpty) TypeApply(result, targs) else result
+          })
         }
         if (isMacroAnnotation) {
+          val mods1 = mods | Flags.MACRO
+          val name1 = TermName("macroTransform")
           val tparams1 = {
             if (tparams.nonEmpty) {
               val where = s"on the annotation class instead of the inline method"
@@ -181,15 +185,21 @@ abstract class SyntaxAnalyzer extends NscSyntaxAnalyzer with ReflectToolkit {
             val param1 = ValDef(Modifiers(Flags.PARAM), TermName("annottees"), tpt, EmptyTree)
             List(List(atPos(param.pos)(param1)))
           }
-          DefDef(mods1, TermName("macroTransform"), Nil, vparamss1, tpt, rhs1(Nil))
+          val tpt1 = tpt // NOTE: intentionally not duplicated
+          DefDef(mods1, name1, tparams1, vparamss1, tpt1, rhs1(Nil))
         } else {
-          DefDef(mods1, name.inlineMacroName, tparams, vparamss, tpt, rhs1(tparams))
+          val mods1 = mods | Flags.MACRO
+          val name1 = name.inlineMacroName
+          val tparams1 = tparams // NOTE: intentionally not duplicated
+          val vparamss1 = vparamss // NOTE: intentionally not duplicated
+          val tpt1 = tpt // NOTE: intentionally not duplicated
+          DefDef(mods1, name1, tparams1, vparamss1, tpt, rhs1(tparams1))
         }
       }
       val shimDef = atPos(tree.pos) {
         val mods2 = NoMods
         val name2 = name.inlineShimName
-        val tparams2 = tparams
+        val tparams2 = tparams.map(_.duplicate)
         val cname = unit.freshTermName("c$")
         def cExprOf(tpt: Tree): Tree = atPos(tpt.pos) {
           tpt match {
