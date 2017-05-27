@@ -1,24 +1,23 @@
 package scala.meta
 package trees
 
-private[scala] trait Trees extends Abstracts with Companions with Extensions { root: Universe =>
+private[scala] trait Trees extends Abstracts with Companions with Extensions { self =>
   type Tree >: Null <: AnyRef // Tree.pos, Tree.syntax, Tree.structure
 
   type Ref >: Null <: Tree
   type Stat >: Null <: Tree
 
   type Name >: Null <: Ref // Name.value
-  private[scala] trait NameHack {
-    type Anonymous >: Null <: Term.Name with Type.Name
-  }
-  object Name extends NameHack {
+  val Name: NameCompanion = new NameCompanion {}
+  private[scala] trait NameCompanion {
     def unapply(tree: Tree) = abstracts.nameUnapply(tree)
     def Anonymous = abstracts.NameAnonymous
     def Indeterminate = abstracts.NameIndeterminate
   }
 
   type Lit >: Null <: Term with Type with Pat // Lit.value
-  object Lit {
+  val Lit: LitCompanion = new LitCompanion {}
+  private[scala] trait LitCompanion {
     def unapply(tree: Tree) = abstracts.litUnapply(tree)
     def Unit = abstracts.LitUnit
     def Boolean = abstracts.LitBoolean
@@ -35,14 +34,12 @@ private[scala] trait Trees extends Abstracts with Companions with Extensions { r
   }
 
   type Term >: Null <: Stat
-  private[scala] trait TermHack {
-    type Ref >: Null <: Term with root.Ref
-    type Name >: Null <: root.Name with Term.Ref with Pat
-    type Param >: Null <: Member.Term
-  }
-  object Term extends TermHack { // Term.fresh
+  val Term: TermCompanion = new TermCompanion {}
+  private[scala] trait TermCompanion { // Term.fresh
+    type Ref >: Null <: Term with self.Ref
     def This = abstracts.TermThis
     def Super = abstracts.TermSuper
+    type Name >: Null <: self.Name with Term.Ref with Pat
     def Name = abstracts.TermName
     def Select = abstracts.TermSelect
     def Interpolate = abstracts.TermInterpolate
@@ -73,18 +70,15 @@ private[scala] trait Trees extends Abstracts with Companions with Extensions { r
     def Placeholder = abstracts.TermPlaceholder
     def Eta = abstracts.TermEta
     def Repeated = abstracts.TermRepeated
+    type Param >: Null <: Member.Term
     def Param = abstracts.TermParam
   }
 
   type Type >: Null <: Tree
-  private[scala] trait TypeHack {
-    type Ref >: Null <: Type with root.Ref
-    type Name >: Null <: root.Name with Type.Ref
-    type Bounds >: Null <: Tree
-    type Var >: Null <: Type with Member.Type
-    type Param >: Null <: Member.Type
-  }
-  object Type extends TypeHack { // Type.fresh
+  val Type: TypeCompanion = new TypeCompanion {}
+  private[scala] trait TypeCompanion { // Type.fresh
+    type Ref >: Null <: Type with self.Ref
+    type Name >: Null <: self.Name with Type.Ref
     def Name = abstracts.TypeName
     def Select = abstracts.TypeSelect
     def Project = abstracts.TypeProject
@@ -100,18 +94,20 @@ private[scala] trait Trees extends Abstracts with Companions with Extensions { r
     def Existential = abstracts.TypeExistential
     def Annotate = abstracts.TypeAnnotate
     def Placeholder = abstracts.TypePlaceholder
+    type Bounds >: Null <: Tree
     def Bounds = abstracts.TypeBounds
     def ByName = abstracts.TypeByName
     def Repeated = abstracts.TypeRepeated
+    type Var >: Null <: Type with Member.Type
     def Var = abstracts.TypeVar
+    type Param >: Null <: Member.Type
     def Param = abstracts.TypeParam
   }
 
   type Pat >: Null <: Tree
-  private[scala] trait PatHack {
+  val Pat: PatCompanion = new PatCompanion {}
+  private[scala] trait PatCompanion { // Pat.fresh
     type Var >: Null <: Pat with Member.Term
-  }
-  object Pat extends PatHack { // Pat.fresh
     def Var = abstracts.PatVar
     def Wildcard = abstracts.PatWildcard
     def SeqWildcard = abstracts.PatSeqWildcard
@@ -126,65 +122,61 @@ private[scala] trait Trees extends Abstracts with Companions with Extensions { r
   }
 
   type Member >: Null <: Tree // Member.name
-  private[scala] trait MemberHack {
+  val Member: MemberCompanion = new MemberCompanion {}
+  private[scala] trait MemberCompanion {
     type Term >: Null <: Member // Member.Term.name
     type Type >: Null <: Member // Member.Type.name
   }
-  object Member extends MemberHack
 
   type Decl >: Null <: Stat
-  private[scala] trait DeclHack {
+  val Decl: DeclCompanion = new DeclCompanion {}
+  private[scala] trait DeclCompanion {
     type Val >: Null <: Decl
-    type Var >: Null <: Decl
-    type Def >: Null <: Decl with Member.Term
-    type Type >: Null <: Decl with Member.Type
-  }
-  object Decl extends DeclHack {
     def Val = abstracts.DeclVal
+    type Var >: Null <: Decl
     def Var = abstracts.DeclVar
+    type Def >: Null <: Decl with Member.Term
     def Def = abstracts.DeclDef
+    type Type >: Null <: Decl with Member.Type
     def Type = abstracts.DeclType
   }
 
   type Defn >: Null <: Stat
-  private[scala] trait DefnHack {
+  val Defn: DefnCompanion = new DefnCompanion {}
+  private[scala] trait DefnCompanion {
     type Val >: Null <: Defn
-    type Var >: Null <: Defn
-    type Def >: Null <: Defn with Member.Term
-    type Macro >: Null <: Defn with Member.Term
-    type Type >: Null <: Defn with Member.Type
-    type Class >: Null <: Defn with Member.Type
-    type Trait >: Null <: Defn with Member.Type
-    type Object >: Null <: Defn with Member.Term
-  }
-  object Defn extends DefnHack {
     def Val = abstracts.DefnVal
+    type Var >: Null <: Defn
     def Var = abstracts.DefnVar
+    type Def >: Null <: Defn with Member.Term
     def Def = abstracts.DefnDef
+    type Macro >: Null <: Defn with Member.Term
     def Macro = abstracts.DefnMacro
+    type Type >: Null <: Defn with Member.Type
     def Type = abstracts.DefnType
+    type Class >: Null <: Defn with Member.Type
     def Class = abstracts.DefnClass
+    type Trait >: Null <: Defn with Member.Type
     def Trait = abstracts.DefnTrait
+    type Object >: Null <: Defn with Member.Term
     def Object = abstracts.DefnObject
   }
 
   type Pkg >: Null <: Member.Term with Stat // Pkg.name
-  private[scala] trait PkgHack {
+  val Pkg: PkgCompanion = new PkgCompanion {}
+  private[scala] trait PkgCompanion {
+    def apply(ref: Term.Ref, stats: List[Stat]) = abstracts.PkgProper.apply(ref, stats)
+    def unapply(tree: Tree): Option[(Term.Ref, List[Stat])] = abstracts.PkgProper.unapply(tree)
     type Object >: Null <: Member.Term with Stat
-  }
-  object Pkg extends PkgHack {
-    def apply(ref: Term.Ref, stats: List[Stat]) = abstracts.Pkg.apply(ref, stats)
-    def unapply(tree: Tree): Option[(Term.Ref, List[Stat])] = abstracts.Pkg.unapply(tree)
     def Object = abstracts.PkgObject
   }
 
   type Ctor >: Null <: Member
-  private[scala] trait CtorHack {
+  val Ctor: CtorCompanion = new CtorCompanion {}
+  private[scala] trait CtorCompanion {
     type Primary >: Null <: Ctor
-    type Secondary >: Null <: Ctor with Stat
-  }
-  object Ctor extends CtorHack {
     def Primary = abstracts.CtorPrimary
+    type Secondary >: Null <: Ctor with Stat
     def Secondary = abstracts.CtorSecondary
   }
 
@@ -198,7 +190,8 @@ private[scala] trait Trees extends Abstracts with Companions with Extensions { r
   def Template = abstracts.Template
 
   type Mod >: Null <: Tree
-  object Mod {
+  val Mod: ModCompanion = new ModCompanion {}
+  private[scala] trait ModCompanion {
     def Annot = abstracts.ModAnnot
     def Private = abstracts.ModPrivate
     def Protected = abstracts.ModProtected
@@ -217,7 +210,8 @@ private[scala] trait Trees extends Abstracts with Companions with Extensions { r
   }
 
   type Enumerator >: Null <: Tree
-  object Enumerator {
+  val Enumerator: EnumeratorCompanion = new EnumeratorCompanion {}
+  private[scala] trait EnumeratorCompanion {
     def Generator = abstracts.EnumeratorGenerator
     def Val = abstracts.EnumeratorVal
     def Guard = abstracts.EnumeratorGuard
@@ -230,7 +224,8 @@ private[scala] trait Trees extends Abstracts with Companions with Extensions { r
   def Importer = abstracts.Importer
 
   type Importee >: Null <: Ref
-  object Importee {
+  val Importee: ImporteeCompanion = new ImporteeCompanion {}
+  private[scala] trait ImporteeCompanion {
     def Wildcard = abstracts.ImporteeWildcard
     def Name = abstracts.ImporteeName
     def Rename = abstracts.ImporteeRename

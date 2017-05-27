@@ -6,8 +6,8 @@ import scala.collection.mutable
 import scala.reflect.internal.util.BatchSourceFile
 import scala.tools.nsc.{Global => NscGlobal, SubComponent, Settings => NscSettings}
 import scala.tools.nsc.interpreter.{ReplGlobal => NscReplGlobal, _}
-import parser.{SyntaxAnalyzer => PluginSyntaxAnalyzer}
-import parser.{ReplGlobal => PluginReplGlobal}
+import scala.macros.internal.plugins.scalac.parser.{SyntaxAnalyzer => PluginSyntaxAnalyzer}
+import scala.macros.internal.plugins.scalac.parser.{ReplGlobal => PluginReplGlobal}
 
 trait HijackSyntaxAnalyzer { self: Plugin =>
   // NOTE: Thank you myself from three years ago.

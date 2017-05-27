@@ -3,7 +3,6 @@ package plugins.scalac
 package parser
 
 import scala.tools.nsc.interpreter.{ReplGlobal => NscReplGlobal, _}
-import parser.{SyntaxAnalyzer => PluginSyntaxAnalyzer}
 
 trait ReplGlobal extends NscReplGlobal {
   // TODO: classloader happy meal!!

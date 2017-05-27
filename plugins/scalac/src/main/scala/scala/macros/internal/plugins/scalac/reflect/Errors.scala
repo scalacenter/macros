@@ -2,8 +2,8 @@ package scala.macros.internal
 package plugins.scalac
 package reflect
 
-import scala.macros.coreVersion
 import scala.macros.internal.prettyprinters.EOL
+import scala.macros.coreVersion
 
 trait Errors { self: ReflectToolkit =>
   import global._

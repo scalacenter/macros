@@ -1,20 +1,18 @@
 package scala.meta
 package trees
 
-import scala.reflect._
 import scala.meta.inputs._
-import scala.meta.internal.prettyprinters._
 
-private[scala] trait Abstracts { self: Universe =>
-  import companions._
+private[scala] trait Abstracts { self: Trees =>
+  import treeCompanions._
 
   // NOTE: Check out Companions.scala to see why this is private.
-  private[scala] def abstracts: Abstracts
-  private[scala] trait Abstracts {
+  private[scala] def abstracts: TreeAbstracts
+  private[scala] trait TreeAbstracts {
     def treePos(tree: Tree): Position
     def nameValue(name: Name): String
     def nameUnapply(tree: Tree): Option[String]
-    def litValue(lit: Lit): String
+    def litValue(lit: Lit): Any
     def litUnapply(tree: Tree): Option[Any]
     def memberName(member: Member): Name
     def NameAnonymous: NameAnonymousCompanion
@@ -107,7 +105,7 @@ private[scala] trait Abstracts { self: Universe =>
     def DefnClass: DefnClassCompanion
     def DefnTrait: DefnTraitCompanion
     def DefnObject: DefnObjectCompanion
-    def Pkg: PkgCompanion
+    def PkgProper: PkgProperCompanion
     def PkgObject: PkgObjectCompanion
     def CtorPrimary: CtorPrimaryCompanion
     def CtorSecondary: CtorSecondaryCompanion

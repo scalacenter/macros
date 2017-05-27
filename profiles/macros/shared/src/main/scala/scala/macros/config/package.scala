@@ -1,3 +1,3 @@
 package scala.macros
 
-package object config extends Api
+package object config extends Api with scala.meta.config.Aliases

@@ -3,9 +3,9 @@ package plugins.scalac
 
 import scala.tools.nsc.Global
 import scala.tools.nsc.plugins.{Plugin => NscPlugin}
-import reflect.ReflectToolkit
-import parser.HijackSyntaxAnalyzer
-import typechecker.AnalyzerPlugins
+import scala.macros.internal.plugins.scalac.reflect.ReflectToolkit
+import scala.macros.internal.plugins.scalac.parser.HijackSyntaxAnalyzer
+import scala.macros.internal.plugins.scalac.typechecker.AnalyzerPlugins
 
 class Plugin(val global: Global)
     extends NscPlugin

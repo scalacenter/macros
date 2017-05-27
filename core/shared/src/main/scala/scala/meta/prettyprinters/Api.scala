@@ -22,6 +22,6 @@ private[scala] trait Api {
 }
 
 private[scala] trait Aliases {
-  // NOTE: We don't expose any definitions inside scala.meta.prettyprinters
-  // as part of this package's public API that will show up in scala.meta.
+  // NOTE: We don't expose any definitions in this package
+  // as part of the package's public API that will show up in scala.meta.
 }

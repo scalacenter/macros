@@ -2,12 +2,12 @@ package scala.macros.internal
 package plugins.scalac
 package typechecker
 
-import scala.macros.{coreVersion => foundCoreVersion}
+import scala.reflect.internal.util.ScalaClassLoader
 import scala.macros.internal.config.{engineVersion => foundEngineVersion}
 import scala.macros.internal.inlineMetadata
+import scala.macros.internal.plugins.scalac.reflect.ReflectToolkit
+import scala.macros.{coreVersion => foundCoreVersion}
 import scala.macros.Version
-import scala.reflect.internal.util.ScalaClassLoader
-import reflect.ReflectToolkit
 
 trait AnalyzerPlugins extends ReflectToolkit {
   import global._

@@ -15,6 +15,6 @@ package object macros
     with scala.macros.Aliases
     with scala.macros.Universe {
 
-  private[scala] val universe = new ThreadLocal[scala.meta.Universe]
+  private[scala] val universe = new ThreadLocal[scala.macros.Universe]
   private[scala] def abstracts = universe.get.abstracts.asInstanceOf[Abstracts]
 }

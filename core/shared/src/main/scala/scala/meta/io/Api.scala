@@ -3,7 +3,7 @@ package io
 
 private[scala] trait Api {
   // NOTE: We don't expose any extension methods
-  // as part of this package's public API that will show up in scala.meta.
+  // as part of the package's public API that will show up in scala.meta.
 }
 
 private[scala] trait Aliases {

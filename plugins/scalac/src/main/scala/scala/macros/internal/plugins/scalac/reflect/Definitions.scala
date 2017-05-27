@@ -2,10 +2,10 @@ package scala.macros.internal
 package plugins.scalac
 package reflect
 
-import scala.macros.Version
-import scala.macros.{scalaVersion, coreVersion}
 import scala.macros.internal.config.engineVersion
 import scala.macros.internal.inlineMetadata
+import scala.macros.{scalaVersion, coreVersion}
+import scala.macros.Version
 
 trait Definitions { self: ReflectToolkit =>
   import global._
