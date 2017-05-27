@@ -251,7 +251,10 @@ case class Universe(val g: Global) extends scala.macros.Universe {
     }
 
     object TermParam extends TermParamCompanion {
-      def apply(mods: List[Mod], name: Term.Name, decltpe: Option[Type], default: Option[Term]): Term.Param = ???
+      def apply(mods: List[Mod],
+                name: Term.Name,
+                decltpe: Option[Type],
+                default: Option[Term]): Term.Param = ???
       def unapply(tree: Tree): Option[(List[Mod], Term.Name, Option[Type], Option[Term])] = ???
     }
 
@@ -357,7 +360,9 @@ case class Universe(val g: Global) extends scala.macros.Universe {
                 tbounds: Type.Bounds,
                 vbounds: List[Type],
                 cbounds: List[Type]): Type.Param = ???
-      def unapply(tree: Tree): Option[(List[Mod], Type.Name, List[Type.Param], Type.Bounds, List[Type], List[Type])] = ???
+      def unapply(tree: Tree)
+        : Option[(List[Mod], Type.Name, List[Type.Param], Type.Bounds, List[Type], List[Type])] =
+        ???
     }
 
     object PatVar extends PatVarCompanion {
@@ -416,121 +421,105 @@ case class Universe(val g: Global) extends scala.macros.Universe {
     }
 
     object DeclVal extends DeclValCompanion {
-      def apply(
-        mods: List[Mod],
-        pats: List[Pat],
-        decltpe: Type): Decl.Val = ???
+      def apply(mods: List[Mod], pats: List[Pat], decltpe: Type): Decl.Val = ???
       def unapply(tree: Tree): Option[(List[Mod], List[Pat], Type)] = ???
     }
 
     object DeclVar extends DeclVarCompanion {
-      def apply(
-        mods: List[Mod],
-        pats: List[Pat],
-        decltpe: Type): Decl.Var = ???
+      def apply(mods: List[Mod], pats: List[Pat], decltpe: Type): Decl.Var = ???
       def unapply(tree: Tree): Option[(List[Mod], List[Pat], Type)] = ???
     }
 
     object DeclDef extends DeclDefCompanion {
-      def apply(
-        mods: List[Mod],
-        name: Term.Name,
-        tparams: List[Type.Param],
-        paramss: List[List[Term.Param]],
-        decltpe: Type): Decl.Def = ???
-      def unapply(tree: Tree): Option[(List[Mod], Term.Name, List[Type.Param], List[List[Term.Param]], Type)] = ???
+      def apply(mods: List[Mod],
+                name: Term.Name,
+                tparams: List[Type.Param],
+                paramss: List[List[Term.Param]],
+                decltpe: Type): Decl.Def = ???
+      def unapply(tree: Tree)
+        : Option[(List[Mod], Term.Name, List[Type.Param], List[List[Term.Param]], Type)] = ???
     }
 
     object DeclType extends DeclTypeCompanion {
-      def apply(
-        mods: List[Mod],
-        name: Type.Name,
-        tparams: List[Type.Param],
-        bounds: Type.Bounds): Decl.Type = ???
+      def apply(mods: List[Mod],
+                name: Type.Name,
+                tparams: List[Type.Param],
+                bounds: Type.Bounds): Decl.Type = ???
       def unapply(tree: Tree): Option[(List[Mod], Type.Name, List[Type.Param], Type.Bounds)] = ???
     }
 
     object DefnVal extends DefnValCompanion {
-      def apply(
-        mods: List[Mod],
-        pats: List[Pat],
-        decltpe: Option[Type],
-        rhs: Term): Defn.Val = ???
+      def apply(mods: List[Mod], pats: List[Pat], decltpe: Option[Type], rhs: Term): Defn.Val = ???
       def unapply(tree: Tree): Option[(List[Mod], List[Pat], Option[Type], Term)] = ???
     }
 
     object DefnVar extends DefnVarCompanion {
-      def apply(
-        mods: List[Mod],
-        pats: List[Pat],
-        decltpe: Option[Type],
-        rhs: Option[Term]): Defn.Var = ???
+      def apply(mods: List[Mod],
+                pats: List[Pat],
+                decltpe: Option[Type],
+                rhs: Option[Term]): Defn.Var = ???
       def unapply(tree: Tree): Option[(List[Mod], List[Pat], Option[Type], Option[Term])] = ???
     }
 
     object DefnDef extends DefnDefCompanion {
-      def apply(
-        mods: List[Mod],
-        name: Term.Name,
-        tparams: List[Type.Param],
-        paramss: List[List[Term.Param]],
-        decltpe: Option[Type],
-        body: Term): Defn.Def = ???
-      def unapply(tree: Tree): Option[(List[Mod], Term.Name, List[Type.Param], List[List[Term.Param]], Option[Type], Term)] = ???
+      def apply(mods: List[Mod],
+                name: Term.Name,
+                tparams: List[Type.Param],
+                paramss: List[List[Term.Param]],
+                decltpe: Option[Type],
+                body: Term): Defn.Def = ???
+      def unapply(tree: Tree): Option[
+        (List[Mod], Term.Name, List[Type.Param], List[List[Term.Param]], Option[Type], Term)] = ???
     }
 
     object DefnMacro extends DefnMacroCompanion {
-      def apply(
-        mods: List[Mod],
-        name: Term.Name,
-        tparams: List[Type.Param],
-        paramss: List[List[Term.Param]],
-        decltpe: Option[Type],
-        body: Term): Defn.Macro = ???
-      def unapply(tree: Tree): Option[(List[Mod], Term.Name, List[Type.Param], List[List[Term.Param]], Option[Type], Term)] = ???
+      def apply(mods: List[Mod],
+                name: Term.Name,
+                tparams: List[Type.Param],
+                paramss: List[List[Term.Param]],
+                decltpe: Option[Type],
+                body: Term): Defn.Macro = ???
+      def unapply(tree: Tree): Option[
+        (List[Mod], Term.Name, List[Type.Param], List[List[Term.Param]], Option[Type], Term)] = ???
     }
 
     object DefnType extends DefnTypeCompanion {
-      def apply(
-        mods: List[Mod],
-        name: Type.Name,
-        tparams: List[Type.Param],
-        body: Type): Defn.Type = ???
+      def apply(mods: List[Mod],
+                name: Type.Name,
+                tparams: List[Type.Param],
+                body: Type): Defn.Type = ???
       def unapply(tree: Tree): Option[(List[Mod], Type.Name, List[Type.Param], Type)] = ???
     }
 
     object DefnClass extends DefnClassCompanion {
-      def apply(
-        mods: List[Mod],
-        name: Type.Name,
-        tparams: List[Type.Param],
-        ctor: Ctor.Primary,
-        templ: Template): Defn.Class = ???
-      def unapply(tree: Tree): Option[(List[Mod], Type.Name, List[Type.Param], Ctor.Primary, Template)] = ???
+      def apply(mods: List[Mod],
+                name: Type.Name,
+                tparams: List[Type.Param],
+                ctor: Ctor.Primary,
+                templ: Template): Defn.Class = ???
+      def unapply(
+          tree: Tree): Option[(List[Mod], Type.Name, List[Type.Param], Ctor.Primary, Template)] =
+        ???
     }
 
     object DefnTrait extends DefnTraitCompanion {
-      def apply(
-        mods: List[Mod],
-        name: Type.Name,
-        tparams: List[Type.Param],
-        ctor: Ctor.Primary,
-        templ: Template): Defn.Trait = ???
-      def unapply(tree: Tree): Option[(List[Mod], Type.Name, List[Type.Param], Ctor.Primary, Template)] = ???
+      def apply(mods: List[Mod],
+                name: Type.Name,
+                tparams: List[Type.Param],
+                ctor: Ctor.Primary,
+                templ: Template): Defn.Trait = ???
+      def unapply(
+          tree: Tree): Option[(List[Mod], Type.Name, List[Type.Param], Ctor.Primary, Template)] =
+        ???
     }
 
     object DefnObject extends DefnObjectCompanion {
-      def apply(
-        mods: List[Mod],
-        name: Term.Name,
-        templ: Template): Defn.Object = ???
+      def apply(mods: List[Mod], name: Term.Name, templ: Template): Defn.Object = ???
       def unapply(tree: Tree): Option[(List[Mod], Term.Name, Template)] = ???
     }
 
     object Pkg extends PkgCompanion {
-      def apply(
-        ref: Term.Ref,
-        stats: List[Stat]): Pkg = ???
+      def apply(ref: Term.Ref, stats: List[Stat]): Pkg = ???
       def unapply(tree: Tree): Option[(Term.Ref, List[Stat])] = ???
 
       type Object = Universe.this.Pkg.Object
@@ -538,29 +527,23 @@ case class Universe(val g: Global) extends scala.macros.Universe {
     }
 
     object PkgObject extends PkgObjectCompanion {
-      def apply(
-        mods: List[Mod],
-        name: Term.Name,
-        templ: Template): Pkg.Object = ???
+      def apply(mods: List[Mod], name: Term.Name, templ: Template): Pkg.Object = ???
       def unapply(tree: Tree): Option[(List[Mod], Term.Name, Template)] = ???
     }
 
     object CtorPrimary extends CtorPrimaryCompanion {
-      def apply(
-        mods: List[Mod],
-        name: Name,
-        paramss: List[List[Term.Param]]): Ctor.Primary = ???
+      def apply(mods: List[Mod], name: Name, paramss: List[List[Term.Param]]): Ctor.Primary = ???
       def unapply(tree: Tree): Option[(List[Mod], Name, List[List[Term.Param]])] = ???
     }
 
     object CtorSecondary extends CtorSecondaryCompanion {
-      def apply(
-        mods: List[Mod],
-        name: Name,
-        paramss: List[List[Term.Param]],
-        init: Init,
-        stats: List[Stat]): Ctor.Secondary = ???
-      def unapply(tree: Tree): Option[(List[Mod], Name, List[List[Term.Param]], Init, List[Stat])] = ???
+      def apply(mods: List[Mod],
+                name: Name,
+                paramss: List[List[Term.Param]],
+                init: Init,
+                stats: List[Stat]): Ctor.Secondary = ???
+      def unapply(
+          tree: Tree): Option[(List[Mod], Name, List[List[Term.Param]], Init, List[Stat])] = ???
     }
 
     object Init extends InitCompanion {
@@ -574,7 +557,8 @@ case class Universe(val g: Global) extends scala.macros.Universe {
     }
 
     object Template extends TemplateCompanion {
-      def apply(early: List[Stat], inits: List[Init], self: Self, stats: List[Stat]): Template = ???
+      def apply(early: List[Stat], inits: List[Init], self: Self, stats: List[Stat]): Template =
+        ???
       def unapply(tree: Tree): Option[(List[Stat], List[Init], Self, List[Stat])] = ???
     }
 

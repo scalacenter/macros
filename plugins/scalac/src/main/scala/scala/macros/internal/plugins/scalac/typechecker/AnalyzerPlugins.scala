@@ -12,10 +12,10 @@ import reflect.ReflectToolkit
 trait AnalyzerPlugins extends ReflectToolkit {
   import global._
   import pluginDefinitions._
-  import analyzer.{MacroPlugin => NscMacroPlugin, _}
+  import analyzer.{MacroPlugin => _, _}
 
-  object MacroPlugin extends NscMacroPlugin {
-    private class PluginMacroRuntimeResolver(macroDef: Symbol) extends MacroRuntimeResolver(macroDef) {
+  object MacroPlugin extends analyzer.MacroPlugin {
+    private class PluginMacroRuntimeResolver(sym: Symbol) extends MacroRuntimeResolver(sym) {
       override def resolveJavaReflectionRuntime(defaultClassLoader: ClassLoader): MacroRuntime = {
         // NOTE: defaultClassLoader only includes libraryClasspath + toolClasspath.
         // We need to include pluginClasspath, so that the inline shim can instantiate
@@ -32,10 +32,9 @@ trait AnalyzerPlugins extends ReflectToolkit {
 
     private val pluginMacroRuntimesCache = perRunCaches.newWeakMap[Symbol, MacroRuntime]
     override def pluginsMacroRuntime(expandee: Tree): Option[MacroRuntime] = {
-      def ensureCompatible(
-          found: Version,
-          required: Option[Version],
-          onError: (Position, String, String) => Unit): Boolean = {
+      def ensureCompatible(found: Version,
+                           required: Option[Version],
+                           onError: (Position, String, String) => Unit): Boolean = {
         val Version(foundMajor, _, _, foundSnapshot, _) = found
         val compatible = required match {
           case Some(Version(requiredMajor, _, _, requiredSnapshot, _)) =>
@@ -58,10 +57,9 @@ trait AnalyzerPlugins extends ReflectToolkit {
         case metadata: inlineMetadata =>
           val requiredCoreVersion = Version.parse(metadata.coreVersion)
           val requiredEngineVersion = Version.parse(metadata.engineVersion)
-          val isCompatible =
-            ensureCompatible(foundCoreVersion, requiredCoreVersion, IncompatibleCoreVersion) &&
-            ensureCompatible(foundEngineVersion, requiredEngineVersion, IncompatibleEngineVersion)
-          if (isCompatible) {
+          val ok1 = ensureCompatible(foundCoreVersion, requiredCoreVersion, BadCoreVersion)
+          val ok2 = ensureCompatible(foundEngineVersion, requiredEngineVersion, BadEngineVersion)
+          if (ok1 && ok2) {
             macroLogVerbose(s"looking for macro implementation: $macroDef")
             def mkResolver = new PluginMacroRuntimeResolver(macroDef).resolveRuntime()
             Some(pluginMacroRuntimesCache.getOrElseUpdate(macroDef, mkResolver))

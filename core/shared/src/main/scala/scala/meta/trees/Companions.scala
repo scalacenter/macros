@@ -238,7 +238,10 @@ private[scala] trait Companions { self: Universe =>
     }
 
     trait TermParamCompanion {
-      def apply(mods: List[Mod], name: Term.Name, decltpe: Option[Type], default: Option[Term]): Term.Param
+      def apply(mods: List[Mod],
+                name: Term.Name,
+                decltpe: Option[Type],
+                default: Option[Term]): Term.Param
       def unapply(tree: Tree): Option[(List[Mod], Term.Name, Option[Type], Option[Term])]
     }
 
@@ -344,7 +347,8 @@ private[scala] trait Companions { self: Universe =>
                 tbounds: Type.Bounds,
                 vbounds: List[Type],
                 cbounds: List[Type]): Type.Param
-      def unapply(tree: Tree): Option[(List[Mod], Type.Name, List[Type.Param], Type.Bounds, List[Type], List[Type])]
+      def unapply(tree: Tree)
+        : Option[(List[Mod], Type.Name, List[Type.Param], Type.Bounds, List[Type], List[Type])]
     }
 
     trait PatVarCompanion {
@@ -403,147 +407,119 @@ private[scala] trait Companions { self: Universe =>
     }
 
     trait DeclValCompanion {
-      def apply(
-        mods: List[Mod],
-        pats: List[Pat],
-        decltpe: Type): Decl.Val
+      def apply(mods: List[Mod], pats: List[Pat], decltpe: Type): Decl.Val
       def unapply(tree: Tree): Option[(List[Mod], List[Pat], Type)]
     }
 
     trait DeclVarCompanion {
-      def apply(
-        mods: List[Mod],
-        pats: List[Pat],
-        decltpe: Type): Decl.Var
+      def apply(mods: List[Mod], pats: List[Pat], decltpe: Type): Decl.Var
       def unapply(tree: Tree): Option[(List[Mod], List[Pat], Type)]
     }
 
     trait DeclDefCompanion {
-      def apply(
-        mods: List[Mod],
-        name: Term.Name,
-        tparams: List[Type.Param],
-        paramss: List[List[Term.Param]],
-        decltpe: Type): Decl.Def
-      def unapply(tree: Tree): Option[(List[Mod], Term.Name, List[Type.Param], List[List[Term.Param]], Type)]
+      def apply(mods: List[Mod],
+                name: Term.Name,
+                tparams: List[Type.Param],
+                paramss: List[List[Term.Param]],
+                decltpe: Type): Decl.Def
+      def unapply(tree: Tree)
+        : Option[(List[Mod], Term.Name, List[Type.Param], List[List[Term.Param]], Type)]
     }
 
     trait DeclTypeCompanion {
-      def apply(
-        mods: List[Mod],
-        name: Type.Name,
-        tparams: List[Type.Param],
-        bounds: Type.Bounds): Decl.Type
+      def apply(mods: List[Mod],
+                name: Type.Name,
+                tparams: List[Type.Param],
+                bounds: Type.Bounds): Decl.Type
       def unapply(tree: Tree): Option[(List[Mod], Type.Name, List[Type.Param], Type.Bounds)]
     }
 
     trait DefnValCompanion {
-      def apply(
-        mods: List[Mod],
-        pats: List[Pat],
-        decltpe: Option[Type],
-        rhs: Term): Defn.Val
+      def apply(mods: List[Mod], pats: List[Pat], decltpe: Option[Type], rhs: Term): Defn.Val
       def unapply(tree: Tree): Option[(List[Mod], List[Pat], Option[Type], Term)]
     }
 
     trait DefnVarCompanion {
-      def apply(
-        mods: List[Mod],
-        pats: List[Pat],
-        decltpe: Option[Type],
-        rhs: Option[Term]): Defn.Var
+      def apply(mods: List[Mod],
+                pats: List[Pat],
+                decltpe: Option[Type],
+                rhs: Option[Term]): Defn.Var
       def unapply(tree: Tree): Option[(List[Mod], List[Pat], Option[Type], Option[Term])]
     }
 
     trait DefnDefCompanion {
-      def apply(
-        mods: List[Mod],
-        name: Term.Name,
-        tparams: List[Type.Param],
-        paramss: List[List[Term.Param]],
-        decltpe: Option[Type],
-        body: Term): Defn.Def
-      def unapply(tree: Tree): Option[(List[Mod], Term.Name, List[Type.Param], List[List[Term.Param]], Option[Type], Term)]
+      def apply(mods: List[Mod],
+                name: Term.Name,
+                tparams: List[Type.Param],
+                paramss: List[List[Term.Param]],
+                decltpe: Option[Type],
+                body: Term): Defn.Def
+      def unapply(tree: Tree): Option[
+        (List[Mod], Term.Name, List[Type.Param], List[List[Term.Param]], Option[Type], Term)]
     }
 
     trait DefnMacroCompanion {
-      def apply(
-        mods: List[Mod],
-        name: Term.Name,
-        tparams: List[Type.Param],
-        paramss: List[List[Term.Param]],
-        decltpe: Option[Type],
-        body: Term): Defn.Macro
-      def unapply(tree: Tree): Option[(List[Mod], Term.Name, List[Type.Param], List[List[Term.Param]], Option[Type], Term)]
+      def apply(mods: List[Mod],
+                name: Term.Name,
+                tparams: List[Type.Param],
+                paramss: List[List[Term.Param]],
+                decltpe: Option[Type],
+                body: Term): Defn.Macro
+      def unapply(tree: Tree): Option[
+        (List[Mod], Term.Name, List[Type.Param], List[List[Term.Param]], Option[Type], Term)]
     }
 
     trait DefnTypeCompanion {
-      def apply(
-        mods: List[Mod],
-        name: Type.Name,
-        tparams: List[Type.Param],
-        body: Type): Defn.Type
+      def apply(mods: List[Mod], name: Type.Name, tparams: List[Type.Param], body: Type): Defn.Type
       def unapply(tree: Tree): Option[(List[Mod], Type.Name, List[Type.Param], Type)]
     }
 
     trait DefnClassCompanion {
-      def apply(
-        mods: List[Mod],
-        name: Type.Name,
-        tparams: List[Type.Param],
-        ctor: Ctor.Primary,
-        templ: Template): Defn.Class
-      def unapply(tree: Tree): Option[(List[Mod], Type.Name, List[Type.Param], Ctor.Primary, Template)]
+      def apply(mods: List[Mod],
+                name: Type.Name,
+                tparams: List[Type.Param],
+                ctor: Ctor.Primary,
+                templ: Template): Defn.Class
+      def unapply(
+          tree: Tree): Option[(List[Mod], Type.Name, List[Type.Param], Ctor.Primary, Template)]
     }
 
     trait DefnTraitCompanion {
-      def apply(
-        mods: List[Mod],
-        name: Type.Name,
-        tparams: List[Type.Param],
-        ctor: Ctor.Primary,
-        templ: Template): Defn.Trait
-      def unapply(tree: Tree): Option[(List[Mod], Type.Name, List[Type.Param], Ctor.Primary, Template)]
+      def apply(mods: List[Mod],
+                name: Type.Name,
+                tparams: List[Type.Param],
+                ctor: Ctor.Primary,
+                templ: Template): Defn.Trait
+      def unapply(
+          tree: Tree): Option[(List[Mod], Type.Name, List[Type.Param], Ctor.Primary, Template)]
     }
 
     trait DefnObjectCompanion {
-      def apply(
-        mods: List[Mod],
-        name: Term.Name,
-        templ: Template): Defn.Object
+      def apply(mods: List[Mod], name: Term.Name, templ: Template): Defn.Object
       def unapply(tree: Tree): Option[(List[Mod], Term.Name, Template)]
     }
 
     trait PkgCompanion {
-      def apply(
-        ref: Term.Ref,
-        stats: List[Stat]): Pkg
+      def apply(ref: Term.Ref, stats: List[Stat]): Pkg
       def unapply(tree: Tree): Option[(Term.Ref, List[Stat])]
     }
 
     trait PkgObjectCompanion {
-      def apply(
-        mods: List[Mod],
-        name: Term.Name,
-        templ: Template): Pkg.Object
+      def apply(mods: List[Mod], name: Term.Name, templ: Template): Pkg.Object
       def unapply(tree: Tree): Option[(List[Mod], Term.Name, Template)]
     }
 
     trait CtorPrimaryCompanion {
-      def apply(
-        mods: List[Mod],
-        name: Name,
-        paramss: List[List[Term.Param]]): Ctor.Primary
+      def apply(mods: List[Mod], name: Name, paramss: List[List[Term.Param]]): Ctor.Primary
       def unapply(tree: Tree): Option[(List[Mod], Name, List[List[Term.Param]])]
     }
 
     trait CtorSecondaryCompanion {
-      def apply(
-        mods: List[Mod],
-        name: Name,
-        paramss: List[List[Term.Param]],
-        init: Init,
-        stats: List[Stat]): Ctor.Secondary
+      def apply(mods: List[Mod],
+                name: Name,
+                paramss: List[List[Term.Param]],
+                init: Init,
+                stats: List[Stat]): Ctor.Secondary
       def unapply(tree: Tree): Option[(List[Mod], Name, List[List[Term.Param]], Init, List[Stat])]
     }
 

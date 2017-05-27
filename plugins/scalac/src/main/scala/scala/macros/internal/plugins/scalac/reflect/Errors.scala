@@ -21,14 +21,14 @@ trait Errors { self: ReflectToolkit =>
     reporter.error(pos, s"new-style macro annotations require $dependency")
   }
 
-  def IncompatibleCoreVersion(pos: Position, found: String, required: String): Unit = {
+  def BadCoreVersion(pos: Position, found: String, required: String): Unit = {
     var message = "macro cannot be expanded, because it was compiled against an incompatible API"
     message += (EOL + " found   : " + found)
     message += (EOL + " required: " + required)
     reporter.error(pos, message)
   }
 
-  def IncompatibleEngineVersion(pos: Position, found: String, required: String): Unit = {
+  def BadEngineVersion(pos: Position, found: String, required: String): Unit = {
     var message = "macro cannot be expanded, because it was compiled by an incompatible engine"
     message += (EOL + " found   : " + found)
     message += (EOL + " required: " + required)
