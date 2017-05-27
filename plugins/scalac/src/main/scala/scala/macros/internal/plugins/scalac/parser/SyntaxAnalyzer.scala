@@ -187,6 +187,7 @@ abstract class SyntaxAnalyzer extends NscSyntaxAnalyzer with ReflectToolkit {
         }
       }
       val shimDef = atPos(tree.pos) {
+        val mods2 = NoMods
         val name2 = name.inlineShimName
         val tparams2 = tparams
         val cname = unit.freshTermName("c$")
@@ -231,9 +232,10 @@ abstract class SyntaxAnalyzer extends NscSyntaxAnalyzer with ReflectToolkit {
           (vparamss2, atPos(rhs.pos)(rhs2))
         }
         val tpt2 = cExprOf(scalaDot(TypeName("Any")))
-        DefDef(NoMods, name2, tparams2, vparamss2, tpt2, rhs2)
+        DefDef(mods2, name2, tparams2, vparamss2, tpt2, rhs2)
       }
       val implDef = atPos(rhs.pos) {
+        val mods3 = NoMods
         val name3 = name.inlineImplName
         val tparams3 = Nil
         val thisParamName = unit.freshTermName("prefix$")
@@ -271,10 +273,29 @@ abstract class SyntaxAnalyzer extends NscSyntaxAnalyzer with ReflectToolkit {
             syntaxError(rhs.pos.point, s"implementation restriction: $restr")
             rhs
         }
-        DefDef(NoMods, name3, tparams3, vparamss3, tpt3, rhs3)
+        DefDef(mods3, name3, tparams3, vparamss3, tpt3, rhs3)
+      }
+      val abiDef = atPos(rhs.pos) {
+        // NOTE: abiDef is different from implDef,
+        // because sometimes we may want implDef to be called in a particular way.
+        // For instance, old-style macros trim stacktraces of macro-generated exceptions
+        // by looking for a method whose name ends with `macroExpandWithRuntime`.
+        // Therefore, for optimal user experience we really want implDef to be named like that.
+        val DefDef(_, name3, _, vparamss3, tpt3, _) = implDef
+        val mods4 = NoMods
+        val name4 = name.inlineAbiName
+        val tparams4 = Nil
+        val vparamss4 = vparamss3.map(_.map(_.duplicate))
+        val tpt4 = tpt3.duplicate
+        val rhs4 = {
+          val vargss4 = vparamss3.map(_.map(p => Ident(p.name)))
+          val core4 = Select(This(tpnme.EMPTY), name3)
+          atPos(rhs.pos)(vargss4.foldLeft(core4: Tree)((curr, args) => Apply(curr, args)))
+        }
+        DefDef(mods4, name4, tparams4, vparamss4, tpt4, rhs4)
       }
       val stats = List(atPos(tree.pos)(ImportScalaLanguageExperimentalMacros), macroDef)
-      val mstats = List(shimDef, implDef)
+      val mstats = List(shimDef, implDef, abiDef)
       (stats, mstats)
     }
 
