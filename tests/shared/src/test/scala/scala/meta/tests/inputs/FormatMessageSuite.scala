@@ -7,7 +7,7 @@ import org.junit.runners._
 import org.junit.Assert._
 import scala.meta.internal.inputs._
 import scala.meta.inputs._
-import scala.meta.prettyprinters._
+import scala.meta.internal.prettyprinters._
 
 @RunWith(classOf[JUnit4])
 class FormatMessageSuite {

@@ -26,6 +26,7 @@ trait Versions { self: ScalametaBuild =>
     }
   }
 
+  lazy val BuildVersion = computeProductVersionFromGit("build").replace("2.0.0", "x.y.z")
   lazy val CoreVersion = computeProductVersionFromGit("core")
   lazy val EngineScalacVersion = computeProductVersionFromGit("engine-scalac")
   lazy val PluginScalacVersion = computeProductVersionFromGit("plugin-scalac")

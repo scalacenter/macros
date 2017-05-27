@@ -4,6 +4,7 @@ import java.nio.charset._
 import java.nio.file._
 import scala.meta.inputs._
 import scala.meta.prettyprinters._
+import scala.meta.internal.prettyprinters._
 
 package object inputs {
   implicit class XtensionPositionFormatMessage(pos: Position) {

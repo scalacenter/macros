@@ -25,12 +25,12 @@ object main$inline {
   // TODO: There's no blackbox.Context in 2.10, so codegen for 2.10 should be different.
   // In this environment, we can set up compatibility shims, but typically we won't be able to do that.
   def apply$shim(c: _root_.scala.reflect.macros.blackbox.Context)(annottees: c.Expr[Any]*): c.Expr[Any] = {
-    var availableEngine = "scalac " + _root_.scala.util.Properties.versionNumberString
+    var foundEngine = "scalac " + _root_.scala.util.Properties.versionNumberString
     def failMacroEngine(): _root_.scala.Nothing = {
       val requiredEngine = "<engineVersion>"
       var msg = "macro cannot be expanded, because it was compiled by an incompatible engine"
-      msg += (_root_.scala.meta.prettyprinters.EOL + " available: " + availableEngine)
-      msg += (_root_.scala.meta.prettyprinters.EOL + " required : " + requiredEngine)
+      msg += (_root_.scala.meta.internal.prettyprinters.EOL + " found   : " + foundEngine)
+      msg += (_root_.scala.meta.internal.prettyprinters.EOL + " required: " + requiredEngine)
       c.abort(c.enclosingPosition, msg)
     }
     def invokeBackendMethod(
@@ -55,7 +55,7 @@ object main$inline {
       }
     }
     invokeBackendMethod("scala.macros.internal.config.package", "engineVersion") match {
-      case version: _root_.scala.macros.Version => availableEngine = version.toString
+      case version: _root_.scala.macros.Version => foundEngine = version.toString
       case _ => failMacroEngine()
     }
 

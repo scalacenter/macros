@@ -2,8 +2,10 @@ package scala.macros.internal
 package plugins.scalac
 package reflect
 
-import scala.macros.scalaVersion
 import scala.macros.Version
+import scala.macros.{scalaVersion, coreVersion}
+import scala.macros.internal.config.engineVersion
+import scala.macros.internal.inlineMetadata
 
 trait Definitions { self: ReflectToolkit =>
   import global._
@@ -12,32 +14,60 @@ trait Definitions { self: ReflectToolkit =>
   import treeBuilder._
 
   object pluginDefinitions {
-    def isInlineMacrosAllowed: Boolean = {
-      InternalInline != NoSymbol
+    def hasLibraryDependencyOnScalamacros: Boolean = {
+      InlineMetadata != NoSymbol
     }
 
-    def isInlineAnnotationsAllowed: Boolean = {
-      isInlineMacrosAllowed && plugins.exists(_.name == "macroparadise")
+    def hasPluginDependencyOnParadise: Boolean = {
+      plugins.exists(_.name == "macroparadise")
     }
 
-    private lazy val InternalInline = getClassIfDefined("scala.macros.internal.inline")
+    private lazy val InlineMetadata = getClassIfDefined("scala.macros.internal.inlineMetadata")
+    private def inlineMetadata(args: List[Tree]): Option[inlineMetadata] = args match {
+      case List(Literal(Constant(coreVersion: String)), Literal(Constant(engineVersion: String))) =>
+        Some(new inlineMetadata(coreVersion, engineVersion))
+      case _ =>
+        None
+    }
+    private def inlineMetadata(tree: Tree): Option[inlineMetadata] = tree match {
+      case Apply(Select(New(tpt), nme.CONSTRUCTOR), args) =>
+        val isInlineMetadata = {
+          InlineMetadata != NoSymbol &&
+          tpt.tpe != null && tpt.tpe.typeSymbol == InlineMetadata
+        }
+        if (isInlineMetadata) inlineMetadata(args) else None
+      case _ =>
+        None
+    }
+    private def inlineMetadata(ann: AnnotationInfo): Option[inlineMetadata] = {
+      val isInlineMetadata = InlineMetadata != NoSymbol && ann.tpe.typeSymbol == InlineMetadata
+      if (isInlineMetadata) inlineMetadata(ann.args) else None
+    }
 
     implicit class XtensionDefinitionsModifiers(mods: Modifiers) {
       def markInline(pos: Position): Modifiers = {
-        if (InternalInline == NoSymbol) mods
-        else mods.withAnnotations(List(atPos(pos)(New(InternalInline))))
+        if (InlineMetadata == NoSymbol) mods
+        else {
+          def arg(value: String) = Literal(Constant(value)).setType(ConstantType(Constant(value)))
+          val args = List(arg(coreVersion.toString), arg(engineVersion.toString))
+          mods.withAnnotations(List(atPos(pos)(New(InlineMetadata.tpe, args: _*))))
+        }
       }
-      def isInline: Boolean = mods.annotations.exists {
-        case Apply(Select(New(tpt), nme.CONSTRUCTOR), Nil) =>
-          val isInline = tpt.tpe != null && tpt.tpe.typeSymbol == InternalInline
-          InternalInline != NoSymbol && isInline
-        case _ =>
-          false
+      def isInline: Boolean = {
+        inlineMetadata.nonEmpty
+      }
+      def inlineMetadata: Option[inlineMetadata] = {
+        mods.annotations.map(pluginDefinitions.inlineMetadata).flatten.headOption
       }
     }
 
     implicit class XtensionDefinitionsSymbol(sym: Symbol) {
-      def isInline: Boolean = sym.annotations.exists(_.tpe.typeSymbol == InternalInline)
+      def isInline: Boolean = {
+        inlineMetadata.nonEmpty
+      }
+      def inlineMetadata: Option[inlineMetadata] = {
+        sym.annotations.map(pluginDefinitions.inlineMetadata).flatten.headOption
+      }
     }
 
     lazy val ImportScalaLanguageExperimentalMacros: Tree = {

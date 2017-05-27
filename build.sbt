@@ -5,7 +5,10 @@ import org.scalajs.sbtplugin.ScalaJSCrossVersion
 // Projects
 // ==========================================
 
-name := "scalametaRoot"
+{
+  println(s"[info] Welcome to scalameta $BuildVersion")
+  name := "scalametaRoot"
+}
 nonPublishableSettings
 commands += CiCommand("ci-test", List("test"))
 commands += CiCommand("ci-publish", List("publish"))

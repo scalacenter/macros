@@ -12,37 +12,37 @@ import scala.meta.prettyprinters._
 // Other changes increment the minor version (the second number).
 // Patch version (the third number) always stays at zero barring exceptional occasions.
 //
-// Prerelease builds are versioned using semver too, e.g. 2.0.0-707+51be4a51,
+// Prerelease builds are versioned using semver too, e.g. 2.0.0-707-51be4a51,
 // where snapshot metadata (the number after the dash) is the distance from the 1.0.0 release
-// and commit metadata (the number after the plus) is the SHA of the current commit.
-// If the working copy is dirty, we additionally append the timestamp to build metadata,
-// e.g. 2.0.0-707+51be4a51.1495325855697
+// concatenated with the SHA of the current commit.
+// If the working copy is dirty, we additionally append the timestamp to snapshot metadata,
+// e.g. 2.0.0-707-51be4a51.1495325855697
 
 final case class Version(
     major: Int,
     minor: Int,
     patch: Int,
     snapshot: String,
-    commit: String
+    build: String
 ) extends Pretty {
   protected def syntax(p: Prettyprinter): Unit = {
     p.raw(s"$major.$minor.$patch")
     if (snapshot.nonEmpty) p.raw(s"-$snapshot")
-    if (commit.nonEmpty) p.raw(s"+$commit")
+    if (build.nonEmpty) p.raw(s"+$build")
   }
 }
 
 object Version {
   def parse(s: String): Option[Version] = {
-    val rxVersion = """^(\d+)\.(\d+)\.(\d+)(?:-(.*?)(?:\+([0-9a-f]+(?:\.(?:\d+))?))?)?$""".r
+    val rxVersion = """^(\d+)\.(\d+)\.(\d+)(?:-([0-9A-Za-z-\.]+)(?:\+([0-9A-Za-z-\.]+))?)?$""".r
     s match {
-      case rxVersion(s_major, s_minor, s_patch, s_snapshot, s_commit) =>
+      case rxVersion(s_major, s_minor, s_patch, s_snapshot, s_build) =>
         val major = s_major.toInt
         val minor = s_minor.toInt
         val patch = s_patch.toInt
         val snapshot = if (s_snapshot != null) s_snapshot else ""
-        val commit = if (s_commit != null) s_commit else ""
-        Some(Version(major, minor, patch, snapshot, commit))
+        val build = if (s_build != null) s_build else ""
+        Some(Version(major, minor, patch, snapshot, build))
       case _ =>
         None
     }

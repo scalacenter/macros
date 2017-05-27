@@ -63,7 +63,7 @@ abstract class SyntaxAnalyzer extends NscSyntaxAnalyzer with ReflectToolkit {
       def loop(mods: Modifiers): Modifiers = in.token match {
         case IDENTIFIER if isInlineDef =>
           val pos = r2p(in.offset)
-          ensureInlineMacrosAllowed(pos)
+          if (!hasLibraryDependencyOnScalamacros) MissingLibraryDependencyOnScalamacros(pos)
           in.nextToken()
           loop(mods.markInline(pos))
         case PRIVATE | PROTECTED =>
@@ -82,7 +82,7 @@ abstract class SyntaxAnalyzer extends NscSyntaxAnalyzer with ReflectToolkit {
       def loop(mods: Modifiers): Modifiers = {
         if (isInlineDef) {
           val pos = r2p(in.offset)
-          ensureInlineMacrosAllowed(pos)
+          if (!hasLibraryDependencyOnScalamacros) MissingLibraryDependencyOnScalamacros(pos)
           in.nextToken()
           loop(mods.markInline(pos))
         } else if (isLocalModifier) {
@@ -155,7 +155,9 @@ abstract class SyntaxAnalyzer extends NscSyntaxAnalyzer with ReflectToolkit {
         val hasTheRightName = name == InlineAnnotationMethodName
         isClass && extendsMacroAnnotation && hasTheRightName
       }
-      if (isMacroAnnotation) ensureInlineAnnotationsAllowed(tree.pos)
+      if (isMacroAnnotation) {
+        if (!hasPluginDependencyOnParadise) MissingPluginDependencyOnParadise(tree.pos)
+      }
       val macroDef = atPos(tree.pos) {
         val mods1 = mods | Flags.MACRO
         def rhs1(tparams: List[Tree]) = {
@@ -305,12 +307,12 @@ abstract class SyntaxAnalyzer extends NscSyntaxAnalyzer with ReflectToolkit {
       val dialectArgName = unit.freshTermName("dialect$")
       val expansionArgName = unit.freshTermName("expansion$")
       q"""
-        var availableEngine = "scalac " + _root_.scala.util.Properties.versionNumberString
+        var foundEngine = "old-style " + _root_.scala.util.Properties.versionNumberString
         def failMacroEngine(): _root_.scala.Nothing = {
           val requiredEngine = ${engineVersion.toString}
           var msg = "macro cannot be expanded, because it was compiled by an incompatible engine"
-          msg += (_root_.scala.meta.prettyprinters.EOL + " available: " + availableEngine)
-          msg += (_root_.scala.meta.prettyprinters.EOL + " required : " + requiredEngine)
+          msg += (_root_.scala.meta.internal.prettyprinters.EOL + " found   : " + foundEngine)
+          msg += (_root_.scala.meta.internal.prettyprinters.EOL + " required: " + requiredEngine)
           $cName.abort($cName.enclosingPosition, msg)
         }
         def invokeBackendMethod(
@@ -335,7 +337,7 @@ abstract class SyntaxAnalyzer extends NscSyntaxAnalyzer with ReflectToolkit {
           }
         }
         invokeBackendMethod("scala.macros.internal.config.package", "engineVersion") match {
-          case version: _root_.scala.macros.Version => availableEngine = version.toString
+          case v: _root_.scala.macros.Version => foundEngine = v.toString
           case _ => failMacroEngine()
         }
 

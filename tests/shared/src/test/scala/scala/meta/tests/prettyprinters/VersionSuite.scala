@@ -18,23 +18,30 @@ class VersionSuite {
   }
 
   @Test
-  def yesSnapshotNoBuild: Unit = {
+  def yesSnapshotShortNoBuild: Unit = {
     val v = Version.parse("2.0.0-707").get
     assertEquals("""2.0.0-707""", v.syntax)
     assertEquals("""Version(2, 0, 0, "707", "")""", v.structure)
   }
 
   @Test
-  def yesSnapshotYesBuildShort: Unit = {
-    val v = Version.parse("2.0.0-707+51be4a51").get
-    assertEquals("""2.0.0-707+51be4a51""", v.syntax)
-    assertEquals("""Version(2, 0, 0, "707", "51be4a51")""", v.structure)
+  def yesSnapshotMediumNoBuild: Unit = {
+    val v = Version.parse("2.0.0-707-51be4a51").get
+    assertEquals("""2.0.0-707-51be4a51""", v.syntax)
+    assertEquals("""Version(2, 0, 0, "707-51be4a51", "")""", v.structure)
   }
 
   @Test
-  def yesSnapshotYesBuildFull: Unit = {
-    val v = Version.parse("2.0.0-707+51be4a51.1495325855697").get
-    assertEquals("""2.0.0-707+51be4a51.1495325855697""", v.syntax)
-    assertEquals("""Version(2, 0, 0, "707", "51be4a51.1495325855697")""", v.structure)
+  def yesSnapshotFullNoBuild: Unit = {
+    val v = Version.parse("2.0.0-707-51be4a51.1495325855697").get
+    assertEquals("""2.0.0-707-51be4a51.1495325855697""", v.syntax)
+    assertEquals("""Version(2, 0, 0, "707-51be4a51.1495325855697", "")""", v.structure)
+  }
+
+  @Test
+  def yesSnapshotFullYesBuild: Unit = {
+    val v = Version.parse("2.0.0-707-51be4a51.1495325855697+build").get
+    assertEquals("""2.0.0-707-51be4a51.1495325855697+build""", v.syntax)
+    assertEquals("""Version(2, 0, 0, "707-51be4a51.1495325855697", "build")""", v.structure)
   }
 }

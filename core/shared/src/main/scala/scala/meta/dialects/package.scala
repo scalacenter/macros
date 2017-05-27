@@ -4,6 +4,7 @@ import scala.language.experimental.macros
 import scala.meta.internal.dialects._
 import scala.meta.dialects._
 import scala.meta.prettyprinters._
+import scala.meta.internal.prettyprinters._
 
 // NOTE: Can't put Dialect into scala.meta.dialects,
 // because then implicit scope for Dialect lookups will contain members of the package object,

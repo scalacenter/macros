@@ -3,19 +3,11 @@ package plugins.scalac
 package reflect
 
 import scala.macros.coreVersion
-import scala.macros.internal.config.engineVersion
+import scala.macros.internal.prettyprinters.EOL
 
 trait Errors { self: ReflectToolkit =>
   import global._
   import pluginDefinitions._
-
-  def ensureInlineMacrosAllowed(pos: Position): Unit = {
-    if (!isInlineMacrosAllowed) MissingLibraryDependencyOnScalamacros(pos)
-  }
-
-  def ensureInlineAnnotationsAllowed(pos: Position): Unit = {
-    if (!isInlineAnnotationsAllowed) MissingPluginDependencyOnParadise(pos)
-  }
 
   def MissingLibraryDependencyOnScalamacros(pos: Position): Unit = {
     val version = coreVersion.syntax
@@ -27,5 +19,19 @@ trait Errors { self: ReflectToolkit =>
     val version = "2.1.0"
     val dependency = s"""a plugin dependency on "org.scalamacros" %% "paradise" % "$version""""
     reporter.error(pos, s"new-style macro annotations require $dependency")
+  }
+
+  def IncompatibleCoreVersion(pos: Position, found: String, required: String): Unit = {
+    var message = "macro cannot be expanded, because it was compiled against an incompatible API"
+    message += (EOL + " found   : " + found)
+    message += (EOL + " required: " + required)
+    reporter.error(pos, message)
+  }
+
+  def IncompatibleEngineVersion(pos: Position, found: String, required: String): Unit = {
+    var message = "macro cannot be expanded, because it was compiled by an incompatible engine"
+    message += (EOL + " found   : " + found)
+    message += (EOL + " required: " + required)
+    reporter.error(pos, message)
   }
 }
