@@ -29,7 +29,7 @@ trait Abstracts extends scala.macros.trees.Abstracts with Positions { self: Univ
     def memberName(member: Member): Name = g.Ident(member.name)
 
     object NameAnonymous extends NameAnonymousCompanion {
-      def apply(): Name = ???
+      def apply(): Term.Name with Type.Name = ???
       def unapply(tree: Any): Boolean = ???
     }
 

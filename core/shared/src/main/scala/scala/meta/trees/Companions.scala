@@ -9,7 +9,7 @@ private[scala] trait Companions { self: Trees =>
   private[scala] val treeCompanions: TreeCompanions = new TreeCompanions {}
   private[scala] trait TreeCompanions {
     trait NameAnonymousCompanion {
-      def apply(): Name
+      def apply(): Term.Name with Type.Name
       def unapply(tree: Any): Boolean
     }
 
