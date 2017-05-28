@@ -3,7 +3,8 @@ package engines.scalac
 package trees
 
 trait Companions extends scala.macros.trees.Companions { self: Universe =>
-  override object treeCompanions extends super.TreeCompanions {
+  override val treeCompanions = TreeCompanions
+  object TreeCompanions extends TreeCompanions {
     trait InitCompanion extends super.InitCompanion {
       def unapply(tree: Init): Option[(Type, Name, List[List[Term]])]
 

@@ -367,10 +367,10 @@ abstract class SyntaxAnalyzer extends NscSyntaxAnalyzer with ReflectToolkit {
           var msg = "macro cannot be expanded, because it was compiled by an incompatible engine"
           msg += (_root_.scala.meta.internal.prettyprinters.EOL + " found   : " + foundEngine)
           msg += (_root_.scala.meta.internal.prettyprinters.EOL + " required: " + requiredEngine)
-          // ex.printStackTrace
+          ex.printStackTrace
           $cName.abort($cName.enclosingPosition, msg)
         }
-        def invokeBackendMethod(
+        def invokeEngineMethod(
             moduleName: _root_.java.lang.String,
             methodName: _root_.java.lang.String,
             args: _root_.scala.AnyRef*): _root_.scala.AnyRef = {
@@ -400,17 +400,13 @@ abstract class SyntaxAnalyzer extends NscSyntaxAnalyzer with ReflectToolkit {
             case ex: _root_.java.lang.reflect.InvocationTargetException => throw ex
           }
         }
-        invokeBackendMethod("scala.macros.internal.config.package", "engineVersion") match {
-          case v: _root_.scala.macros.Version => foundEngine =
-            v.toString
-          case other =>
-            val className = if (other != null) other.getClass.getName else "null"
-            val message = "engineVersion returned " + className
-            failMacroEngine(new _root_.java.lang.IllegalStateException(message))
-        }
+        val ConfigPackage = "scala.macros.internal.config.package"
+        val foundVersion = invokeEngineMethod(ConfigPackage, "engineVersion")
+        try foundEngine = foundVersion.toString
+        catch { case ex: _root_.java.lang.ClassCastException => failMacroEngine(ex) }
 
         val ScalacUniverse = "scala.macros.internal.engines.scalac.Universe"
-        val scalacUniverse = invokeBackendMethod(ScalacUniverse, "apply", $cName.universe)
+        val scalacUniverse = invokeEngineMethod(ScalacUniverse, "apply", $cName.universe)
         _root_.scala.macros.internal.withUniverse(scalacUniverse) {
           val $thisArgName = {
             try $cName.macroApplication.asInstanceOf[_root_.scala.macros.Term]
@@ -419,15 +415,10 @@ abstract class SyntaxAnalyzer extends NscSyntaxAnalyzer with ReflectToolkit {
           ..$otherArgDefs
           val $dialectArgName = _root_.scala.macros.Dialect.current
           val ScalacExpansion = "scala.macros.internal.engines.scalac.Expansion"
-          val $expansionArgName = invokeBackendMethod(ScalacExpansion, "apply", $cName) match {
-            // TODO: We can't say `expansion: _root_.scala.macros.Expansion`,
-            // because it produces a pattern matcher warning in 2.12.x.
-            case expansion if expansion.isInstanceOf[_root_.scala.macros.Expansion] =>
-              expansion.asInstanceOf[_root_.scala.macros.Expansion]
-            case other =>
-              val className = if (other != null) other.getClass.getName else "null"
-              val message = "ScalacExpansion.apply returned " + className
-              failMacroEngine(new _root_.java.lang.IllegalStateException(message))
+          val $expansionArgName = {
+            val $expansionArgName = invokeEngineMethod(ScalacExpansion, "apply", $cName)
+            try $expansionArgName.asInstanceOf[_root_.scala.macros.Expansion]
+            catch { case ex: _root_.java.lang.ClassCastException => failMacroEngine(ex) }
           }
           val result = $implName($thisArgName, ..$otherArgNames)($dialectArgName, $expansionArgName)
           $cName.Expr[_root_.scala.Any](result.asInstanceOf[$cName.Tree])

@@ -8,7 +8,6 @@ import scala.macros.internal.engines.scalac.inputs._
 trait Abstracts extends scala.macros.trees.Abstracts with Positions { self: Universe =>
   import treeCompanions._
 
-  val abstracts: TreeAbstracts
   trait TreeAbstracts extends super.TreeAbstracts {
     def treePos(tree: Tree): Position = tree.pos
 

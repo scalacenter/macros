@@ -8,7 +8,6 @@ import scala.macros.inputs._
 trait Expansions extends scala.macros.Expansions with Positions { self: Universe =>
   case class Expansion(c: Context)
 
-  def abstracts: ExpansionAbstracts
   trait ExpansionAbstracts extends super.ExpansionAbstracts {
     def expandee(e: Expansion): Term = e.c.macroApplication.asInstanceOf[Term]
     def abort(e: Expansion, pos: Position, msg: String): Nothing = e.c.abort(pos, msg)

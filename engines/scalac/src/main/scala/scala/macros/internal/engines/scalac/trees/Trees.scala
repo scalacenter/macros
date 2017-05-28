@@ -18,14 +18,16 @@ trait Trees extends scala.macros.trees.Trees with Abstracts with Companions { se
   type Lit = g.Literal
 
   type Term = g.Tree
-  override object Term extends TermCompanion {
+  override val Term = TermCompanion
+  object TermCompanion extends TermCompanion {
     type Ref = g.RefTree
     type Name = g.Ident
     type Param = g.ValDef
   }
 
   type Type = g.Tree
-  override object Type extends TypeCompanion {
+  override val Type = TypeCompanion
+  object TypeCompanion extends TypeCompanion {
     type Ref = g.RefTree
     type Name = g.Ident
     type Bounds = g.TypeBoundsTree
@@ -34,18 +36,21 @@ trait Trees extends scala.macros.trees.Trees with Abstracts with Companions { se
   }
 
   type Pat = g.Tree
-  override object Pat extends PatCompanion {
+  override val Pat = PatCompanion
+  object PatCompanion extends PatCompanion {
     type Var = g.Bind
   }
 
   type Member = g.DefTree
-  override object Member extends MemberCompanion {
+  override val Member = MemberCompanion
+  object MemberCompanion extends MemberCompanion {
     type Term = g.DefTree
     type Type = g.DefTree
   }
 
   type Decl = g.Tree
-  override object Decl extends DeclCompanion {
+  override val Decl = DeclCompanion
+  object DeclCompanion extends DeclCompanion {
     type Val = g.Tree
     type Var = g.Tree
     type Def = g.DefDef
@@ -53,7 +58,8 @@ trait Trees extends scala.macros.trees.Trees with Abstracts with Companions { se
   }
 
   type Defn = g.Tree
-  override object Defn extends DefnCompanion {
+  override val Defn = DefnCompanion
+  object DefnCompanion extends DefnCompanion {
     type Val = g.Tree
     type Var = g.Tree
     type Def = g.DefDef
@@ -65,12 +71,14 @@ trait Trees extends scala.macros.trees.Trees with Abstracts with Companions { se
   }
 
   type Pkg = g.PackageDef
-  override object Pkg extends PkgCompanion {
+  override val Pkg = PkgCompanion
+  object PkgCompanion extends PkgCompanion {
     type Object = g.ModuleDef
   }
 
   type Ctor = g.DefDef
-  override object Ctor extends CtorCompanion {
+  override val Ctor = CtorCompanion
+  object CtorCompanion extends CtorCompanion {
     type Primary = g.DefDef
     type Secondary = g.DefDef
   }
@@ -89,7 +97,8 @@ trait Trees extends scala.macros.trees.Trees with Abstracts with Companions { se
   type Template = g.Template
 
   sealed trait Mod extends Tree
-  override object Mod extends ModCompanion {
+  override val Mod = ModCompanion
+  object ModCompanion extends ModCompanion {
     case class Annot(init: Init) extends Mod
     override object Annot extends ModAnnotCompanion
     case class Private(within: Ref) extends Mod
@@ -123,7 +132,8 @@ trait Trees extends scala.macros.trees.Trees with Abstracts with Companions { se
   }
 
   sealed trait Enumerator extends Tree
-  override object Enumerator extends EnumeratorCompanion {
+  override val Enumerator = EnumeratorCompanion
+  object EnumeratorCompanion extends EnumeratorCompanion {
     case class Generator(pat: Pat, rhs: Term) extends Enumerator
     override object Generator extends EnumeratorGeneratorCompanion
     case class Val(pat: Pat, rhs: Term) extends Enumerator
@@ -138,7 +148,8 @@ trait Trees extends scala.macros.trees.Trees with Abstracts with Companions { se
   override object Importer extends ImporterCompanion
 
   sealed trait Importee extends Ref
-  override object Importee extends ImporteeCompanion {
+  override val Importee = ImporteeCompanion
+  object ImporteeCompanion extends ImporteeCompanion {
     case class Wildcard() extends Importee {
       def qualifier: g.Tree = g.EmptyTree
       def name: g.Name = g.nme.WILDCARD
