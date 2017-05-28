@@ -75,13 +75,13 @@ trait Trees extends scala.macros.trees.Trees with Abstracts with Companions { se
     type Secondary = g.DefDef
   }
 
-  final case class Init(mtpe: Type, mname: Name, argss: List[List[Term]]) extends Ref {
+  case class Init(mtpe: Type, mname: Name, argss: List[List[Term]]) extends Ref {
     def qualifier: g.Tree = g.EmptyTree
     def name: g.Name = mname.name
   }
   override object Init extends InitCompanion
 
-  final case class Self(mname: Term.Name, decltpe: Option[Type]) extends Member {
+  case class Self(mname: Term.Name, decltpe: Option[Type]) extends Member {
     def name: g.Name = mname.name
   }
   override object Self extends SelfCompanion
@@ -90,71 +90,71 @@ trait Trees extends scala.macros.trees.Trees with Abstracts with Companions { se
 
   sealed trait Mod extends Tree
   override object Mod extends ModCompanion {
-    final case class Annot(init: Init) extends Mod
+    case class Annot(init: Init) extends Mod
     override object Annot extends ModAnnotCompanion
-    final case class Private(within: Ref) extends Mod
+    case class Private(within: Ref) extends Mod
     override object Private extends ModPrivateCompanion
-    final case class Protected(within: Ref) extends Mod
+    case class Protected(within: Ref) extends Mod
     override object Protected extends ModProtectedCompanion
-    final case class Implicit() extends Mod
+    case class Implicit() extends Mod
     override object Implicit extends ModImplicitCompanion
-    final case class Final() extends Mod
+    case class Final() extends Mod
     override object Final extends ModFinalCompanion
-    final case class Sealed() extends Mod
+    case class Sealed() extends Mod
     override object Sealed extends ModSealedCompanion
-    final case class Override() extends Mod
+    case class Override() extends Mod
     override object Override extends ModOverrideCompanion
-    final case class Case() extends Mod
+    case class Case() extends Mod
     override object Case extends ModCaseCompanion
-    final case class Abstract() extends Mod
+    case class Abstract() extends Mod
     override object Abstract extends ModAbstractCompanion
-    final case class Covariant() extends Mod
+    case class Covariant() extends Mod
     override object Covariant extends ModCovariantCompanion
-    final case class Contravariant() extends Mod
+    case class Contravariant() extends Mod
     override object Contravariant extends ModContravariantCompanion
-    final case class Lazy() extends Mod
+    case class Lazy() extends Mod
     override object Lazy extends ModLazyCompanion
-    final case class ValParam() extends Mod
+    case class ValParam() extends Mod
     override object ValParam extends ModValParamCompanion
-    final case class VarParam() extends Mod
+    case class VarParam() extends Mod
     override object VarParam extends ModVarParamCompanion
-    final case class Inline() extends Mod
+    case class Inline() extends Mod
     override object Inline extends ModInlineCompanion
   }
 
   sealed trait Enumerator extends Tree
   override object Enumerator extends EnumeratorCompanion {
-    final case class Generator(pat: Pat, rhs: Term) extends Enumerator
+    case class Generator(pat: Pat, rhs: Term) extends Enumerator
     override object Generator extends EnumeratorGeneratorCompanion
-    final case class Val(pat: Pat, rhs: Term) extends Enumerator
+    case class Val(pat: Pat, rhs: Term) extends Enumerator
     override object Val extends EnumeratorValCompanion
-    final case class Guard(cond: Term) extends Enumerator
+    case class Guard(cond: Term) extends Enumerator
     override object Guard extends EnumeratorGuardCompanion
   }
 
   type Import = g.Import
 
-  final case class Importer(ref: Term.Ref, importees: List[Importee]) extends Tree
+  case class Importer(ref: Term.Ref, importees: List[Importee]) extends Tree
   override object Importer extends ImporterCompanion
 
   sealed trait Importee extends Ref
   override object Importee extends ImporteeCompanion {
-    final case class Wildcard() extends Importee {
+    case class Wildcard() extends Importee {
       def qualifier: g.Tree = g.EmptyTree
       def name: g.Name = g.nme.WILDCARD
     }
     override object Wildcard extends ImporteeWildcardCompanion
-    final case class Name(mname: self.Name) extends Importee {
+    case class Name(mname: self.Name) extends Importee {
       def qualifier: g.Tree = g.EmptyTree
       def name: g.Name = mname.name
     }
     override object Name extends ImporteeNameCompanion
-    final case class Rename(mname: self.Name, mrename: self.Name) extends Importee {
+    case class Rename(mname: self.Name, mrename: self.Name) extends Importee {
       def qualifier: g.Tree = g.EmptyTree
       def name: g.Name = mrename.name
     }
     override object Rename extends ImporteeRenameCompanion
-    final case class Unimport(mname: self.Name) extends Importee {
+    case class Unimport(mname: self.Name) extends Importee {
       def qualifier: g.Tree = g.EmptyTree
       def name: g.Name = g.nme.WILDCARD
     }
