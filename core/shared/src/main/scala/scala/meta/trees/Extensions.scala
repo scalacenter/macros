@@ -22,15 +22,15 @@ private[scala] trait Extensions extends Gensym with TreeSyntax with TreeStructur
     def value: Any = abstracts.litValue(lit)
   }
 
-  implicit class XtensionTreesTerm(term: Term.type) {
+  implicit class XtensionTreesTerm(term: TermCompanion) {
     def fresh(prefix: String = "fresh") = Term.Name(gensym(prefix))
   }
 
-  implicit class XtensionTreesType(term: Type.type) {
+  implicit class XtensionTreesType(term: TypeCompanion) {
     def fresh(prefix: String = "fresh") = Type.Name(gensym(prefix))
   }
 
-  implicit class XtensionTreesPat(pat: Pat.type) {
+  implicit class XtensionTreesPat(pat: PatCompanion) {
     def fresh(prefix: String = "fresh") = Pat.Var(Term.Name(gensym(prefix)))
   }
 
