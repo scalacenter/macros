@@ -10,7 +10,7 @@ private[scala] trait Trees extends Abstracts with Companions with Extensions { s
   type Name >: Null <: Ref // Name.value
   val Name: NameCompanion = new NameCompanion {}
   private[scala] trait NameCompanion {
-    def unapply(tree: Tree) = abstracts.nameUnapply(tree)
+    def unapply(tree: Any) = abstracts.nameUnapply(tree)
     def Anonymous = abstracts.NameAnonymous
     def Indeterminate = abstracts.NameIndeterminate
   }
@@ -18,7 +18,7 @@ private[scala] trait Trees extends Abstracts with Companions with Extensions { s
   type Lit >: Null <: Term with Type with Pat // Lit.value
   val Lit: LitCompanion = new LitCompanion {}
   private[scala] trait LitCompanion {
-    def unapply(tree: Tree) = abstracts.litUnapply(tree)
+    def unapply(tree: Any) = abstracts.litUnapply(tree)
     def Unit = abstracts.LitUnit
     def Boolean = abstracts.LitBoolean
     def Byte = abstracts.LitByte
@@ -166,7 +166,7 @@ private[scala] trait Trees extends Abstracts with Companions with Extensions { s
   val Pkg: PkgCompanion = new PkgCompanion {}
   private[scala] trait PkgCompanion {
     def apply(ref: Term.Ref, stats: List[Stat]) = abstracts.PkgProper.apply(ref, stats)
-    def unapply(tree: Tree): Option[(Term.Ref, List[Stat])] = abstracts.PkgProper.unapply(tree)
+    def unapply(tree: Any): Option[(Term.Ref, List[Stat])] = abstracts.PkgProper.unapply(tree)
     type Object >: Null <: Member.Term with Stat
     def Object = abstracts.PkgObject
   }

@@ -11,9 +11,9 @@ private[scala] trait Abstracts { self: Trees =>
   private[scala] trait TreeAbstracts {
     def treePos(tree: Tree): Position
     def nameValue(name: Name): String
-    def nameUnapply(tree: Tree): Option[String]
+    def nameUnapply(tree: Any): Option[String]
     def litValue(lit: Lit): Any
-    def litUnapply(tree: Tree): Option[Any]
+    def litUnapply(tree: Any): Option[Any]
     def memberName(member: Member): Name
     def NameAnonymous: NameAnonymousCompanion
     def NameIndeterminate: NameIndeterminateCompanion

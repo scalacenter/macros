@@ -14,14 +14,14 @@ trait Abstracts extends scala.macros.trees.Abstracts with Positions { self: Univ
 
     def nameValue(name: Name): String = nameUnapply(name).get
 
-    def nameUnapply(tree: Tree): Option[String] = tree match {
+    def nameUnapply(tree: Any): Option[String] = tree match {
       case tree: g.Ident => Some(tree.name.decoded)
       case _ => None
     }
 
     def litValue(lit: Lit): Any = litUnapply(lit).get
 
-    def litUnapply(tree: Tree): Option[Any] = tree match {
+    def litUnapply(tree: Any): Option[Any] = tree match {
       case tree: g.Literal => Some(tree.value.value)
       case _ => None
     }
@@ -30,232 +30,232 @@ trait Abstracts extends scala.macros.trees.Abstracts with Positions { self: Univ
 
     object NameAnonymous extends NameAnonymousCompanion {
       def apply(): Name = ???
-      def unapply(tree: Tree): Boolean = ???
+      def unapply(tree: Any): Boolean = ???
     }
 
     object NameIndeterminate extends NameIndeterminateCompanion {
       def apply(value: String): Name = ???
-      def unapply(tree: Tree): Option[String] = ???
+      def unapply(tree: Any): Option[String] = ???
     }
 
     object LitUnit extends LitUnitCompanion {
       def apply(value: Unit): Lit = ???
-      def unapply(tree: Tree): Option[Unit] = ???
+      def unapply(tree: Any): Option[Unit] = ???
     }
 
     object LitBoolean extends LitBooleanCompanion {
       def apply(value: Boolean): Lit = ???
-      def unapply(tree: Tree): Option[Boolean] = ???
+      def unapply(tree: Any): Option[Boolean] = ???
     }
 
     object LitByte extends LitByteCompanion {
       def apply(value: Byte): Lit = ???
-      def unapply(tree: Tree): Option[Byte] = ???
+      def unapply(tree: Any): Option[Byte] = ???
     }
 
     object LitShort extends LitShortCompanion {
       def apply(value: Short): Lit = ???
-      def unapply(tree: Tree): Option[Short] = ???
+      def unapply(tree: Any): Option[Short] = ???
     }
 
     object LitChar extends LitCharCompanion {
       def apply(value: Char): Lit = ???
-      def unapply(tree: Tree): Option[Char] = ???
+      def unapply(tree: Any): Option[Char] = ???
     }
 
     object LitInt extends LitIntCompanion {
       def apply(value: Int): Lit = ???
-      def unapply(tree: Tree): Option[Int] = ???
+      def unapply(tree: Any): Option[Int] = ???
     }
 
     object LitFloat extends LitFloatCompanion {
       def apply(value: Float): Lit = ???
-      def unapply(tree: Tree): Option[Float] = ???
+      def unapply(tree: Any): Option[Float] = ???
     }
 
     object LitLong extends LitLongCompanion {
       def apply(value: Long): Lit = ???
-      def unapply(tree: Tree): Option[Long] = ???
+      def unapply(tree: Any): Option[Long] = ???
     }
 
     object LitDouble extends LitDoubleCompanion {
       def apply(value: Double): Lit = ???
-      def unapply(tree: Tree): Option[Double] = ???
+      def unapply(tree: Any): Option[Double] = ???
     }
 
     object LitString extends LitStringCompanion {
       def apply(value: String): Lit = ???
-      def unapply(tree: Tree): Option[String] = ???
+      def unapply(tree: Any): Option[String] = ???
     }
 
     object LitSymbol extends LitSymbolCompanion {
       def apply(value: Symbol): Lit = ???
-      def unapply(tree: Tree): Option[Symbol] = ???
+      def unapply(tree: Any): Option[Symbol] = ???
     }
 
     object LitNull extends LitNullCompanion {
       def apply(value: Any): Lit = ???
-      def unapply(tree: Tree): Option[Any] = ???
+      def unapply(tree: Any): Option[Any] = ???
     }
 
     object TermThis extends TermThisCompanion {
       def apply(qual: Name): Term.Ref = ???
-      def unapply(tree: Tree): Option[Name] = ???
+      def unapply(tree: Any): Option[Name] = ???
     }
 
     object TermSuper extends TermSuperCompanion {
       def apply(thisp: Name, superp: Name): Term.Ref = ???
-      def unapply(tree: Tree): Option[(Name, Name)] = ???
+      def unapply(tree: Any): Option[(Name, Name)] = ???
     }
 
     object TermName extends TermNameCompanion {
       def apply(value: String): Term.Name = ???
-      def unapply(tree: Tree): Option[String] = ???
+      def unapply(tree: Any): Option[String] = ???
     }
 
     object TermSelect extends TermSelectCompanion {
       def apply(qual: Term, name: Term.Name): Term.Ref = ???
-      def unapply(tree: Tree): Option[(Term, Term.Name)] = ???
+      def unapply(tree: Any): Option[(Term, Term.Name)] = ???
     }
 
     object TermInterpolate extends TermInterpolateCompanion {
       def apply(prefix: Term.Name, parts: List[Lit], args: List[Term]): Term = ???
-      def unapply(tree: Tree): Option[(Term.Name, List[Lit], List[Term])] = ???
+      def unapply(tree: Any): Option[(Term.Name, List[Lit], List[Term])] = ???
     }
 
     object TermXml extends TermXmlCompanion {
       def apply(parts: List[Lit], args: List[Term]): Term = ???
-      def unapply(tree: Tree): Option[(List[Lit], List[Term])] = ???
+      def unapply(tree: Any): Option[(List[Lit], List[Term])] = ???
     }
 
     object TermApply extends TermApplyCompanion {
       def apply(fun: Term, args: List[Term]): Term = ???
-      def unapply(tree: Tree): Option[(Term, List[Term])] = ???
+      def unapply(tree: Any): Option[(Term, List[Term])] = ???
     }
 
     object TermApplyType extends TermApplyTypeCompanion {
       def apply(fun: Term, targs: List[Type]): Term = ???
-      def unapply(tree: Tree): Option[(Term, List[Type])] = ???
+      def unapply(tree: Any): Option[(Term, List[Type])] = ???
     }
 
     object TermApplyInfix extends TermApplyInfixCompanion {
       def apply(lhs: Term, op: Name, targs: List[Type], args: List[Term]): Term = ???
-      def unapply(tree: Tree): Option[(Term, Name, List[Type], List[Term])] = ???
+      def unapply(tree: Any): Option[(Term, Name, List[Type], List[Term])] = ???
     }
 
     object TermApplyUnary extends TermApplyUnaryCompanion {
       def apply(op: Name, arg: Term): Term.Ref = ???
-      def unapply(tree: Tree): Option[(Name, Term)] = ???
+      def unapply(tree: Any): Option[(Name, Term)] = ???
     }
 
     object TermAssign extends TermAssignCompanion {
       def apply(lhs: Term, rhs: Term): Term = ???
-      def unapply(tree: Tree): Option[(Term, Term)] = ???
+      def unapply(tree: Any): Option[(Term, Term)] = ???
     }
 
     object TermReturn extends TermReturnCompanion {
       def apply(expr: Term): Term = ???
-      def unapply(tree: Tree): Option[Term] = ???
+      def unapply(tree: Any): Option[Term] = ???
     }
 
     object TermThrow extends TermThrowCompanion {
       def apply(expr: Term): Term = ???
-      def unapply(tree: Tree): Option[Term] = ???
+      def unapply(tree: Any): Option[Term] = ???
     }
 
     object TermAscribe extends TermAscribeCompanion {
       def apply(expr: Term, tpe: Type): Term = ???
-      def unapply(tree: Tree): Option[(Term, Type)] = ???
+      def unapply(tree: Any): Option[(Term, Type)] = ???
     }
 
     object TermAnnotate extends TermAnnotateCompanion {
       def apply(expr: Term, annots: List[Mod]): Term = ???
-      def unapply(tree: Tree): Option[(Term, List[Mod])] = ???
+      def unapply(tree: Any): Option[(Term, List[Mod])] = ???
     }
 
     object TermTuple extends TermTupleCompanion {
       def apply(args: List[Term]): Term = ???
-      def unapply(tree: Tree): Option[List[Term]] = ???
+      def unapply(tree: Any): Option[List[Term]] = ???
     }
 
     object TermBlock extends TermBlockCompanion {
       def apply(stats: List[Stat]): Term = ???
-      def unapply(tree: Tree): Option[List[Stat]] = ???
+      def unapply(tree: Any): Option[List[Stat]] = ???
     }
 
     object TermIf extends TermIfCompanion {
       def apply(cond: Term, thenp: Term, elsep: Term): Term = ???
-      def unapply(tree: Tree): Option[(Term, Term, Term)] = ???
+      def unapply(tree: Any): Option[(Term, Term, Term)] = ???
     }
 
     object TermMatch extends TermMatchCompanion {
       def apply(expr: Term, cases: List[Case]): Term = ???
-      def unapply(tree: Tree): Option[(Term, List[Case])] = ???
+      def unapply(tree: Any): Option[(Term, List[Case])] = ???
     }
 
     object TermTry extends TermTryCompanion {
       def apply(expr: Term, catchp: List[Case], finallyp: Option[Term]): Term = ???
-      def unapply(tree: Tree): Option[(Term, List[Case], Option[Term])] = ???
+      def unapply(tree: Any): Option[(Term, List[Case], Option[Term])] = ???
     }
 
     object TermTryWithHandler extends TermTryWithHandlerCompanion {
       def apply(expr: Term, catchp: Term, finallyp: Option[Term]): Term = ???
-      def unapply(tree: Tree): Option[(Term, Term, Option[Term])] = ???
+      def unapply(tree: Any): Option[(Term, Term, Option[Term])] = ???
     }
 
     object TermFunction extends TermFunctionCompanion {
       def apply(params: List[Term.Param], body: Term): Term = ???
-      def unapply(tree: Tree): Option[(List[Term.Param], Term)] = ???
+      def unapply(tree: Any): Option[(List[Term.Param], Term)] = ???
     }
 
     object TermPartialFunction extends TermPartialFunctionCompanion {
       def apply(cases: List[Case]): Term = ???
-      def unapply(tree: Tree): Option[List[Case]] = ???
+      def unapply(tree: Any): Option[List[Case]] = ???
     }
 
     object TermWhile extends TermWhileCompanion {
       def apply(expr: Term, body: Term): Term = ???
-      def unapply(tree: Tree): Option[(Term, Term)] = ???
+      def unapply(tree: Any): Option[(Term, Term)] = ???
     }
 
     object TermDo extends TermDoCompanion {
       def apply(body: Term, expr: Term): Term = ???
-      def unapply(tree: Tree): Option[(Term, Term)] = ???
+      def unapply(tree: Any): Option[(Term, Term)] = ???
     }
 
     object TermFor extends TermForCompanion {
       def apply(enums: List[Enumerator], body: Term): Term = ???
-      def unapply(tree: Tree): Option[(List[Enumerator], Term)] = ???
+      def unapply(tree: Any): Option[(List[Enumerator], Term)] = ???
     }
 
     object TermForYield extends TermForYieldCompanion {
       def apply(enums: List[Enumerator], body: Term): Term = ???
-      def unapply(tree: Tree): Option[(List[Enumerator], Term)] = ???
+      def unapply(tree: Any): Option[(List[Enumerator], Term)] = ???
     }
 
     object TermNew extends TermNewCompanion {
       def apply(init: Init): Term = ???
-      def unapply(tree: Tree): Option[Init] = ???
+      def unapply(tree: Any): Option[Init] = ???
     }
 
     object TermNewAnonymous extends TermNewAnonymousCompanion {
       def apply(templ: Template): Term = ???
-      def unapply(tree: Tree): Option[Template] = ???
+      def unapply(tree: Any): Option[Template] = ???
     }
 
     object TermPlaceholder extends TermPlaceholderCompanion {
       def apply(): Term = ???
-      def unapply(tree: Tree): Boolean = ???
+      def unapply(tree: Any): Boolean = ???
     }
 
     object TermEta extends TermEtaCompanion {
       def apply(expr: Term): Term = ???
-      def unapply(tree: Tree): Option[Term] = ???
+      def unapply(tree: Any): Option[Term] = ???
     }
 
     object TermRepeated extends TermRepeatedCompanion {
       def apply(expr: Term): Term = ???
-      def unapply(tree: Tree): Option[Term] = ???
+      def unapply(tree: Any): Option[Term] = ???
     }
 
     object TermParam extends TermParamCompanion {
@@ -264,102 +264,102 @@ trait Abstracts extends scala.macros.trees.Abstracts with Positions { self: Univ
           name: Term.Name,
           decltpe: Option[Type],
           default: Option[Term]): Term.Param = ???
-      def unapply(tree: Tree): Option[(List[Mod], Term.Name, Option[Type], Option[Term])] = ???
+      def unapply(tree: Any): Option[(List[Mod], Term.Name, Option[Type], Option[Term])] = ???
     }
 
     object TypeName extends TypeNameCompanion {
       def apply(value: String): Type.Name = ???
-      def unapply(tree: Tree): Option[String] = ???
+      def unapply(tree: Any): Option[String] = ???
     }
 
     object TypeSelect extends TypeSelectCompanion {
       def apply(qual: Term.Ref, name: Type.Name): Type.Ref = ???
-      def unapply(tree: Tree): Option[(Term.Ref, Type.Name)] = ???
+      def unapply(tree: Any): Option[(Term.Ref, Type.Name)] = ???
     }
 
     object TypeProject extends TypeProjectCompanion {
       def apply(qual: Type, name: Type.Name): Type.Ref = ???
-      def unapply(tree: Tree): Option[(Type, Type.Name)] = ???
+      def unapply(tree: Any): Option[(Type, Type.Name)] = ???
     }
 
     object TypeSingleton extends TypeSingletonCompanion {
       def apply(ref: Term.Ref): Type.Ref = ???
-      def unapply(tree: Tree): Option[Term.Ref] = ???
+      def unapply(tree: Any): Option[Term.Ref] = ???
     }
 
     object TypeApply extends TypeApplyCompanion {
       def apply(tpe: Type, args: List[Type]): Type = ???
-      def unapply(tree: Tree): Option[(Type, List[Type])] = ???
+      def unapply(tree: Any): Option[(Type, List[Type])] = ???
     }
 
     object TypeApplyInfix extends TypeApplyInfixCompanion {
       def apply(lhs: Type, op: Name, rhs: Type): Type = ???
-      def unapply(tree: Tree): Option[(Type, Name, Type)] = ???
+      def unapply(tree: Any): Option[(Type, Name, Type)] = ???
     }
 
     object TypeFunction extends TypeFunctionCompanion {
       def apply(params: List[Type], res: Type): Type = ???
-      def unapply(tree: Tree): Option[(List[Type], Type)] = ???
+      def unapply(tree: Any): Option[(List[Type], Type)] = ???
     }
 
     object TypeTuple extends TypeTupleCompanion {
       def apply(args: List[Type]): Type = ???
-      def unapply(tree: Tree): Option[List[Type]] = ???
+      def unapply(tree: Any): Option[List[Type]] = ???
     }
 
     object TypeWith extends TypeWithCompanion {
       def apply(lhs: Type, rhs: Type): Type = ???
-      def unapply(tree: Tree): Option[(Type, Type)] = ???
+      def unapply(tree: Any): Option[(Type, Type)] = ???
     }
 
     object TypeAnd extends TypeAndCompanion {
       def apply(lhs: Type, rhs: Type): Type = ???
-      def unapply(tree: Tree): Option[(Type, Type)] = ???
+      def unapply(tree: Any): Option[(Type, Type)] = ???
     }
 
     object TypeOr extends TypeOrCompanion {
       def apply(lhs: Type, rhs: Type): Type = ???
-      def unapply(tree: Tree): Option[(Type, Type)] = ???
+      def unapply(tree: Any): Option[(Type, Type)] = ???
     }
 
     object TypeRefine extends TypeRefineCompanion {
       def apply(tpe: Option[Type], stats: List[Stat]): Type = ???
-      def unapply(tree: Tree): Option[(Option[Type], List[Stat])] = ???
+      def unapply(tree: Any): Option[(Option[Type], List[Stat])] = ???
     }
 
     object TypeExistential extends TypeExistentialCompanion {
       def apply(tpe: Type, stats: List[Stat]): Type = ???
-      def unapply(tree: Tree): Option[(Type, List[Stat])] = ???
+      def unapply(tree: Any): Option[(Type, List[Stat])] = ???
     }
 
     object TypeAnnotate extends TypeAnnotateCompanion {
       def apply(tpe: Type, annots: List[Mod]): Type = ???
-      def unapply(tree: Tree): Option[(Type, List[Mod])] = ???
+      def unapply(tree: Any): Option[(Type, List[Mod])] = ???
     }
 
     object TypePlaceholder extends TypePlaceholderCompanion {
       def apply(bounds: Type.Bounds): Type = ???
-      def unapply(tree: Tree): Option[Type.Bounds] = ???
+      def unapply(tree: Any): Option[Type.Bounds] = ???
     }
 
     object TypeBounds extends TypeBoundsCompanion {
       def apply(lo: Option[Type], hi: Option[Type]): Type.Bounds = ???
-      def unapply(tree: Tree): Option[(Option[Type], Option[Type])] = ???
+      def unapply(tree: Any): Option[(Option[Type], Option[Type])] = ???
     }
 
     object TypeByName extends TypeByNameCompanion {
       def apply(tpe: Type): Type = ???
-      def unapply(tree: Tree): Option[Type] = ???
+      def unapply(tree: Any): Option[Type] = ???
     }
 
     object TypeRepeated extends TypeRepeatedCompanion {
       def apply(tpe: Type): Type = ???
-      def unapply(tree: Tree): Option[Type] = ???
+      def unapply(tree: Any): Option[Type] = ???
     }
 
     object TypeVar extends TypeVarCompanion {
       def apply(name: Type.Name): Type.Var = ???
-      def unapply(tree: Tree): Option[Type.Name] = ???
+      def unapply(tree: Any): Option[Type.Name] = ???
     }
 
     object TypeParam extends TypeParamCompanion {
@@ -370,74 +370,74 @@ trait Abstracts extends scala.macros.trees.Abstracts with Positions { self: Univ
           tbounds: Type.Bounds,
           vbounds: List[Type],
           cbounds: List[Type]): Type.Param = ???
-      def unapply(tree: Tree)
+      def unapply(tree: Any)
         : Option[(List[Mod], Type.Name, List[Type.Param], Type.Bounds, List[Type], List[Type])] =
         ???
     }
 
     object PatVar extends PatVarCompanion {
       def apply(name: Term.Name): Pat.Var = ???
-      def unapply(tree: Tree): Option[Term.Name] = ???
+      def unapply(tree: Any): Option[Term.Name] = ???
     }
 
     object PatWildcard extends PatWildcardCompanion {
       def apply(): Pat = ???
-      def unapply(tree: Tree): Boolean = ???
+      def unapply(tree: Any): Boolean = ???
     }
 
     object PatSeqWildcard extends PatSeqWildcardCompanion {
       def apply(): Pat = ???
-      def unapply(tree: Tree): Boolean = ???
+      def unapply(tree: Any): Boolean = ???
     }
 
     object PatBind extends PatBindCompanion {
       def apply(lhs: Pat, rhs: Pat): Pat = ???
-      def unapply(tree: Tree): Option[(Pat, Pat)] = ???
+      def unapply(tree: Any): Option[(Pat, Pat)] = ???
     }
 
     object PatAlternative extends PatAlternativeCompanion {
       def apply(lhs: Pat, rhs: Pat): Pat = ???
-      def unapply(tree: Tree): Option[(Pat, Pat)] = ???
+      def unapply(tree: Any): Option[(Pat, Pat)] = ???
     }
 
     object PatTuple extends PatTupleCompanion {
       def apply(args: List[Pat]): Pat = ???
-      def unapply(tree: Tree): Option[List[Pat]] = ???
+      def unapply(tree: Any): Option[List[Pat]] = ???
     }
 
     object PatExtract extends PatExtractCompanion {
       def apply(fun: Term, args: List[Pat]): Pat = ???
-      def unapply(tree: Tree): Option[(Term, List[Pat])] = ???
+      def unapply(tree: Any): Option[(Term, List[Pat])] = ???
     }
 
     object PatExtractInfix extends PatExtractInfixCompanion {
       def apply(lhs: Pat, op: Term.Name, rhs: List[Pat]): Pat = ???
-      def unapply(tree: Tree): Option[(Pat, Term.Name, List[Pat])] = ???
+      def unapply(tree: Any): Option[(Pat, Term.Name, List[Pat])] = ???
     }
 
     object PatInterpolate extends PatInterpolateCompanion {
       def apply(prefix: Term.Name, parts: List[Lit], args: List[Pat]): Pat = ???
-      def unapply(tree: Tree): Option[(Term.Name, List[Lit], List[Pat])] = ???
+      def unapply(tree: Any): Option[(Term.Name, List[Lit], List[Pat])] = ???
     }
 
     object PatXml extends PatXmlCompanion {
       def apply(parts: List[Lit], args: List[Pat]): Pat = ???
-      def unapply(tree: Tree): Option[(List[Lit], List[Pat])] = ???
+      def unapply(tree: Any): Option[(List[Lit], List[Pat])] = ???
     }
 
     object PatTyped extends PatTypedCompanion {
       def apply(lhs: Pat, rhs: Type): Pat = ???
-      def unapply(tree: Tree): Option[(Pat, Type)] = ???
+      def unapply(tree: Any): Option[(Pat, Type)] = ???
     }
 
     object DeclVal extends DeclValCompanion {
       def apply(mods: List[Mod], pats: List[Pat], decltpe: Type): Decl.Val = ???
-      def unapply(tree: Tree): Option[(List[Mod], List[Pat], Type)] = ???
+      def unapply(tree: Any): Option[(List[Mod], List[Pat], Type)] = ???
     }
 
     object DeclVar extends DeclVarCompanion {
       def apply(mods: List[Mod], pats: List[Pat], decltpe: Type): Decl.Var = ???
-      def unapply(tree: Tree): Option[(List[Mod], List[Pat], Type)] = ???
+      def unapply(tree: Any): Option[(List[Mod], List[Pat], Type)] = ???
     }
 
     object DeclDef extends DeclDefCompanion {
@@ -447,7 +447,7 @@ trait Abstracts extends scala.macros.trees.Abstracts with Positions { self: Univ
           tparams: List[Type.Param],
           paramss: List[List[Term.Param]],
           decltpe: Type): Decl.Def = ???
-      def unapply(tree: Tree)
+      def unapply(tree: Any)
         : Option[(List[Mod], Term.Name, List[Type.Param], List[List[Term.Param]], Type)] = ???
     }
 
@@ -457,12 +457,12 @@ trait Abstracts extends scala.macros.trees.Abstracts with Positions { self: Univ
           name: Type.Name,
           tparams: List[Type.Param],
           bounds: Type.Bounds): Decl.Type = ???
-      def unapply(tree: Tree): Option[(List[Mod], Type.Name, List[Type.Param], Type.Bounds)] = ???
+      def unapply(tree: Any): Option[(List[Mod], Type.Name, List[Type.Param], Type.Bounds)] = ???
     }
 
     object DefnVal extends DefnValCompanion {
       def apply(mods: List[Mod], pats: List[Pat], decltpe: Option[Type], rhs: Term): Defn.Val = ???
-      def unapply(tree: Tree): Option[(List[Mod], List[Pat], Option[Type], Term)] = ???
+      def unapply(tree: Any): Option[(List[Mod], List[Pat], Option[Type], Term)] = ???
     }
 
     object DefnVar extends DefnVarCompanion {
@@ -471,7 +471,7 @@ trait Abstracts extends scala.macros.trees.Abstracts with Positions { self: Univ
           pats: List[Pat],
           decltpe: Option[Type],
           rhs: Option[Term]): Defn.Var = ???
-      def unapply(tree: Tree): Option[(List[Mod], List[Pat], Option[Type], Option[Term])] = ???
+      def unapply(tree: Any): Option[(List[Mod], List[Pat], Option[Type], Option[Term])] = ???
     }
 
     object DefnDef extends DefnDefCompanion {
@@ -482,7 +482,7 @@ trait Abstracts extends scala.macros.trees.Abstracts with Positions { self: Univ
           paramss: List[List[Term.Param]],
           decltpe: Option[Type],
           body: Term): Defn.Def = ???
-      def unapply(tree: Tree): Option[
+      def unapply(tree: Any): Option[
         (List[Mod], Term.Name, List[Type.Param], List[List[Term.Param]], Option[Type], Term)] = ???
     }
 
@@ -494,7 +494,7 @@ trait Abstracts extends scala.macros.trees.Abstracts with Positions { self: Univ
           paramss: List[List[Term.Param]],
           decltpe: Option[Type],
           body: Term): Defn.Macro = ???
-      def unapply(tree: Tree): Option[
+      def unapply(tree: Any): Option[
         (List[Mod], Term.Name, List[Type.Param], List[List[Term.Param]], Option[Type], Term)] = ???
     }
 
@@ -504,7 +504,7 @@ trait Abstracts extends scala.macros.trees.Abstracts with Positions { self: Univ
           name: Type.Name,
           tparams: List[Type.Param],
           body: Type): Defn.Type = ???
-      def unapply(tree: Tree): Option[(List[Mod], Type.Name, List[Type.Param], Type)] = ???
+      def unapply(tree: Any): Option[(List[Mod], Type.Name, List[Type.Param], Type)] = ???
     }
 
     object DefnClass extends DefnClassCompanion {
@@ -515,7 +515,7 @@ trait Abstracts extends scala.macros.trees.Abstracts with Positions { self: Univ
           ctor: Ctor.Primary,
           templ: Template): Defn.Class = ???
       def unapply(
-          tree: Tree): Option[(List[Mod], Type.Name, List[Type.Param], Ctor.Primary, Template)] =
+          tree: Any): Option[(List[Mod], Type.Name, List[Type.Param], Ctor.Primary, Template)] =
         ???
     }
 
@@ -527,28 +527,28 @@ trait Abstracts extends scala.macros.trees.Abstracts with Positions { self: Univ
           ctor: Ctor.Primary,
           templ: Template): Defn.Trait = ???
       def unapply(
-          tree: Tree): Option[(List[Mod], Type.Name, List[Type.Param], Ctor.Primary, Template)] =
+          tree: Any): Option[(List[Mod], Type.Name, List[Type.Param], Ctor.Primary, Template)] =
         ???
     }
 
     object DefnObject extends DefnObjectCompanion {
       def apply(mods: List[Mod], name: Term.Name, templ: Template): Defn.Object = ???
-      def unapply(tree: Tree): Option[(List[Mod], Term.Name, Template)] = ???
+      def unapply(tree: Any): Option[(List[Mod], Term.Name, Template)] = ???
     }
 
     object PkgProper extends PkgProperCompanion {
       def apply(ref: Term.Ref, stats: List[Stat]): Pkg = ???
-      def unapply(tree: Tree): Option[(Term.Ref, List[Stat])] = ???
+      def unapply(tree: Any): Option[(Term.Ref, List[Stat])] = ???
     }
 
     object PkgObject extends PkgObjectCompanion {
       def apply(mods: List[Mod], name: Term.Name, templ: Template): Pkg.Object = ???
-      def unapply(tree: Tree): Option[(List[Mod], Term.Name, Template)] = ???
+      def unapply(tree: Any): Option[(List[Mod], Term.Name, Template)] = ???
     }
 
     object CtorPrimary extends CtorPrimaryCompanion {
       def apply(mods: List[Mod], name: Name, paramss: List[List[Term.Param]]): Ctor.Primary = ???
-      def unapply(tree: Tree): Option[(List[Mod], Name, List[List[Term.Param]])] = ???
+      def unapply(tree: Any): Option[(List[Mod], Name, List[List[Term.Param]])] = ???
     }
 
     object CtorSecondary extends CtorSecondaryCompanion {
@@ -558,8 +558,8 @@ trait Abstracts extends scala.macros.trees.Abstracts with Positions { self: Univ
           paramss: List[List[Term.Param]],
           init: Init,
           stats: List[Stat]): Ctor.Secondary = ???
-      def unapply(
-          tree: Tree): Option[(List[Mod], Name, List[List[Term.Param]], Init, List[Stat])] = ???
+      def unapply(tree: Any): Option[(List[Mod], Name, List[List[Term.Param]], Init, List[Stat])] =
+        ???
     }
 
     lazy val Init = self.Init
@@ -569,7 +569,7 @@ trait Abstracts extends scala.macros.trees.Abstracts with Positions { self: Univ
     object Template extends TemplateCompanion {
       def apply(early: List[Stat], inits: List[Init], self: Self, stats: List[Stat]): Template =
         ???
-      def unapply(tree: Tree): Option[(List[Stat], List[Init], Self, List[Stat])] = ???
+      def unapply(tree: Any): Option[(List[Stat], List[Init], Self, List[Stat])] = ???
     }
 
     lazy val ModAnnot = self.Mod.Annot
@@ -610,7 +610,7 @@ trait Abstracts extends scala.macros.trees.Abstracts with Positions { self: Univ
 
     object Import extends ImportCompanion {
       def apply(importers: List[Importer]): Import = ???
-      def unapply(tree: Tree): Option[List[Importer]] = ???
+      def unapply(tree: Any): Option[List[Importer]] = ???
     }
 
     lazy val Importer = self.Importer
@@ -625,12 +625,12 @@ trait Abstracts extends scala.macros.trees.Abstracts with Positions { self: Univ
 
     object Case extends CaseCompanion {
       def apply(pat: Pat, cond: Option[Term], body: Term): Case = ???
-      def unapply(tree: Tree): Option[(Pat, Option[Term], Term)] = ???
+      def unapply(tree: Any): Option[(Pat, Option[Term], Term)] = ???
     }
 
     object Source extends SourceCompanion {
       def apply(stats: List[Stat]): Source = ???
-      def unapply(tree: Tree): Option[List[Stat]] = ???
+      def unapply(tree: Any): Option[List[Stat]] = ???
     }
   }
 }

@@ -2,7 +2,8 @@ package scala.macros.tests
 package api
 
 // NOTE: This file doesn't contain any test suites.
-// It just checks that we're unaffected by https://github.com/scalameta/scalameta/issues/900.
+// It just checks that we're unaffected by https://github.com/scalameta/scalameta/issues/900
+// and other pattern matching gotchas.
 
 object PatternMatching {
   import scala.macros._
@@ -27,5 +28,6 @@ object PatternMatching {
   (null: AnyRef) match { case _: Position.Range => }
   (null: AnyRef) match { case Position.Range(_, _, _) => }
   (null: AnyRef) match { case _: AbsolutePath => }
+  // (null: AnyRef) match { case _: Term.This => }
+  (null: AnyRef) match { case Term.This(_) => }
 }
-
