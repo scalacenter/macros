@@ -8,5 +8,5 @@ private[scala] trait Api {
 
 private[scala] trait Aliases {
   type AbsolutePath = scala.meta.io.AbsolutePath
-  lazy val AbsolutePath = scala.meta.io.AbsolutePath
+  val AbsolutePath = scala.meta.io.AbsolutePath
 }
