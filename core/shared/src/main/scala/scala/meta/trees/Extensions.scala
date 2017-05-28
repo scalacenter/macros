@@ -7,7 +7,6 @@ import scala.meta.internal.prettyprinters._
 import scala.meta.internal.trees._
 
 private[scala] trait Extensions extends Gensym with TreeSyntax with TreeStructure { self: Trees =>
-
   implicit class XtensionTreesTree(tree: Tree) extends Prettyprinted {
     def pos: Position = abstracts.treePos(tree)
     protected def syntax(p: Prettyprinter): Unit = treeSyntax(p, tree)

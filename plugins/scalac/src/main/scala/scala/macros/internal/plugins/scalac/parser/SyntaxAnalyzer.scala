@@ -324,7 +324,7 @@ abstract class SyntaxAnalyzer extends NscSyntaxAnalyzer with ReflectToolkit {
           val defnArgDef = q"""
             val $defnArgName = {
               try {
-                annottees.map(_.asInstanceOf[_root_.scala.macros.Stat]) match {
+                annottees.map(_.tree.asInstanceOf[_root_.scala.macros.Stat]) match {
                   case _root_.scala.Seq(tree) => tree
                   case trees => _root_.scala.macros.Term.Block(trees.toList)
                 }
@@ -339,7 +339,7 @@ abstract class SyntaxAnalyzer extends NscSyntaxAnalyzer with ReflectToolkit {
             val argName = unit.freshTermName(vvparam.name.toString + "$")
             q"""
               val $argName = {
-                try ${vvparam.name}.asInstanceOf[_root_.scala.macros.Term]
+                try ${vvparam.name}.tree.asInstanceOf[_root_.scala.macros.Term]
                 catch { case ex: _root_.java.lang.ClassCastException => failMacroEngine(ex) }
               }
             """
