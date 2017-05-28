@@ -32,9 +32,10 @@ trait AnalyzerPlugins extends ReflectToolkit {
 
     private val pluginMacroRuntimesCache = perRunCaches.newWeakMap[Symbol, MacroRuntime]
     override def pluginsMacroRuntime(expandee: Tree): Option[MacroRuntime] = {
-      def ensureCompatible(found: Version,
-                           required: Option[Version],
-                           onError: (Position, String, String) => Unit): Boolean = {
+      def ensureCompatible(
+          found: Version,
+          required: Option[Version],
+          onError: (Position, String, String) => Unit): Boolean = {
         val Version(foundMajor, _, _, foundSnapshot, _) = found
         val compatible = required match {
           case Some(Version(requiredMajor, _, _, requiredSnapshot, _)) =>

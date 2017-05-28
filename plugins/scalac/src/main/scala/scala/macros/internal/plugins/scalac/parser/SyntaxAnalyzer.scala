@@ -309,11 +309,12 @@ abstract class SyntaxAnalyzer extends NscSyntaxAnalyzer with ReflectToolkit {
       (stats, mstats)
     }
 
-    private def shimRhs(name: TermName,
-                        c: ValDef,
-                        vvparams: List[ValDef],
-                        vtparams: List[ValDef],
-                        isMacroAnnotation: Boolean): Tree = {
+    private def shimRhs(
+        name: TermName,
+        c: ValDef,
+        vvparams: List[ValDef],
+        vtparams: List[ValDef],
+        isMacroAnnotation: Boolean): Tree = {
       val cName = c.name
       val thisArgName = unit.freshTermName("prefix$")
       val otherArgDefs = {

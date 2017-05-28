@@ -259,10 +259,11 @@ trait Abstracts extends scala.macros.trees.Abstracts with Positions { self: Univ
     }
 
     object TermParam extends TermParamCompanion {
-      def apply(mods: List[Mod],
-                name: Term.Name,
-                decltpe: Option[Type],
-                default: Option[Term]): Term.Param = ???
+      def apply(
+          mods: List[Mod],
+          name: Term.Name,
+          decltpe: Option[Type],
+          default: Option[Term]): Term.Param = ???
       def unapply(tree: Tree): Option[(List[Mod], Term.Name, Option[Type], Option[Term])] = ???
     }
 
@@ -362,12 +363,13 @@ trait Abstracts extends scala.macros.trees.Abstracts with Positions { self: Univ
     }
 
     object TypeParam extends TypeParamCompanion {
-      def apply(mods: List[Mod],
-                name: Type.Name,
-                tparams: List[Type.Param],
-                tbounds: Type.Bounds,
-                vbounds: List[Type],
-                cbounds: List[Type]): Type.Param = ???
+      def apply(
+          mods: List[Mod],
+          name: Type.Name,
+          tparams: List[Type.Param],
+          tbounds: Type.Bounds,
+          vbounds: List[Type],
+          cbounds: List[Type]): Type.Param = ???
       def unapply(tree: Tree)
         : Option[(List[Mod], Type.Name, List[Type.Param], Type.Bounds, List[Type], List[Type])] =
         ???
@@ -439,20 +441,22 @@ trait Abstracts extends scala.macros.trees.Abstracts with Positions { self: Univ
     }
 
     object DeclDef extends DeclDefCompanion {
-      def apply(mods: List[Mod],
-                name: Term.Name,
-                tparams: List[Type.Param],
-                paramss: List[List[Term.Param]],
-                decltpe: Type): Decl.Def = ???
+      def apply(
+          mods: List[Mod],
+          name: Term.Name,
+          tparams: List[Type.Param],
+          paramss: List[List[Term.Param]],
+          decltpe: Type): Decl.Def = ???
       def unapply(tree: Tree)
         : Option[(List[Mod], Term.Name, List[Type.Param], List[List[Term.Param]], Type)] = ???
     }
 
     object DeclType extends DeclTypeCompanion {
-      def apply(mods: List[Mod],
-                name: Type.Name,
-                tparams: List[Type.Param],
-                bounds: Type.Bounds): Decl.Type = ???
+      def apply(
+          mods: List[Mod],
+          name: Type.Name,
+          tparams: List[Type.Param],
+          bounds: Type.Bounds): Decl.Type = ???
       def unapply(tree: Tree): Option[(List[Mod], Type.Name, List[Type.Param], Type.Bounds)] = ???
     }
 
@@ -462,60 +466,66 @@ trait Abstracts extends scala.macros.trees.Abstracts with Positions { self: Univ
     }
 
     object DefnVar extends DefnVarCompanion {
-      def apply(mods: List[Mod],
-                pats: List[Pat],
-                decltpe: Option[Type],
-                rhs: Option[Term]): Defn.Var = ???
+      def apply(
+          mods: List[Mod],
+          pats: List[Pat],
+          decltpe: Option[Type],
+          rhs: Option[Term]): Defn.Var = ???
       def unapply(tree: Tree): Option[(List[Mod], List[Pat], Option[Type], Option[Term])] = ???
     }
 
     object DefnDef extends DefnDefCompanion {
-      def apply(mods: List[Mod],
-                name: Term.Name,
-                tparams: List[Type.Param],
-                paramss: List[List[Term.Param]],
-                decltpe: Option[Type],
-                body: Term): Defn.Def = ???
+      def apply(
+          mods: List[Mod],
+          name: Term.Name,
+          tparams: List[Type.Param],
+          paramss: List[List[Term.Param]],
+          decltpe: Option[Type],
+          body: Term): Defn.Def = ???
       def unapply(tree: Tree): Option[
         (List[Mod], Term.Name, List[Type.Param], List[List[Term.Param]], Option[Type], Term)] = ???
     }
 
     object DefnMacro extends DefnMacroCompanion {
-      def apply(mods: List[Mod],
-                name: Term.Name,
-                tparams: List[Type.Param],
-                paramss: List[List[Term.Param]],
-                decltpe: Option[Type],
-                body: Term): Defn.Macro = ???
+      def apply(
+          mods: List[Mod],
+          name: Term.Name,
+          tparams: List[Type.Param],
+          paramss: List[List[Term.Param]],
+          decltpe: Option[Type],
+          body: Term): Defn.Macro = ???
       def unapply(tree: Tree): Option[
         (List[Mod], Term.Name, List[Type.Param], List[List[Term.Param]], Option[Type], Term)] = ???
     }
 
     object DefnType extends DefnTypeCompanion {
-      def apply(mods: List[Mod],
-                name: Type.Name,
-                tparams: List[Type.Param],
-                body: Type): Defn.Type = ???
+      def apply(
+          mods: List[Mod],
+          name: Type.Name,
+          tparams: List[Type.Param],
+          body: Type): Defn.Type = ???
       def unapply(tree: Tree): Option[(List[Mod], Type.Name, List[Type.Param], Type)] = ???
     }
 
     object DefnClass extends DefnClassCompanion {
-      def apply(mods: List[Mod],
-                name: Type.Name,
-                tparams: List[Type.Param],
-                ctor: Ctor.Primary,
-                templ: Template): Defn.Class = ???
+      def apply(
+          mods: List[Mod],
+          name: Type.Name,
+          tparams: List[Type.Param],
+          ctor: Ctor.Primary,
+          templ: Template): Defn.Class = ???
       def unapply(
           tree: Tree): Option[(List[Mod], Type.Name, List[Type.Param], Ctor.Primary, Template)] =
         ???
     }
 
     object DefnTrait extends DefnTraitCompanion {
-      def apply(mods: List[Mod],
-                name: Type.Name,
-                tparams: List[Type.Param],
-                ctor: Ctor.Primary,
-                templ: Template): Defn.Trait = ???
+      def apply(
+          mods: List[Mod],
+          name: Type.Name,
+          tparams: List[Type.Param],
+          ctor: Ctor.Primary,
+          templ: Template): Defn.Trait = ???
       def unapply(
           tree: Tree): Option[(List[Mod], Type.Name, List[Type.Param], Ctor.Primary, Template)] =
         ???
@@ -542,11 +552,12 @@ trait Abstracts extends scala.macros.trees.Abstracts with Positions { self: Univ
     }
 
     object CtorSecondary extends CtorSecondaryCompanion {
-      def apply(mods: List[Mod],
-                name: Name,
-                paramss: List[List[Term.Param]],
-                init: Init,
-                stats: List[Stat]): Ctor.Secondary = ???
+      def apply(
+          mods: List[Mod],
+          name: Name,
+          paramss: List[List[Term.Param]],
+          init: Init,
+          stats: List[Stat]): Ctor.Secondary = ???
       def unapply(
           tree: Tree): Option[(List[Mod], Name, List[List[Term.Param]], Init, List[Stat])] = ???
     }
