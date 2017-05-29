@@ -62,6 +62,8 @@ This specification describes quasiquote syntax using a markedly condensed notati
  By Name           | `t"=> $tpe"`
  Repeated          | `t"$tpe*"`
  Var               | Not supported
+ Method            | `t"(...$params)$tpe"`
+ Lambda            | `t"[..$tparams] => $tpe"`
 
 ## Patterns (meta.Pat) and Cases (meta.Case)
 
