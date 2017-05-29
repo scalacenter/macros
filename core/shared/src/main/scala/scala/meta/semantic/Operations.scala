@@ -1,7 +1,7 @@
 package scala.meta
 package semantic
 
-private[scala] trait Operations { self: Semantic =>
+private[scala] trait Operations { self: Universe =>
   private[scala] trait SymbolBasedOps extends FlagBasedOps {
     protected def symbol: Symbol
     protected def flags: Long = abstracts.symbolFlags(symbol)

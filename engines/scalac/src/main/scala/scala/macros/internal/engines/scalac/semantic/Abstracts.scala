@@ -9,6 +9,7 @@ trait Abstracts extends scala.macros.semantic.Abstracts { self: Universe =>
     def refDenot(ref: Ref): Denotation = ???
     def termTpe(term: Term): Type = ???
 
+    def symbol(id: String): Symbol = ???
     def symbolSyntax(p: Prettyprinter, symbol: Symbol): Unit = ???
     def symbolStructure(p: Prettyprinter, symbol: Symbol): Unit = ???
     def symbolName(symbol: Symbol): Name = ???

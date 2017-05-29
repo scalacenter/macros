@@ -1,7 +1,7 @@
 package scala.meta
 package trees
 
-private[scala] trait Companions { self: Trees =>
+private[scala] trait Companions { self: Universe =>
   // NOTE: This is private to prevent `Companions` from showing up
   // in a wildcard import from `scala.meta._`.
   // Amazingly, we can have an enclosing object private,
@@ -90,6 +90,7 @@ private[scala] trait Companions { self: Trees =>
 
     trait TermNameCompanion {
       def apply(value: String): Term.Name
+      def apply(symbol: Symbol): Term.Name
       def unapply(tree: Any): Option[String]
     }
 
@@ -249,6 +250,7 @@ private[scala] trait Companions { self: Trees =>
 
     trait TypeNameCompanion {
       def apply(value: String): Type.Name
+      def apply(symbol: Symbol): Type.Name
       def unapply(tree: Any): Option[String]
     }
 

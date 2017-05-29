@@ -3,7 +3,7 @@ package semantic
 
 import scala.meta.internal.prettyprinters._
 
-private[scala] trait Denotations { self: Semantic =>
+private[scala] trait Denotations { self: Universe =>
   type Denotation >: Null <: AnyRef
 
   implicit class XtensionDenotationsDenotation(denot: Denotation)

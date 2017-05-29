@@ -3,7 +3,7 @@ package trees
 
 import scala.meta.inputs._
 
-private[scala] trait Abstracts { self: Trees =>
+private[scala] trait Abstracts { self: Universe =>
   import treeCompanions._
 
   // NOTE: Check out Companions.scala to see why this is private.

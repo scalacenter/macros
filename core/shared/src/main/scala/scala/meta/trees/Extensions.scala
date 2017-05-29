@@ -6,7 +6,9 @@ import scala.meta.inputs._
 import scala.meta.internal.prettyprinters._
 import scala.meta.internal.trees._
 
-private[scala] trait Extensions extends Gensym with TreeSyntax with TreeStructure { self: Trees =>
+private[scala] trait Extensions extends Gensym with TreeSyntax with TreeStructure {
+  self: Universe =>
+
   implicit class XtensionTreesTree(tree: Tree) extends Prettyprinted {
     def pos: Position = abstracts.treePos(tree)
     protected def syntax(p: Prettyprinter): Unit = treeSyntax(p, tree)
@@ -31,24 +33,5 @@ private[scala] trait Extensions extends Gensym with TreeSyntax with TreeStructur
 
   implicit class XtensionTreesPat(pat: PatCompanion) {
     def fresh(prefix: String = "fresh") = Pat.Var(Term.Name(gensym(prefix)))
-  }
-
-  implicit class XtensionTreesMember(member: Member) {
-    def name: Name = abstracts.memberName(member)
-  }
-
-  implicit class XtensionTreesMemberTerm(member: Member.Term) {
-    def name: Term.Name = (member: Member).name.asInstanceOf[Term.Name]
-  }
-
-  implicit class XtensionTreesMemberType(member: Member.Type) {
-    def name: Type.Name = (member: Member).name.asInstanceOf[Type.Name]
-  }
-
-  implicit class XtensionTreesPkg(pkg: Pkg) {
-    def name: Name = pkg match {
-      case Term.Name(_) => name
-      case Term.Select(_, name @ Term.Name(_)) => name
-    }
   }
 }

@@ -1,7 +1,7 @@
 package scala.meta
 package semantic
 
-private[scala] trait Types { self: Semantic =>
+private[scala] trait Types { self: Universe =>
   // TODO: Should types be merged with trees or separated from trees?
   // This design serves as a hopefully convincing argument for merging.
 

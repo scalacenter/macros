@@ -3,13 +3,14 @@ package semantic
 
 import scala.meta.internal.prettyprinters._
 
-private[scala] trait Abstracts extends scala.meta.trees.Abstracts { self: Semantic =>
+private[scala] trait Abstracts extends scala.meta.trees.Abstracts { self: Universe =>
   // NOTE: Check out Companions.scala to see why this is private.
   private[scala] def abstracts: SemanticAbstracts
   private[scala] trait SemanticAbstracts extends TreeAbstracts {
     def refDenot(ref: Ref): Denotation
     def termTpe(term: Term): Type
 
+    def symbol(id: String): Symbol
     def symbolSyntax(p: Prettyprinter, symbol: Symbol): Unit
     def symbolStructure(p: Prettyprinter, symbol: Symbol): Unit
     def symbolName(symbol: Symbol): Name

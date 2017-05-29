@@ -3,8 +3,11 @@ package semantic
 
 import scala.meta.internal.prettyprinters._
 
-private[scala] trait Symbols { self: Semantic =>
+private[scala] trait Symbols { self: Universe =>
   type Symbol >: Null <: AnyRef
+  object Symbol {
+    def apply(id: String): Symbol = abstracts.symbol(id)
+  }
 
   implicit class XtensionSymbolsSymbol(protected val symbol: Symbol)
       extends SymbolBasedOps

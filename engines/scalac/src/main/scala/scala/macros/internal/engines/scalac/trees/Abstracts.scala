@@ -142,6 +142,9 @@ trait Abstracts extends scala.macros.trees.Abstracts with Positions { self: Univ
       def apply(value: String): Term.Name = {
         new c.TermNameImpl(value)
       }
+      def apply(symbol: Symbol): Term.Name = {
+        apply(symbol.name.decoded).setSymbol(symbol)
+      }
       def unapply(gtree: Any): Option[String] = gtree match {
         case g.Ident(name: g.TermName) => Some(name.decoded)
         case _ => None
@@ -317,6 +320,9 @@ trait Abstracts extends scala.macros.trees.Abstracts with Positions { self: Univ
     object TypeName extends TypeNameCompanion {
       def apply(value: String): Type.Name = {
         new c.TypeNameImpl(value)
+      }
+      def apply(symbol: Symbol): Type.Name = {
+        apply(symbol.name.decoded).setSymbol(symbol)
       }
       def unapply(gtree: Any): Option[String] = gtree match {
         case g.Ident(name: g.TypeName) => unapply(name.decoded)
