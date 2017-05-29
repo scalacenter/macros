@@ -100,6 +100,8 @@ private[scala] trait Trees extends Abstracts with Companions with Extensions { s
     def Repeated = abstracts.TypeRepeated
     type Var >: Null <: Type with Member.Type
     def Var = abstracts.TypeVar
+    def Method = abstracts.TypeMethod
+    def Lambda = abstracts.TypeLambda
     type Param >: Null <: Member.Type
     def Param = abstracts.TypeParam
   }

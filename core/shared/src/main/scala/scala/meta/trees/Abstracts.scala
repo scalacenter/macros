@@ -15,6 +15,7 @@ private[scala] trait Abstracts { self: Trees =>
     def litValue(lit: Lit): Any
     def litUnapply(tree: Any): Option[Any]
     def memberName(member: Member): Name
+
     def NameAnonymous: NameAnonymousCompanion
     def NameIndeterminate: NameIndeterminateCompanion
     def LitUnit: LitUnitCompanion
@@ -81,6 +82,8 @@ private[scala] trait Abstracts { self: Trees =>
     def TypeByName: TypeByNameCompanion
     def TypeRepeated: TypeRepeatedCompanion
     def TypeVar: TypeVarCompanion
+    def TypeMethod: TypeMethodCompanion
+    def TypeLambda: TypeLambdaCompanion
     def TypeParam: TypeParamCompanion
     def PatVar: PatVarCompanion
     def PatWildcard: PatWildcardCompanion

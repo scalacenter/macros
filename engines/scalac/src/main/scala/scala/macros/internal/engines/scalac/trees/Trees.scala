@@ -2,8 +2,6 @@ package scala.macros.internal
 package engines.scalac
 package trees
 
-import scala.tools.nsc.Global
-
 // NOTE: Scalac ASTs aren't sufficiently strongly-typed to fully implement our API.
 // As a result, we have to approximate with things like `type Term = g.Tree`.
 // Additionally, we have to come up with new AST nodes to express things that

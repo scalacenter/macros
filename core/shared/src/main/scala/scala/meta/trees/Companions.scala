@@ -69,8 +69,8 @@ private[scala] trait Companions { self: Trees =>
     }
 
     trait LitSymbolCompanion {
-      def apply(value: Symbol): Lit
-      def unapply(tree: Any): Option[Symbol]
+      def apply(value: scala.Symbol): Lit
+      def unapply(tree: Any): Option[scala.Symbol]
     }
 
     trait LitNullCompanion {
@@ -340,6 +340,16 @@ private[scala] trait Companions { self: Trees =>
     trait TypeVarCompanion {
       def apply(name: Type.Name): Type.Var
       def unapply(tree: Any): Option[Type.Name]
+    }
+
+    trait TypeMethodCompanion {
+      def apply(paramss: List[List[Term.Param]], tpe: Type): Type
+      def unapply(tree: Any): Option[(List[List[Term.Param]], Type)]
+    }
+
+    trait TypeLambdaCompanion {
+      def apply(tparams: List[Type.Param], tpe: Type): Type
+      def unapply(tree: Any): Option[(List[Type.Param], Type)]
     }
 
     trait TypeParamCompanion {

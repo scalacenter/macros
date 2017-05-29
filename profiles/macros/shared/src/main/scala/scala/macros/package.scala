@@ -11,6 +11,10 @@ package object macros
     with scala.macros.io.Aliases
     with scala.macros.prettyprinters.Api
     with scala.macros.prettyprinters.Aliases
+    with scala.macros.trees.Api
+    with scala.macros.trees.Aliases
+    with scala.macros.semantic.Api
+    with scala.macros.semantic.Aliases
     with scala.macros.Api
     with scala.macros.Aliases
     with scala.macros.Universe {

@@ -119,8 +119,8 @@ trait Abstracts extends scala.macros.trees.Abstracts with Positions { self: Univ
     }
 
     object LitSymbol extends LitSymbolCompanion {
-      def apply(value: Symbol): Lit = ???
-      def unapply(gtree: Any): Option[Symbol] = ???
+      def apply(value: scala.Symbol): Lit = ???
+      def unapply(gtree: Any): Option[scala.Symbol] = ???
     }
 
     object LitNull extends LitNullCompanion {
@@ -420,6 +420,16 @@ trait Abstracts extends scala.macros.trees.Abstracts with Positions { self: Univ
     object TypeVar extends TypeVarCompanion {
       def apply(name: Type.Name): Type.Var = ???
       def unapply(gtree: Any): Option[Type.Name] = ???
+    }
+
+    object TypeMethod extends TypeMethodCompanion {
+      def apply(paramss: List[List[Term.Param]], tpe: Type): Type = ???
+      def unapply(tree: Any): Option[(List[List[Term.Param]], Type)] = ???
+    }
+
+    object TypeLambda extends TypeLambdaCompanion {
+      def apply(tparams: List[Type.Param], tpe: Type): Type = ???
+      def unapply(tree: Any): Option[(List[Type.Param], Type)] = ???
     }
 
     object TypeParam extends TypeParamCompanion {
