@@ -1,3 +1,4 @@
+// NOTE: I think that having every signature fit in one line is more important than dogma.
 /* scalafmt: { maxColumn = 120 }*/
 package scala.meta
 package semantic

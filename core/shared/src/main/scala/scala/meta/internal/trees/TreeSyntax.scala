@@ -6,7 +6,7 @@ import scala.meta.trees.Trees
 
 trait TreeSyntax { self: Trees =>
 
-  protected def treeSyntax(p: Prettyprinter, tree: Tree): Unit = {
+  private[scala] implicit def treeSyntax[T <: Tree]: Syntax[T] = Syntax { (p, tree) =>
     // TODO: implement this
     ???
   }

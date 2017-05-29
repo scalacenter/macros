@@ -16,7 +16,7 @@ private[scala] trait Operations { self: Universe =>
 
   private[scala] trait FlagBasedOps {
     protected def flags: Long
-    private def hasFlags(flags: Long) = (flags & flags) == flags
+    private def hasFlags(flags: Long) = (this.flags & flags) == flags
     def isVal: Boolean = hasFlags(VAL)
     def isVar: Boolean = hasFlags(VAR)
     def isDef: Boolean = hasFlags(DEF)

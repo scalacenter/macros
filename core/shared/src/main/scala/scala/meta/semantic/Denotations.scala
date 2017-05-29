@@ -6,6 +6,13 @@ import scala.meta.internal.prettyprinters._
 private[scala] trait Denotations { self: Universe =>
   type Denotation >: Null <: AnyRef
 
+  implicit def denotSyntaxInstance[T <: Denotation](implicit m: Mirror): Syntax[T] = {
+    Syntax((p, x) => abstracts.denotSyntax(p, x))
+  }
+  implicit def denotStructureInstance[T <: Denotation](implicit m: Mirror): Structure[T] = {
+    Structure((p, x) => abstracts.denotStructure(p, x))
+  }
+
   implicit class XtensionDenotationsDenotation(denot: Denotation)(implicit protected val m: Mirror)
       extends SymbolBasedOps
       with MemberBasedOps[Denotation]

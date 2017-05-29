@@ -69,52 +69,52 @@ trait Abstracts extends scala.macros.trees.Abstracts with Positions { self: Univ
     }
 
     object LitUnit extends LitUnitCompanion {
-      def apply(): Lit = ???
+      def apply(): Lit = g.Literal(g.Constant(()))
       def unapply(gtree: Any): Boolean = ???
     }
 
     object LitBoolean extends LitBooleanCompanion {
-      def apply(value: Boolean): Lit = ???
+      def apply(value: Boolean): Lit = g.Literal(g.Constant(value))
       def unapply(gtree: Any): Option[Boolean] = ???
     }
 
     object LitByte extends LitByteCompanion {
-      def apply(value: Byte): Lit = ???
+      def apply(value: Byte): Lit = g.Literal(g.Constant(value))
       def unapply(gtree: Any): Option[Byte] = ???
     }
 
     object LitShort extends LitShortCompanion {
-      def apply(value: Short): Lit = ???
+      def apply(value: Short): Lit = g.Literal(g.Constant(value))
       def unapply(gtree: Any): Option[Short] = ???
     }
 
     object LitChar extends LitCharCompanion {
-      def apply(value: Char): Lit = ???
+      def apply(value: Char): Lit = g.Literal(g.Constant(value))
       def unapply(gtree: Any): Option[Char] = ???
     }
 
     object LitInt extends LitIntCompanion {
-      def apply(value: Int): Lit = ???
+      def apply(value: Int): Lit = g.Literal(g.Constant(value))
       def unapply(gtree: Any): Option[Int] = ???
     }
 
     object LitFloat extends LitFloatCompanion {
-      def apply(value: Float): Lit = ???
+      def apply(value: Float): Lit = g.Literal(g.Constant(value))
       def unapply(gtree: Any): Option[Float] = ???
     }
 
     object LitLong extends LitLongCompanion {
-      def apply(value: Long): Lit = ???
+      def apply(value: Long): Lit = g.Literal(g.Constant(value))
       def unapply(gtree: Any): Option[Long] = ???
     }
 
     object LitDouble extends LitDoubleCompanion {
-      def apply(value: Double): Lit = ???
+      def apply(value: Double): Lit = g.Literal(g.Constant(value))
       def unapply(gtree: Any): Option[Double] = ???
     }
 
     object LitString extends LitStringCompanion {
-      def apply(value: String): Lit = ???
+      def apply(value: String): Lit = g.Literal(g.Constant(value))
       def unapply(gtree: Any): Option[String] = ???
     }
 
@@ -124,7 +124,7 @@ trait Abstracts extends scala.macros.trees.Abstracts with Positions { self: Univ
     }
 
     object LitNull extends LitNullCompanion {
-      def apply(): Lit = ???
+      def apply(): Lit = g.Literal(g.Constant(null))
       def unapply(gtree: Any): Boolean = ???
     }
 
@@ -152,7 +152,7 @@ trait Abstracts extends scala.macros.trees.Abstracts with Positions { self: Univ
     }
 
     implicit class XtensionTermName(tree: Term.Name) {
-      def toGTermName: g.TermName = tree.name.asInstanceOf[g.TermName]
+      def toGTermName: g.TermName = tree.name.toTermName
     }
 
     implicit class XtensionGTermName(gtree: g.SymTree with g.NameTree) {
@@ -160,7 +160,7 @@ trait Abstracts extends scala.macros.trees.Abstracts with Positions { self: Univ
     }
 
     object TermSelect extends TermSelectCompanion {
-      def apply(qual: Term, name: Term.Name): Term.Ref = ???
+      def apply(qual: Term, name: Term.Name): Term.Ref = g.Select(qual, name.toGTermName)
       def unapply(gtree: Any): Option[(Term, Term.Name)] = ???
     }
 
@@ -175,12 +175,12 @@ trait Abstracts extends scala.macros.trees.Abstracts with Positions { self: Univ
     }
 
     object TermApply extends TermApplyCompanion {
-      def apply(fun: Term, args: List[Term]): Term = ???
+      def apply(fun: Term, args: List[Term]): Term = g.Apply(fun, args)
       def unapply(gtree: Any): Option[(Term, List[Term])] = ???
     }
 
     object TermApplyType extends TermApplyTypeCompanion {
-      def apply(fun: Term, targs: List[Type]): Term = ???
+      def apply(fun: Term, targs: List[Type]): Term = g.TypeApply(fun, targs)
       def unapply(gtree: Any): Option[(Term, List[Type])] = ???
     }
 
@@ -280,7 +280,7 @@ trait Abstracts extends scala.macros.trees.Abstracts with Positions { self: Univ
     }
 
     object TermNew extends TermNewCompanion {
-      def apply(init: Init): Term = ???
+      def apply(init: Init): Term = init.toGNew
       def unapply(gtree: Any): Option[Init] = ???
     }
 
@@ -331,7 +331,7 @@ trait Abstracts extends scala.macros.trees.Abstracts with Positions { self: Univ
     }
 
     implicit class XtensionTypeName(tree: Type.Name) {
-      def toGTypeName: g.TypeName = tree.name.asInstanceOf[g.TypeName]
+      def toGTypeName: g.TypeName = tree.name.toTypeName
     }
 
     implicit class XtensionGTypeName(gtree: g.SymTree with g.NameTree) {
@@ -339,7 +339,7 @@ trait Abstracts extends scala.macros.trees.Abstracts with Positions { self: Univ
     }
 
     object TypeSelect extends TypeSelectCompanion {
-      def apply(qual: Term.Ref, name: Type.Name): Type.Ref = ???
+      def apply(qual: Term.Ref, name: Type.Name): Type.Ref = g.Select(qual, name.toGTypeName)
       def unapply(gtree: Any): Option[(Term.Ref, Type.Name)] = ???
     }
 
@@ -452,8 +452,11 @@ trait Abstracts extends scala.macros.trees.Abstracts with Positions { self: Univ
     }
 
     object PatVar extends PatVarCompanion {
-      def apply(name: Term.Name): Pat.Var = ???
-      def unapply(gtree: Any): Option[Term.Name] = ???
+      def apply(name: Term.Name): Pat.Var = g.Bind(name.toGTermName, g.Ident(g.nme.WILDCARD))
+      def unapply(gtree: Any): Option[Term.Name] = gtree match {
+        case gtree: g.Bind => Some(gtree.toTermName)
+        case _ => None
+      }
     }
 
     object PatWildcard extends PatWildcardCompanion {
@@ -537,7 +540,14 @@ trait Abstracts extends scala.macros.trees.Abstracts with Positions { self: Univ
     }
 
     object DefnVal extends DefnValCompanion {
-      def apply(mods: List[Mod], pats: List[Pat], decltpe: Option[Type], rhs: Term): Defn.Val = ???
+      def apply(mods: List[Mod], pats: List[Pat], decltpe: Option[Type], rhs: Term): Defn.Val = {
+        pats match {
+          case List(Pat.Var(name)) =>
+            g.ValDef(mods.toGModifiers, name.toGTermName, decltpe.getOrElse(g.TypeTree()), rhs)
+          case _ =>
+            ???
+        }
+      }
       def unapply(gtree: Any): Option[(List[Mod], List[Pat], Option[Type], Term)] = ???
     }
 
@@ -658,17 +668,24 @@ trait Abstracts extends scala.macros.trees.Abstracts with Positions { self: Univ
     }
 
     implicit class XtensionInit(tree: Init) {
-      def toGInit: g.Tree = {
-        val Init(gtpe, _, gargss) = tree
-        g.build.SyntacticApplied(gtpe, gargss).setPos(tree.pos)
+      def toGParent: g.Tree = {
+        val Init(gtpt, _, gargss) = tree
+        g.build.SyntacticApplied(gtpt, gargss).setPos(tree.pos)
+      }
+      def toGNew: g.Tree = {
+        val Init(gtpt, _, gargss) = tree
+        g.New(gtpt, gargss).setPos(tree.pos)
       }
     }
 
     implicit class XtensionGInit(gtree: g.Tree) {
-      def toInit: Init = {
+      def toInitFromGParent: Init = {
         val applied = g.treeInfo.Applied(gtree)
         val name = NameAnonymous().copyAttrs(gtree).setPos(applied.callee.pos.focusEnd)
         Init(applied.callee, name, applied.argss).copyAttrs(gtree)
+      }
+      def toInitFromGNew: Init = {
+        ???
       }
     }
 
@@ -793,18 +810,18 @@ trait Abstracts extends scala.macros.trees.Abstracts with Positions { self: Univ
       def toGTemplate(gctorMods: g.Modifiers, gctorParamss: List[List[g.ValDef]]): g.Template = {
         val Template(early, inits, self, stats) = tree
         val gearly = early.toGStats
-        val ginits = inits.map(_.toGInit)
+        val gparents = inits.map(_.toGParent)
         val gself = self.toGSelf
         val gstats = gearly ++ stats.toGStats
-        g.gen.mkTemplate(ginits, gself, gctorMods, gctorParamss, gstats).setPos(tree.pos)
+        g.gen.mkTemplate(gparents, gself, gctorMods, gctorParamss, gstats).setPos(tree.pos)
       }
     }
 
     implicit class XtensionGTemplate(gtree: g.Template) {
       def toTemplate: Template = {
-        val UnMkTemplate(ginits, gself, _, _, gearly, gstats) = gtree
+        val UnMkTemplate(gparents, gself, _, _, gearly, gstats) = gtree
         val early = gearly.toStats
-        val inits = ginits.map(_.toInit)
+        val inits = gparents.map(_.toInitFromGParent)
         val self = gself.toSelf
         val stats = gstats.toStats
         Template(early, inits, self, stats).copyAttrs(gtree)

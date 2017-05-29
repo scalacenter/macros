@@ -9,6 +9,13 @@ private[scala] trait Symbols { self: Universe =>
     def apply(id: String)(implicit m: Mirror): Symbol = abstracts.sym(id)
   }
 
+  implicit def symSyntaxInstance[T <: Symbol](implicit m: Mirror): Syntax[T] = {
+    Syntax((p, x) => abstracts.symSyntax(p, x))
+  }
+  implicit def symStructureInstance[T <: Symbol](implicit m: Mirror): Structure[T] = {
+    Structure((p, x) => abstracts.symStructure(p, x))
+  }
+
   implicit class XtensionSymbolsSymbol(protected val sym: Symbol)(implicit m0: Mirror)
       extends SymbolBasedOps
       with MemberBasedOps[Symbol]

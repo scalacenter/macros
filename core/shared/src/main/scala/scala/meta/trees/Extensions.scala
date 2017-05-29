@@ -11,8 +11,8 @@ private[scala] trait Extensions extends Gensym with TreeSyntax with TreeStructur
 
   implicit class XtensionTreesTree(tree: Tree) extends Prettyprinted {
     def pos: Position = abstracts.treePos(tree)
-    protected def syntax(p: Prettyprinter): Unit = treeSyntax(p, tree)
-    protected def structure(p: Prettyprinter): Unit = treeStructure(p, tree)
+    protected def syntax(p: Prettyprinter): Unit = treeSyntax.render(p, tree)
+    protected def structure(p: Prettyprinter): Unit = treeStructure.render(p, tree)
   }
 
   implicit class XtensionTreesName(name: Name) {

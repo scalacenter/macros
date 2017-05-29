@@ -123,11 +123,11 @@ private[scala] trait Trees extends Abstracts with Companions with Extensions { s
     def Typed = abstracts.PatTyped
   }
 
-  type Member >: Null <: Tree // Member.name
+  type Member >: Null <: Tree
   val Member: MemberCompanion = new MemberCompanion {}
   private[scala] trait MemberCompanion {
-    type Term >: Null <: Member // Member.Term.name
-    type Type >: Null <: Member // Member.Type.name
+    type Term >: Null <: Member
+    type Type >: Null <: Member
   }
 
   type Decl >: Null <: Stat

@@ -6,7 +6,7 @@ import scala.meta.trees.Trees
 
 trait TreeStructure { self: Trees =>
 
-  protected def treeStructure(p: Prettyprinter, tree: Tree): Unit = {
+  private[scala] implicit def treeStructure[T <: Tree]: Structure[T] = Structure { (p, tree) =>
     // TODO: implement this
     ???
   }
