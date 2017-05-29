@@ -24,9 +24,7 @@ trait Definitions { self: ReflectToolkit =>
 
     private lazy val InlineMetadata = getClassIfDefined("scala.macros.internal.inlineMetadata")
     private def inlineMetadata(args: List[Tree]): Option[inlineMetadata] = args match {
-      case List(
-          Literal(Constant(coreVersion: String)),
-          Literal(Constant(engineVersion: String))) =>
+      case List(Literal(Constant(coreVersion: String)), Literal(Constant(engineVersion: String))) =>
         Some(new inlineMetadata(coreVersion, engineVersion))
       case _ =>
         None

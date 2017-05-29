@@ -434,8 +434,8 @@ private[scala] trait Companions { self: Universe =>
           tparams: List[Type.Param],
           paramss: List[List[Term.Param]],
           decltpe: Type): Decl.Def
-      def unapply(tree: Any)
-        : Option[(List[Mod], Term.Name, List[Type.Param], List[List[Term.Param]], Type)]
+      def unapply(
+          tree: Any): Option[(List[Mod], Term.Name, List[Type.Param], List[List[Term.Param]], Type)]
     }
 
     trait DeclTypeCompanion {

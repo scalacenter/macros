@@ -645,8 +645,7 @@ trait Abstracts extends scala.macros.trees.Abstracts with Positions { self: Univ
           paramss: List[List[Term.Param]],
           init: Init,
           stats: List[Stat]): Ctor.Secondary = ???
-      def unapply(
-          gtree: Any): Option[(List[Mod], Name, List[List[Term.Param]], Init, List[Stat])] =
+      def unapply(gtree: Any): Option[(List[Mod], Name, List[List[Term.Param]], Init, List[Stat])] =
         ???
     }
 
@@ -727,12 +726,8 @@ trait Abstracts extends scala.macros.trees.Abstracts with Positions { self: Univ
 
     // NOTE: Mostly copy/pasted from ReificationSupport.scala.
     protected object UnMkTemplate {
-      def unapply(gtree: g.Template): Option[(List[g.Tree],
-                                              g.ValDef,
-                                              g.Modifiers,
-                                              List[List[g.ValDef]],
-                                              List[g.Tree],
-                                              List[g.Tree])] = {
+      def unapply(gtree: g.Template): Option[
+        (List[g.Tree], g.ValDef, g.Modifiers, List[List[g.ValDef]], List[g.Tree], List[g.Tree])] = {
         val g.Template(parents, selfType, tbody) = gtree
 
         def result(
