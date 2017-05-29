@@ -69,8 +69,8 @@ trait Abstracts extends scala.macros.trees.Abstracts with Positions { self: Univ
     }
 
     object LitUnit extends LitUnitCompanion {
-      def apply(value: Unit): Lit = ???
-      def unapply(gtree: Any): Option[Unit] = ???
+      def apply(): Lit = ???
+      def unapply(gtree: Any): Boolean = ???
     }
 
     object LitBoolean extends LitBooleanCompanion {
@@ -124,8 +124,8 @@ trait Abstracts extends scala.macros.trees.Abstracts with Positions { self: Univ
     }
 
     object LitNull extends LitNullCompanion {
-      def apply(value: Any): Lit = ???
-      def unapply(gtree: Any): Option[Any] = ???
+      def apply(): Lit = ???
+      def unapply(gtree: Any): Boolean = ???
     }
 
     object TermThis extends TermThisCompanion {

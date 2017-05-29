@@ -15,8 +15,8 @@ private[scala] trait Companions { self: Universe =>
     }
 
     trait LitUnitCompanion {
-      def apply(value: Unit): Lit
-      def unapply(tree: Any): Option[Unit]
+      def apply(): Lit
+      def unapply(tree: Any): Boolean
     }
 
     trait LitBooleanCompanion {
@@ -70,8 +70,8 @@ private[scala] trait Companions { self: Universe =>
     }
 
     trait LitNullCompanion {
-      def apply(value: Any): Lit
-      def unapply(tree: Any): Option[Any]
+      def apply(): Lit
+      def unapply(tree: Any): Boolean
     }
 
     trait TermThisCompanion {
