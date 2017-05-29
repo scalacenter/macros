@@ -267,11 +267,19 @@ abstract class SyntaxAnalyzer extends NscSyntaxAnalyzer with ReflectToolkit {
             val name3 = unit.freshTermName("dialect$")
             atPos(tree.pos)(ValDef(Modifiers(Flags.IMPLICIT), name3, MacrosDialect, EmptyTree))
           }
+          val mirrorParam3 = {
+            val name3 = unit.freshTermName("mirror$")
+            atPos(tree.pos)(ValDef(Modifiers(Flags.IMPLICIT), name3, MacrosMirror, EmptyTree))
+          }
           val expansionParam3 = {
             val name3 = unit.freshTermName("expansion$")
             atPos(tree.pos)(ValDef(Modifiers(Flags.IMPLICIT), name3, MacrosExpansion, EmptyTree))
           }
-          List(List(thisParam3) ++ vvparams3 ++ vtparams3, List(dialectParam3, expansionParam3))
+          val vcapabilities3 = {
+            if (isMacroAnnotation) List(dialectParam3, expansionParam3)
+            else List(dialectParam3, mirrorParam3, expansionParam3)
+          }
+          List(List(thisParam3) ++ vvparams3 ++ vtparams3, vcapabilities3)
         }
         val tpt3 = if (isMacroAnnotation) MacrosStat else MacrosTerm
         val rhs3 = rhs match {
@@ -370,7 +378,12 @@ abstract class SyntaxAnalyzer extends NscSyntaxAnalyzer with ReflectToolkit {
       }
       val otherArgNames = otherArgDefs.map(_.name)
       val dialectArgName = unit.freshTermName("dialect$")
+      val mirrorArgName = unit.freshTermName("mirror$")
       val expansionArgName = unit.freshTermName("expansion$")
+      val capabilityArgNames = {
+        if (isMacroAnnotation) List(dialectArgName, expansionArgName)
+        else List(dialectArgName, mirrorArgName, expansionArgName)
+      }
       val implName = name.inlineImplName
       q"""
         var foundEngine = "old-style " + _root_.scala.util.Properties.versionNumberString
@@ -426,13 +439,19 @@ abstract class SyntaxAnalyzer extends NscSyntaxAnalyzer with ReflectToolkit {
           }
           ..$otherArgDefs
           val $dialectArgName = _root_.scala.macros.Dialect.current
+          val ScalacMirror = "scala.macros.internal.engines.scalac.semantic.Mirror"
+          val $mirrorArgName = {
+            val $mirrorArgName = invokeEngineMethod(ScalacMirror, "apply", $cName)
+            try $mirrorArgName.asInstanceOf[_root_.scala.macros.Mirror]
+            catch { case ex: _root_.java.lang.ClassCastException => failMacroEngine(ex) }
+          }
           val ScalacExpansion = "scala.macros.internal.engines.scalac.Expansion"
           val $expansionArgName = {
             val $expansionArgName = invokeEngineMethod(ScalacExpansion, "apply", $cName)
             try $expansionArgName.asInstanceOf[_root_.scala.macros.Expansion]
             catch { case ex: _root_.java.lang.ClassCastException => failMacroEngine(ex) }
           }
-          val result = $implName($thisArgName, ..$otherArgNames)($dialectArgName, $expansionArgName)
+          val result = $implName($thisArgName, ..$otherArgNames)(..$capabilityArgNames)
           $cName.Expr[_root_.scala.Nothing](result.asInstanceOf[$cName.Tree])
         }
       """

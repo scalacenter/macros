@@ -10,6 +10,6 @@ case class Universe(val g: Global)
     with Semantic
     with Trees
     with Expansions {
-  type Abstracts = TreeAbstracts with SemanticAbstracts with ExpansionAbstracts
-  object abstracts extends TreeAbstracts with SemanticAbstracts with ExpansionAbstracts
+  type Abstracts = TreeAbstracts with MirrorAbstracts with ExpansionAbstracts
+  object abstracts extends TreeAbstracts with MirrorAbstracts with ExpansionAbstracts
 }

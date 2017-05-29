@@ -2,10 +2,13 @@ package scala.macros.internal
 package engines.scalac
 package semantic
 
+import scala.reflect.macros.contexts.Context
 import scala.meta.internal.prettyprinters._
 
 trait Abstracts extends scala.macros.semantic.Mirrors { self: Universe =>
-  trait SemanticAbstracts extends super.SemanticAbstracts {
+  case class Mirror(c: Context)
+
+  trait MirrorAbstracts extends super.MirrorAbstracts {
     def refDenot(ref: Ref)(implicit m: Mirror): Denotation = {
       ???
     }
