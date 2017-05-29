@@ -20,5 +20,8 @@ package object macros
     with scala.macros.Universe {
 
   private[scala] val universe = new ThreadLocal[scala.macros.Universe]
-  private[scala] def abstracts = universe.get.abstracts.asInstanceOf[Abstracts]
+  private[scala] def abstracts = {
+    if (universe.get == null) sys.error("this API can only be called in a macro expansion")
+    universe.get.abstracts.asInstanceOf[Abstracts]
+  }
 }
