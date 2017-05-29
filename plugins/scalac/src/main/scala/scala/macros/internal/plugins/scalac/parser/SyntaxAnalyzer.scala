@@ -37,7 +37,7 @@ abstract class SyntaxAnalyzer extends NscSyntaxAnalyzer with ReflectToolkit {
       isInline && skippingModifiers(in.token == DEF)
     }
     private def skippingModifiers[T](op: => T): T = {
-      lookingAhead(if (isModifier) lookingAhead(skippingModifiers(op)) else op)
+      lookingAhead(if (isModifier) skippingModifiers(op) else op)
     }
     override def isExprIntroToken(token: Token) = !isInlineDef && super.isExprIntroToken(token)
     override def isDclIntro: Boolean = isInlineDef || super.isDclIntro
@@ -181,8 +181,8 @@ abstract class SyntaxAnalyzer extends NscSyntaxAnalyzer with ReflectToolkit {
           }
           val vparamss1 = {
             val param = vparamss.flatten.headOption.getOrElse(tree)
-            val tpt = repeatedApplication(scalaDot(TypeName("Any")))
-            val param1 = ValDef(Modifiers(Flags.PARAM), TermName("annottees"), tpt, EmptyTree)
+            val tpt1 = repeatedApplication(scalaDot(TypeName("Any")))
+            val param1 = ValDef(Modifiers(Flags.PARAM), TermName("annottees"), tpt1, EmptyTree)
             List(List(atPos(param.pos)(param1)))
           }
           val tpt1 = tpt // NOTE: intentionally not duplicated
@@ -200,80 +200,85 @@ abstract class SyntaxAnalyzer extends NscSyntaxAnalyzer with ReflectToolkit {
         val mods2 = NoMods
         val name2 = name.inlineShimName
         val tparams2 = tparams.map(_.duplicate)
-        val cname = unit.freshTermName("c$")
-        def cExprOf(tpt: Tree): Tree = atPos(tpt.pos) {
-          tpt match {
-            case AppliedTypeTree(fun @ Select(_, tpnme.REPEATED_PARAM_CLASS_NAME), List(tpt)) =>
-              AppliedTypeTree(fun, List(cExprOf(tpt)))
+        val cname2 = unit.freshTermName("c$")
+        def cExprOf(tpt2: Tree): Tree = atPos(tpt2.pos) {
+          tpt2 match {
+            case AppliedTypeTree(fun2 @ Select(_, tpnme.REPEATED_PARAM_CLASS_NAME), List(tpt2)) =>
+              AppliedTypeTree(fun2, List(cExprOf(tpt2)))
             case _ =>
-              AppliedTypeTree(Select(Ident(cname), TypeName("Expr")), List(tpt))
+              AppliedTypeTree(Select(Ident(cname2), TypeName("Expr")), List(tpt2))
           }
         }
-        def cWeakTypeTagOf(tpt: Tree): Tree = atPos(tpt.pos) {
-          AppliedTypeTree(Select(Ident(cname), TypeName("WeakTypeTag")), List(tpt))
+        def cWeakTypeTagOf(tpt2: Tree): Tree = atPos(tpt2.pos) {
+          AppliedTypeTree(Select(Ident(cname2), TypeName("WeakTypeTag")), List(tpt2))
         }
         val (vparamss2, rhs2) = {
-          val c = atPos(tree.pos)(ValDef(Modifiers(Flags.PARAM), cname, ReflectContext, EmptyTree))
-          val vvparamss = {
+          val c2 = {
+            atPos(tree.pos)(ValDef(Modifiers(Flags.PARAM), cname2, ReflectContext, EmptyTree))
+          }
+          val vvparamss2 = {
             if (isMacroAnnotation) {
               val param = vparamss.flatten.headOption.getOrElse(tree)
-              val tpt = cExprOf(repeatedApplication(scalaDot(TypeName("Any"))))
-              val param1 = ValDef(Modifiers(Flags.PARAM), TermName("annottees"), tpt, EmptyTree)
-              List(List(atPos(param.pos)(param1)))
+              val tpt2 = cExprOf(repeatedApplication(scalaDot(TypeName("Any"))))
+              val param2 = ValDef(Modifiers(Flags.PARAM), TermName("annottees"), tpt2, EmptyTree)
+              List(List(atPos(param.pos)(param2)))
             } else {
-              vparamss.map(_.map(p => copyValDef(p)(tpt = cExprOf(tpt))))
+              vparamss.map(_.map(p => copyValDef(p)(tpt = cExprOf(p.tpt.duplicate))))
             }
           }
-          val vtparamss = {
+          val vtparamss2 = {
             if (tparams.isEmpty) Nil
             else {
               List(tparams.map({
                 case tparam @ TypeDef(_, name, _, _) =>
-                  val vtparamName = TermName("typetag$" + name)
-                  val vtparamTpt = cWeakTypeTagOf(Ident(name))
-                  val vtparam =
-                    ValDef(Modifiers(Flags.IMPLICIT), vtparamName, vtparamTpt, EmptyTree)
-                  atPos(tparam.pos)(vtparam)
+                  val vtparamName2 = TermName("typetag$" + name)
+                  val vtparamTpt2 = cWeakTypeTagOf(Ident(name))
+                  val vtparam2 =
+                    ValDef(Modifiers(Flags.IMPLICIT), vtparamName2, vtparamTpt2, EmptyTree)
+                  atPos(tparam.pos)(vtparam2)
               }))
             }
           }
-          val vparamss2 = List(List(c)) ++ vvparamss ++ vtparamss
-          val rhs2 = shimRhs(name, c, vvparamss.flatten, vtparamss.flatten, isMacroAnnotation)
+          val vparamss2 = List(List(c2)) ++ vvparamss2 ++ vtparamss2
+          val rhs2 = shimRhs(name, c2, vvparamss2.flatten, vtparamss2.flatten, isMacroAnnotation)
           (vparamss2, atPos(rhs.pos)(rhs2))
         }
-        val tpt2 = cExprOf(scalaDot(TypeName("Any")))
+        val tpt2 = {
+          if (isMacroAnnotation) cExprOf(scalaDot(TypeName("Any")))
+          else cExprOf(tpt.duplicate)
+        }
         DefDef(mods2, name2, tparams2, vparamss2, tpt2, rhs2)
       }
       val implDef = atPos(rhs.pos) {
         val mods3 = NoMods
         val name3 = name.inlineImplName
         val tparams3 = Nil
-        val thisParamName = unit.freshTermName("prefix$")
+        val thisParamName3 = unit.freshTermName("prefix$")
         val vparamss3 = {
-          val thisParam = atPos(tree.pos)(ValDef(NoMods, thisParamName, MacrosTerm, EmptyTree))
-          val vvparams = vparamss.flatten.map(p => {
-            val tpt = if (isMacroAnnotation) MacrosStat else MacrosTerm
-            atPos(p.pos)(ValDef(NoMods, p.name, tpt, EmptyTree))
+          val thisParam3 = atPos(tree.pos)(ValDef(NoMods, thisParamName3, MacrosTerm, EmptyTree))
+          val vvparams3 = vparamss.flatten.map(p => {
+            val tpt3 = if (isMacroAnnotation) MacrosStat else MacrosTerm
+            atPos(p.pos)(ValDef(NoMods, p.name, tpt3, EmptyTree))
           })
-          val vtparams = tparams.map(p => {
+          val vtparams3 = tparams.map(p => {
             atPos(p.pos)(ValDef(NoMods, p.name.toTermName, MacrosType, EmptyTree))
           })
-          val dialectParam = {
-            val name = unit.freshTermName("dialect$")
-            atPos(tree.pos)(ValDef(Modifiers(Flags.IMPLICIT), name, MacrosDialect, EmptyTree))
+          val dialectParam3 = {
+            val name3 = unit.freshTermName("dialect$")
+            atPos(tree.pos)(ValDef(Modifiers(Flags.IMPLICIT), name3, MacrosDialect, EmptyTree))
           }
-          val expansionParam = {
-            val name = unit.freshTermName("expansion$")
-            atPos(tree.pos)(ValDef(Modifiers(Flags.IMPLICIT), name, MacrosExpansion, EmptyTree))
+          val expansionParam3 = {
+            val name3 = unit.freshTermName("expansion$")
+            atPos(tree.pos)(ValDef(Modifiers(Flags.IMPLICIT), name3, MacrosExpansion, EmptyTree))
           }
-          List(List(thisParam) ++ vvparams ++ vtparams, List(dialectParam, expansionParam))
+          List(List(thisParam3) ++ vvparams3 ++ vtparams3, List(dialectParam3, expansionParam3))
         }
         val tpt3 = if (isMacroAnnotation) MacrosStat else MacrosTerm
         val rhs3 = rhs match {
           case Apply(Ident(TermName("meta")), List(block)) =>
             object transformer extends Transformer {
               override def transform(tree: Tree): Tree = tree match {
-                case This(tpnme.EMPTY) => atPos(tree.pos)(Ident(thisParamName))
+                case This(tpnme.EMPTY) => atPos(tree.pos)(Ident(thisParamName3))
                 case tree => super.transform(tree)
               }
             }
@@ -339,8 +344,11 @@ abstract class SyntaxAnalyzer extends NscSyntaxAnalyzer with ReflectToolkit {
             val argName = unit.freshTermName(vvparam.name.toString + "$")
             q"""
               val $argName = {
-                try ${vvparam.name}.tree.asInstanceOf[_root_.scala.macros.Term]
-                catch { case ex: _root_.java.lang.ClassCastException => failMacroEngine(ex) }
+                try {
+                  ${vvparam.name}.tree.asInstanceOf[_root_.scala.macros.Term]
+                } catch {
+                  case ex: _root_.java.lang.ClassCastException => failMacroEngine(ex)
+                }
               }
             """
           })
@@ -348,8 +356,12 @@ abstract class SyntaxAnalyzer extends NscSyntaxAnalyzer with ReflectToolkit {
             val argName = unit.freshTermName(vtparam.name.toString.stripSuffix("typetag$") + "$")
             q"""
               val $argName = {
-                try ${vtparam.name}.tpe.asInstanceOf[_root_.scala.macros.Type]
-                catch { case ex: _root_.java.lang.ClassCastException => failMacroEngine(ex) }
+                try {
+                  val tpt = $cName.universe.TypeTree(${vtparam.name}.tpe)
+                  tpt.asInstanceOf[_root_.scala.macros.Type]
+                } catch {
+                  case ex: _root_.java.lang.ClassCastException => failMacroEngine(ex)
+                }
               }
             """
           })
@@ -421,7 +433,7 @@ abstract class SyntaxAnalyzer extends NscSyntaxAnalyzer with ReflectToolkit {
             catch { case ex: _root_.java.lang.ClassCastException => failMacroEngine(ex) }
           }
           val result = $implName($thisArgName, ..$otherArgNames)($dialectArgName, $expansionArgName)
-          $cName.Expr[_root_.scala.Any](result.asInstanceOf[$cName.Tree])
+          $cName.Expr[_root_.scala.Nothing](result.asInstanceOf[$cName.Tree])
         }
       """
     }
