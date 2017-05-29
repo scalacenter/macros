@@ -1,3 +1,4 @@
+/* scalafmt: { maxColumn = 120 }*/
 package scala.meta
 package semantic
 
