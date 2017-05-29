@@ -4,37 +4,115 @@ package semantic
 
 import scala.meta.internal.prettyprinters._
 
-trait Abstracts extends scala.macros.semantic.Abstracts { self: Universe =>
+trait Abstracts extends scala.macros.semantic.Mirrors { self: Universe =>
   trait SemanticAbstracts extends super.SemanticAbstracts {
-    def refDenot(ref: Ref): Denotation = ???
-    def termTpe(term: Term): Type = ???
+    def refDenot(ref: Ref)(implicit m: Mirror): Denotation = {
+      ???
+    }
 
-    def symbol(id: String): Symbol = ???
-    def symbolSyntax(p: Prettyprinter, symbol: Symbol): Unit = ???
-    def symbolStructure(p: Prettyprinter, symbol: Symbol): Unit = ???
-    def symbolName(symbol: Symbol): Name = ???
-    def symbolFlags(symbol: Symbol): Long = ???
-    def symbolAnnots(symbol: Symbol): List[Init] = ???
-    def symbolWithin(symbol: Symbol): Symbol = ???
-    def symbolDenot(symbol: Symbol): Denotation = ???
-    def symbolDenot(symbol: Symbol, pre: Type): Denotation = ???
-    def symbolMembers(symbol: Symbol, f: Symbol => Boolean): List[Symbol] = ???
-    def symbolMembers(symbol: Symbol, name: String, f: Symbol => Boolean): List[Symbol] = ???
+    def termTpe(term: Term)(implicit m: Mirror): Type = {
+      ???
+    }
 
-    def denotSyntax(p: Prettyprinter, denot: Denotation): Unit = ???
-    def denotStructure(p: Prettyprinter, denot: Denotation): Unit = ???
-    def denotSymbol(denot: Denotation): Symbol = ???
-    def denotInfo(denot: Denotation): Type = ???
-    def denotMembers(denot: Denotation, f: Symbol => Boolean): List[Denotation] = ???
-    def denotMembers(denot: Denotation, name: String, f: Symbol => Boolean): List[Denotation] = ???
+    def sym(id: String)(implicit m: Mirror): Symbol = {
+      ???
+    }
 
-    def typeEqual(tpe1: Type, tpe2: Type): Boolean = ???
-    def typeSubtype(tpe1: Type, tpe2: Type): Boolean = ???
-    def typeWiden(tpe: Type): Type = ???
-    def typeNarrow(tpe: Type): Type = ???
-    def typeMembers(tpe: Type, f: Symbol => Boolean): List[Denotation] = ???
-    def typeMembers(tpe: Type, name: String, f: Symbol => Boolean): List[Denotation] = ???
-    def typeLub(tpes: List[Type]): Type = ???
-    def typeGlb(tpes: List[Type]): Type = ???
+    def symSyntax(p: Prettyprinter, sym: Symbol)(implicit m: Mirror): Unit = {
+      ???
+    }
+
+    def symStructure(p: Prettyprinter, sym: Symbol)(implicit m: Mirror): Unit = {
+      ???
+    }
+
+    def symName(sym: Symbol)(implicit m: Mirror): Name = {
+      ???
+    }
+
+    def symFlags(sym: Symbol)(implicit m: Mirror): Long = {
+      ???
+    }
+
+    def symAnnots(sym: Symbol)(implicit m: Mirror): List[Init] = {
+      ???
+    }
+
+    def symWithin(sym: Symbol)(implicit m: Mirror): Symbol = {
+      ???
+    }
+
+    def symDenot(sym: Symbol)(implicit m: Mirror): Denotation = {
+      ???
+    }
+
+    def symDenot(sym: Symbol, pre: Type)(implicit m: Mirror): Denotation = {
+      ???
+    }
+
+    def symMembers(sym: Symbol, f: SymFilter)(implicit m: Mirror): List[Symbol] = {
+      ???
+    }
+
+    def symMembers(sym: Symbol, name: String, f: SymFilter)(implicit m: Mirror): List[Symbol] = {
+      ???
+    }
+
+    def denotSyntax(p: Prettyprinter, denot: Denotation)(implicit m: Mirror): Unit = {
+      ???
+    }
+
+    def denotStructure(p: Prettyprinter, denot: Denotation)(implicit m: Mirror): Unit = {
+      ???
+    }
+
+    def denotSym(denot: Denotation)(implicit m: Mirror): Symbol = {
+      ???
+    }
+
+    def denotInfo(denot: Denotation)(implicit m: Mirror): Type = {
+      ???
+    }
+
+    def denotMembers(denot: Denotation, f: SymFilter)(implicit m: Mirror): List[Denotation] = {
+      ???
+    }
+
+    def denotMembers(denot: Denotation, name: String, f: SymFilter)(
+        implicit m: Mirror): List[Denotation] = {
+      ???
+    }
+
+    def typeEqual(tpe1: Type, tpe2: Type)(implicit m: Mirror): Boolean = {
+      ???
+    }
+
+    def typeSubtype(tpe1: Type, tpe2: Type)(implicit m: Mirror): Boolean = {
+      ???
+    }
+
+    def typeWiden(tpe: Type)(implicit m: Mirror): Type = {
+      ???
+    }
+
+    def typeNarrow(tpe: Type)(implicit m: Mirror): Type = {
+      ???
+    }
+
+    def typeMembers(tpe: Type, f: SymFilter)(implicit m: Mirror): List[Denotation] = {
+      ???
+    }
+
+    def typeMembers(tpe: Type, name: String, f: SymFilter)(implicit m: Mirror): List[Denotation] = {
+      ???
+    }
+
+    def typeLub(tpes: List[Type])(implicit m: Mirror): Type = {
+      ???
+    }
+
+    def typeGlb(tpes: List[Type])(implicit m: Mirror): Type = {
+      ???
+    }
   }
 }

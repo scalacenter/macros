@@ -9,9 +9,9 @@ trait Expansions extends scala.macros.Expansions with Positions { self: Universe
   case class Expansion(c: Context)
 
   trait ExpansionAbstracts extends super.ExpansionAbstracts {
-    def expandee(e: Expansion): Term = e.c.macroApplication.asInstanceOf[Term]
-    def abort(e: Expansion, pos: Position, msg: String): Nothing = e.c.abort(pos, msg)
-    def error(e: Expansion, pos: Position, msg: String): Unit = e.c.error(pos, msg)
-    def warning(e: Expansion, pos: Position, msg: String): Unit = e.c.warning(pos, msg)
+    def expandee(implicit e: Expansion): Term = e.c.macroApplication.asInstanceOf[Term]
+    def abort(pos: Position, msg: String)(implicit e: Expansion): Nothing = e.c.abort(pos, msg)
+    def error(pos: Position, msg: String)(implicit e: Expansion): Unit = e.c.error(pos, msg)
+    def warning(pos: Position, msg: String)(implicit e: Expansion): Unit = e.c.warning(pos, msg)
   }
 }

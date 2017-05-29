@@ -6,16 +6,17 @@ import scala.meta.internal.prettyprinters._
 private[scala] trait Symbols { self: Universe =>
   type Symbol >: Null <: AnyRef
   object Symbol {
-    def apply(id: String): Symbol = abstracts.symbol(id)
+    def apply(id: String)(implicit m: Mirror): Symbol = abstracts.sym(id)
   }
 
-  implicit class XtensionSymbolsSymbol(protected val symbol: Symbol)
+  implicit class XtensionSymbolsSymbol(protected val sym: Symbol)(implicit m0: Mirror)
       extends SymbolBasedOps
       with MemberBasedOps[Symbol]
       with Prettyprinted {
-    protected def syntax(p: Prettyprinter): Unit = abstracts.symbolSyntax(p, symbol)
-    protected def structure(p: Prettyprinter): Unit = abstracts.symbolStructure(p, symbol)
-    protected def members(f: SymbolFilter) = abstracts.symbolMembers(symbol, f)
-    protected def members(name: String, f: SymbolFilter) = abstracts.symbolMembers(symbol, name, f)
+    protected def m: Mirror = m0
+    protected def syntax(p: Prettyprinter): Unit = abstracts.symSyntax(p, sym)
+    protected def structure(p: Prettyprinter): Unit = abstracts.symStructure(p, sym)
+    protected def members(f: SymFilter) = abstracts.symMembers(sym, f)
+    protected def members(name: String, f: SymFilter) = abstracts.symMembers(sym, name, f)
   }
 }

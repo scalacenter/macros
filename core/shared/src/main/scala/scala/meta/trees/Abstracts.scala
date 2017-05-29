@@ -6,7 +6,6 @@ import scala.meta.inputs._
 private[scala] trait Abstracts { self: Universe =>
   import treeCompanions._
 
-  // NOTE: Check out Companions.scala to see why this is private.
   private[scala] def abstracts: TreeAbstracts
   private[scala] trait TreeAbstracts {
     def treePos(tree: Tree): Position
@@ -15,7 +14,6 @@ private[scala] trait Abstracts { self: Universe =>
     def litValue(lit: Lit): Any
     def litUnapply(tree: Any): Option[Any]
     def memberName(member: Member): Name
-
     def NameAnonymous: NameAnonymousCompanion
     def NameIndeterminate: NameIndeterminateCompanion
     def LitUnit: LitUnitCompanion

@@ -2,10 +2,6 @@ package scala.meta
 package trees
 
 private[scala] trait Companions { self: Universe =>
-  // NOTE: This is private to prevent `Companions` from showing up
-  // in a wildcard import from `scala.meta._`.
-  // Amazingly, we can have an enclosing object private,
-  // but then still use its members in a public API.
   private[scala] val treeCompanions: TreeCompanions = new TreeCompanions {}
   private[scala] trait TreeCompanions {
     trait NameAnonymousCompanion {
@@ -90,7 +86,7 @@ private[scala] trait Companions { self: Universe =>
 
     trait TermNameCompanion {
       def apply(value: String): Term.Name
-      def apply(symbol: Symbol): Term.Name
+      def apply(sym: Symbol): Term.Name
       def unapply(tree: Any): Option[String]
     }
 
@@ -250,7 +246,7 @@ private[scala] trait Companions { self: Universe =>
 
     trait TypeNameCompanion {
       def apply(value: String): Type.Name
-      def apply(symbol: Symbol): Type.Name
+      def apply(sym: Symbol): Type.Name
       def unapply(tree: Any): Option[String]
     }
 

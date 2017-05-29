@@ -3,14 +3,15 @@ package semantic
 
 private[scala] trait Operations { self: Universe =>
   private[scala] trait SymbolBasedOps extends FlagBasedOps {
-    protected def symbol: Symbol
-    protected def flags: Long = abstracts.symbolFlags(symbol)
-    def name: Name = abstracts.symbolName(symbol)
+    protected implicit def m: Mirror
+    protected def sym: Symbol
+    protected def flags: Long = abstracts.symFlags(sym)
+    def name: Name = abstracts.symName(sym)
     // NOTE: isXXX operations inherited from FlagBasedOps
-    def annots: List[Init] = abstracts.symbolAnnots(symbol)
-    def within: Symbol = abstracts.symbolWithin(symbol)
-    def denot: Denotation = abstracts.symbolDenot(symbol)
-    def denot(pre: Type): Denotation = abstracts.symbolDenot(symbol, pre)
+    def annots: List[Init] = abstracts.symAnnots(sym)
+    def within: Symbol = abstracts.symWithin(sym)
+    def denot: Denotation = abstracts.symDenot(sym)
+    def denot(pre: Type): Denotation = abstracts.symDenot(sym, pre)
   }
 
   private[scala] trait FlagBasedOps {
@@ -43,10 +44,11 @@ private[scala] trait Operations { self: Universe =>
     def isInline: Boolean = hasFlags(INLINE)
   }
 
+  private[scala] type SymFilter = Symbol => Boolean
   private[scala] trait MemberBasedOps[M] {
-    protected type SymbolFilter = Symbol => Boolean
-    protected def members(f: SymbolFilter): List[M]
-    protected def members(name: String, f: SymbolFilter): List[M]
+    protected implicit def m: Mirror
+    protected def members(f: SymFilter): List[M]
+    protected def members(name: String, f: SymFilter): List[M]
     def members: List[M] = members(sym => true)
     def members(name: String): List[M] = members(name, sym => true)
     def vals: List[M] = members(sym => sym.isVal)

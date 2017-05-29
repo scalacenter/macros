@@ -2,33 +2,37 @@ package scala.meta
 package semantic
 
 private[scala] trait Semantic
-    extends Abstracts
-    with Denotations
+    extends Denotations
     with Flags
+    with Mirrors
     with Symbols
     with Operations
     with Types { self: Universe =>
 
-  implicit class XtensionSemanticRef(ref: Ref) extends SymbolBasedOps {
-    def symbol: Symbol = ref.denot.symbol
+  implicit class XtensionSemanticRef(ref: Ref)(implicit protected val m: Mirror)
+      extends SymbolBasedOps {
+    def sym: Symbol = ref.denot.sym
     override def denot: Denotation = abstracts.refDenot(ref)
   }
 
-  implicit class XtensionSemanticMem(member: Member) extends SymbolBasedOps {
+  implicit class XtensionSemanticMember(member: Member)(implicit protected val m: Mirror)
+      extends SymbolBasedOps {
     override def name: Name = abstracts.memberName(member)
-    def symbol: Symbol = name.symbol
+    def sym: Symbol = name.sym
     override def denot: Denotation = name.denot
   }
 
-  implicit class XtensionSemanticMemTerm(member: Member.Term) extends XtensionSemanticMem(member) {
+  implicit class XtensionSemanticMemberTerm(member: Member.Term)(implicit m: Mirror)
+      extends XtensionSemanticMember(member) {
     override def name: Term.Name = super.name.asInstanceOf[Term.Name]
   }
 
-  implicit class XtensionSemanticMemType(member: Member.Term) extends XtensionSemanticMem(member) {
+  implicit class XtensionSemanticMemberType(member: Member.Term)(implicit m: Mirror)
+      extends XtensionSemanticMember(member) {
     override def name: Type.Name = super.name.asInstanceOf[Type.Name]
   }
 
-  implicit class XtensionSemanticTerm(term: Term) {
+  implicit class XtensionSemanticTerm(term: Term)(implicit m: Mirror) {
     def tpe: Type = abstracts.termTpe(term)
   }
 }
