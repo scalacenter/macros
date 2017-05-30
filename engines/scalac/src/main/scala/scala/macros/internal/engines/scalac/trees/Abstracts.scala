@@ -479,7 +479,7 @@ trait Abstracts extends scala.macros.trees.Abstracts with Positions { self: Univ
     }
 
     object PatBind extends PatBindCompanion {
-      def apply(lhs: Pat, rhs: Pat): Pat = ???
+      def apply(lhs: Pat, rhs: Pat): Pat = ??? // TODO: auto-promote Term.Name in lhs
       def unapply(gtree: Any): Option[(Pat, Pat)] = ???
     }
 
@@ -514,7 +514,7 @@ trait Abstracts extends scala.macros.trees.Abstracts with Positions { self: Univ
     }
 
     object PatTyped extends PatTypedCompanion {
-      def apply(lhs: Pat, rhs: Type): Pat = ???
+      def apply(lhs: Pat, rhs: Type): Pat = ??? // TODO: auto-promote Term.Name in lhs
       def unapply(gtree: Any): Option[(Pat, Type)] = ???
     }
 
@@ -551,6 +551,8 @@ trait Abstracts extends scala.macros.trees.Abstracts with Positions { self: Univ
     object DefnVal extends DefnValCompanion {
       def apply(mods: List[Mod], pats: List[Pat], decltpe: Option[Type], rhs: Term): Defn.Val = {
         pats match {
+          case List(name @ g.Ident(_: g.TermName)) =>
+            apply(mods, List(Pat.Var(name.toTermName).setPos(name.pos)), decltpe, rhs)
           case List(Pat.Var(name)) =>
             g.ValDef(mods.toGModifiers, name.toGTermName, decltpe.getOrElse(g.TypeTree()), rhs)
           case _ =>
@@ -565,7 +567,7 @@ trait Abstracts extends scala.macros.trees.Abstracts with Positions { self: Univ
           mods: List[Mod],
           pats: List[Pat],
           decltpe: Option[Type],
-          rhs: Option[Term]): Defn.Var = ???
+          rhs: Option[Term]): Defn.Var = ??? // TODO: auto-promote Term.Name in lhs
       def unapply(gtree: Any): Option[(List[Mod], List[Pat], Option[Type], Option[Term])] = ???
     }
 
