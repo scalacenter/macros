@@ -15,7 +15,13 @@ trait AnalyzerPlugins extends ReflectToolkit {
   import analyzer.{MacroPlugin => _, _}
 
   object MacroPlugin extends analyzer.MacroPlugin {
-    private class PluginMacroRuntimeResolver(sym: Symbol) extends MacroRuntimeResolver(sym) {
+    private lazy val pluginMacroClassloader: ClassLoader = {
+      val classpath = global.classPath.asURLs
+      macroLogVerbose("macro classloader: initializing from -cp: %s".format(classpath))
+      ScalaClassLoader.fromURLs(classpath, this.getClass.getClassLoader)
+    }
+
+    private class PluginRuntimeResolver(sym: Symbol) extends MacroRuntimeResolver(sym) {
       override def resolveJavaReflectionRuntime(defaultClassLoader: ClassLoader): MacroRuntime = {
         // NOTE: defaultClassLoader only includes libraryClasspath + toolClasspath.
         // We need to include pluginClasspath, so that the inline shim can instantiate
@@ -24,14 +30,8 @@ trait AnalyzerPlugins extends ReflectToolkit {
       }
     }
 
-    private lazy val pluginMacroClassloader: ClassLoader = {
-      val classpath = global.classPath.asURLs
-      macroLogVerbose("macro classloader: initializing from -cp: %s".format(classpath))
-      ScalaClassLoader.fromURLs(classpath, this.getClass.getClassLoader)
-    }
-
-    private val pluginMacroRuntimesCache = perRunCaches.newWeakMap[Symbol, MacroRuntime]
-    override def pluginsMacroRuntime(expandee: Tree): Option[MacroRuntime] = {
+    private val inlineRuntimesCache = perRunCaches.newWeakMap[Symbol, MacroRuntime]
+    private def inlineRuntime(expandee: Tree): Option[MacroRuntime] = {
       def ensureCompatible(
           found: Version,
           required: Option[Version],
@@ -53,21 +53,31 @@ trait AnalyzerPlugins extends ReflectToolkit {
         }
         compatible
       }
-      val macroDef = expandee.symbol
-      macroDef.inlineMetadata.flatMap {
-        case metadata: inlineMetadata =>
-          val requiredCoreVersion = Version.parse(metadata.coreVersion)
-          val requiredEngineVersion = Version.parse(metadata.engineVersion)
-          val ok1 = ensureCompatible(foundCoreVersion, requiredCoreVersion, BadCoreVersion)
-          val ok2 = ensureCompatible(foundEngineVersion, requiredEngineVersion, BadEngineVersion)
-          if (ok1 && ok2) {
-            macroLogVerbose(s"looking for macro implementation: $macroDef")
-            def mkResolver = new PluginMacroRuntimeResolver(macroDef).resolveRuntime()
-            Some(pluginMacroRuntimesCache.getOrElseUpdate(macroDef, mkResolver))
-          } else {
-            None
-          }
+      val metadata = expandee.symbol.inlineMetadata.get
+      val requiredCoreVersion = Version.parse(metadata.coreVersion)
+      val requiredEngineVersion = Version.parse(metadata.engineVersion)
+      val ok1 = ensureCompatible(foundCoreVersion, requiredCoreVersion, BadCoreVersion)
+      val ok2 = ensureCompatible(foundEngineVersion, requiredEngineVersion, BadEngineVersion)
+      if (ok1 && ok2) {
+        macroLogVerbose(s"looking for macro implementation: ${expandee.symbol}")
+        def mkResolver = new PluginRuntimeResolver(expandee.symbol).resolveRuntime()
+        Some(inlineRuntimesCache.getOrElseUpdate(expandee.symbol, mkResolver))
+      } else {
+        None
       }
+    }
+
+    private val quasiquoteRuntimesCache = perRunCaches.newWeakMap[Symbol, MacroRuntime]
+    private def quasiquoteRuntime(expandee: Tree): Option[MacroRuntime] = {
+      macroLogVerbose(s"looking for macro implementation: ${expandee.symbol}")
+      def mkResolver = new PluginRuntimeResolver(expandee.symbol).resolveRuntime()
+      Some(quasiquoteRuntimesCache.getOrElseUpdate(expandee.symbol, mkResolver))
+    }
+
+    override def pluginsMacroRuntime(expandee: Tree): Option[MacroRuntime] = {
+      if (expandee.symbol.inlineMetadata.nonEmpty) inlineRuntime(expandee)
+      else if (QuasiquoteMethods.contains(expandee.symbol)) quasiquoteRuntime(expandee)
+      else None
     }
   }
 }

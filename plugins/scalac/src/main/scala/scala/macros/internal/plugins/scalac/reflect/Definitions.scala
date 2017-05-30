@@ -2,13 +2,19 @@ package scala.macros.internal
 package plugins.scalac
 package reflect
 
+import scala.reflect.classTag
+import scala.reflect.internal.Flags._
+import scala.tools.nsc.typechecker.Fingerprint._
+import scala.tools.reflect.FastTrack
 import scala.macros.internal.config.engineVersion
 import scala.macros.internal.inlineMetadata
+import scala.macros.internal.plugins.scalac.quasiquotes.Macros
 import scala.macros.{scalaVersion, coreVersion}
 import scala.macros.Version
 
 trait Definitions { self: ReflectToolkit =>
   import global._
+  import analyzer._
   import definitions._
   import rootMirror._
   import treeBuilder._
@@ -90,5 +96,39 @@ trait Definitions { self: ReflectToolkit =>
     lazy val MacrosDialect: Tree = apiRef("Dialect")
     lazy val MacrosMirror: Tree = apiRef("Mirror")
     lazy val MacrosExpansion: Tree = apiRef("Expansion")
+
+    private def quasiquoteMethods(name: String): List[Symbol] = {
+      val macrosPackage = getModuleIfDefined("scala.macros.package")
+      val xtensionQuasiquotes = macrosPackage.info.member(TypeName("XtensionQuasiquotes"))
+      val interpolators = xtensionQuasiquotes.info.decls.filter(_.isModule).toList
+      val methods = interpolators.map(_.info.member(TermName(name)))
+      methods.filter(_.exists).distinct
+    }
+    lazy val QuasiquoteApplies: List[Symbol] = quasiquoteMethods("apply")
+    lazy val QuasiquoteUnapplies: List[Symbol] = quasiquoteMethods("unapply")
+    lazy val QuasiquoteMethods: List[Symbol] = QuasiquoteApplies ++ QuasiquoteUnapplies
+
+    def init(): Unit = {
+      QuasiquoteMethods.foreach(sym => {
+        sym.initialize
+        if (!sym.hasFlag(MACRO)) {
+          sym.setFlag(MACRO)
+          val pickle = {
+            import MacroImplBinding._
+            val nucleus = Ident(newTermName("macro"))
+            val payload = List[(String, Any)](
+              "macroEngine" -> macroEngine,
+              "isBundle" -> false,
+              "isBlackbox" -> false,
+              "className" -> classTag[Macros.type].runtimeClass.getName,
+              "methodName" -> sym.name.toString,
+              "signature" -> List(List(Other), List(LiftedUntyped))
+            )
+            Apply(nucleus, payload.map({ case (k, v) => Assign(pickleAtom(k), pickleAtom(v)) }))
+          }
+          sym.addAnnotation(AnnotationInfo(MacroImplAnnotation.tpe, List(pickle), Nil))
+        }
+      })
+    }
   }
 }

@@ -17,4 +17,5 @@ class Plugin(val global: Global)
   val components = Nil
   hijackSyntaxAnalyzer()
   global.analyzer.addMacroPlugin(MacroPlugin)
+  pluginDefinitions.init()
 }

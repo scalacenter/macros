@@ -7,24 +7,24 @@ import scala.macros.internal.trees.Errors
 private[scala] trait Quasiquotes { self: Universe =>
   // NOTE: These are just stubs that must be taken care of by engines.
   implicit class XtensionQuasiquotes(val sc: StringContext) {
-    trait QuasiquoteSignature {
+    trait InterpolatorSignature {
       @compileTimeOnly(Errors.QuasiquotesRequireCompilerSupport)
-      def apply(args: Any*): Tree = ???
+      def apply[T](args: T*): Tree = ???
       @compileTimeOnly(Errors.QuasiquotesRequireCompilerSupport)
       def unapply(tree: Tree): Any = ???
     }
-    object q extends QuasiquoteSignature
-    object param extends QuasiquoteSignature
-    object t extends QuasiquoteSignature
-    object tparam extends QuasiquoteSignature
-    object p extends QuasiquoteSignature
-    object init extends QuasiquoteSignature
-    object self extends QuasiquoteSignature
-    object template extends QuasiquoteSignature
-    object mod extends QuasiquoteSignature
-    object enumerator extends QuasiquoteSignature
-    object importer extends QuasiquoteSignature
-    object importee extends QuasiquoteSignature
-    object source extends QuasiquoteSignature
+    object q extends InterpolatorSignature
+    object param extends InterpolatorSignature
+    object t extends InterpolatorSignature
+    object tparam extends InterpolatorSignature
+    object p extends InterpolatorSignature
+    object init extends InterpolatorSignature
+    object self extends InterpolatorSignature
+    object template extends InterpolatorSignature
+    object mod extends InterpolatorSignature
+    object enumerator extends InterpolatorSignature
+    object importer extends InterpolatorSignature
+    object importee extends InterpolatorSignature
+    object source extends InterpolatorSignature
   }
 }

@@ -31,3 +31,4 @@ repos.tar.gz
 .settings
 .cache*
 .project
+*.jar
