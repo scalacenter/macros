@@ -5,6 +5,7 @@ package quasiquotes
 import scala.language.implicitConversions
 import scala.reflect.macros.whitebox.Context
 import scala.meta.internal.parsers.Absolutize._
+import scala.meta.internal.trees.Quasi
 import scala.{meta => m}
 
 class Macros(val c: Context) {
@@ -15,7 +16,7 @@ class Macros(val c: Context) {
   def apply(args: g.Tree*): g.Tree = expand
   def unapply(tree: g.Tree): g.Tree = expand
 
-  case class Hole(name: g.TermName, arg: g.Tree)
+  case class Hole(name: g.TermName, arg: g.Tree) { def pos = arg.pos }
   sealed trait Mode {
     def isTerm: Boolean = this.isInstanceOf[Mode.Term]
     def isPattern: Boolean = this.isInstanceOf[Mode.Pattern]
@@ -147,7 +148,13 @@ class Macros(val c: Context) {
       val reifiedArgs = args.map(reify)
       g.Apply(reifiedFqn, reifiedArgs)
     }
+    def unquote(quasi: m.Tree): g.Tree = {
+      val pos = quasi.pos.absolutize
+      val hole = mode.holes.find(h => pos.start <= h.pos.point && h.pos.point <= pos.end).get
+      hole.arg
+    }
     def reify(x: Any): g.Tree = x match {
+      case x: Quasi => unquote(x)
       case x: m.Tree => apply("scala.macros." + x.productPrefix, x.productIterator.toList)
       case Nil => path("scala.Nil")
       case xs: List[_] => apply("scala.List", xs)

@@ -122,7 +122,7 @@ trait Definitions { self: ReflectToolkit =>
               "isBlackbox" -> false,
               "className" -> classTag[Macros].runtimeClass.getName,
               "methodName" -> sym.name.toString,
-              "signature" -> List(List(Other), List(LiftedUntyped))
+              "signature" -> List(List(LiftedUntyped))
             )
             Apply(nucleus, payload.map({ case (k, v) => Assign(pickleAtom(k), pickleAtom(v)) }))
           }

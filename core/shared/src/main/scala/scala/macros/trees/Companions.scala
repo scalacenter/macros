@@ -116,8 +116,8 @@ private[macros] trait Companions { self: Universe =>
     }
 
     trait TermApplyInfixCompanion {
-      def apply(lhs: Term, op: Name, targs: List[Type], args: List[Term]): Term
-      def unapply(tree: Any): Option[(Term, Name, List[Type], List[Term])]
+      def apply(lhs: Term, op: Term.Name, targs: List[Type], args: List[Term]): Term
+      def unapply(tree: Any): Option[(Term, Term.Name, List[Type], List[Term])]
     }
 
     trait TermApplyUnaryCompanion {
@@ -271,8 +271,8 @@ private[macros] trait Companions { self: Universe =>
     }
 
     trait TypeApplyInfixCompanion {
-      def apply(lhs: Type, op: Name, rhs: Type): Type
-      def unapply(tree: Any): Option[(Type, Name, Type)]
+      def apply(lhs: Type, op: Type.Name, rhs: Type): Type
+      def unapply(tree: Any): Option[(Type, Type.Name, Type)]
     }
 
     trait TypeFunctionCompanion {

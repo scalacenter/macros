@@ -185,8 +185,17 @@ trait Abstracts extends scala.macros.trees.Abstracts with Positions { self: Univ
     }
 
     object TermApplyInfix extends TermApplyInfixCompanion {
-      def apply(lhs: Term, op: Name, targs: List[Type], args: List[Term]): Term = ???
-      def unapply(gtree: Any): Option[(Term, Name, List[Type], List[Term])] = ???
+      def apply(lhs: Term, op: Term.Name, targs: List[Type], args: List[Term]): Term = {
+        val isLeftAssoc = !op.value.endsWith(":")
+        if (isLeftAssoc) {
+          var method: g.Tree = g.Select(lhs, op.toGTermName).setPos(op.pos)
+          if (targs.nonEmpty) method = g.TypeApply(method, targs).setPos(op.pos)
+          g.Apply(method, args)
+        } else {
+          ???
+        }
+      }
+      def unapply(gtree: Any): Option[(Term, Term.Name, List[Type], List[Term])] = ???
     }
 
     object TermApplyUnary extends TermApplyUnaryCompanion {
@@ -359,8 +368,8 @@ trait Abstracts extends scala.macros.trees.Abstracts with Positions { self: Univ
     }
 
     object TypeApplyInfix extends TypeApplyInfixCompanion {
-      def apply(lhs: Type, op: Name, rhs: Type): Type = ???
-      def unapply(gtree: Any): Option[(Type, Name, Type)] = ???
+      def apply(lhs: Type, op: Type.Name, rhs: Type): Type = ???
+      def unapply(gtree: Any): Option[(Type, Type.Name, Type)] = ???
     }
 
     object TypeFunction extends TypeFunctionCompanion {
