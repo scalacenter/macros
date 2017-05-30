@@ -9,9 +9,9 @@ private[scala] trait Quasiquotes { self: Universe =>
   implicit class XtensionQuasiquotes(val sc: StringContext) {
     trait InterpolatorSignature {
       @compileTimeOnly(Errors.QuasiquotesRequireCompilerSupport)
-      def apply[T](args: T*): Tree = ???
+      def apply[T >: Any](args: T*): Any = ???
       @compileTimeOnly(Errors.QuasiquotesRequireCompilerSupport)
-      def unapply(tree: Tree): Any = ???
+      def unapply(scrutinee: Any): Any = ???
     }
     object q extends InterpolatorSignature
     object param extends InterpolatorSignature

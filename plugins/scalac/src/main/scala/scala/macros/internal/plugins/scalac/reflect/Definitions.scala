@@ -118,9 +118,9 @@ trait Definitions { self: ReflectToolkit =>
             val nucleus = Ident(newTermName("macro"))
             val payload = List[(String, Any)](
               "macroEngine" -> macroEngine,
-              "isBundle" -> false,
+              "isBundle" -> true,
               "isBlackbox" -> false,
-              "className" -> classTag[Macros.type].runtimeClass.getName,
+              "className" -> classTag[Macros].runtimeClass.getName,
               "methodName" -> sym.name.toString,
               "signature" -> List(List(Other), List(LiftedUntyped))
             )
