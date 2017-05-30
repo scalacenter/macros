@@ -4,6 +4,7 @@ package quasiquotes
 
 import scala.language.implicitConversions
 import scala.reflect.macros.whitebox.Context
+import scala.macros.internal.trees.Errors
 import scala.meta.internal.parsers.Absolutize._
 import scala.meta.internal.trees.Quasi
 import scala.{meta => m}
@@ -151,13 +152,53 @@ class Macros(val c: Context) {
     def unquote(quasi: m.Tree): g.Tree = {
       val pos = quasi.pos.absolutize
       val hole = mode.holes.find(h => pos.start <= h.pos.point && h.pos.point <= pos.end).get
-      hole.arg
+      if (mode.isTerm) hole.arg
+      else ???
+    }
+    def trees(trees: List[m.Tree]): g.Tree = {
+      def loop(trees: List[m.Tree], acc: g.Tree, prefix: List[m.Tree]): g.Tree = trees match {
+        case (quasi: Quasi) +: rest if quasi.rank == 1 =>
+          if (acc.isEmpty) {
+            if (prefix.isEmpty) loop(rest, reify(quasi), Nil)
+            else loop(rest, prefix.foldRight(acc)((curr, acc) => {
+              val currElement = reify(curr)
+              val alreadyLiftedList = acc.orElse(reify(quasi))
+              if (mode.isTerm) q"$currElement +: $alreadyLiftedList"
+              else pq"$currElement +: $alreadyLiftedList"
+            }), Nil)
+          } else {
+            if (mode.isTerm) loop(rest, q"$acc ++ ${reify(quasi)}", Nil)
+            else c.abort(quasi.pos, Errors.QuasiquoteAdjacentEllipsesInPattern(quasi.rank))
+          }
+        case other +: rest =>
+          if (acc.isEmpty) loop(rest, acc, prefix :+ other)
+          else {
+            if (mode.isTerm) loop(rest, q"$acc :+ ${reify(other)}", Nil)
+            else loop(rest, pq"$acc :+ ${reify(other)}", Nil)
+          }
+        case Nil =>
+          if (acc.isEmpty) q"_root_.scala.List(..${prefix.map(reify)})"
+          else acc
+      }
+      loop(trees, g.EmptyTree, Nil)
+    }
+    def treess(treess: List[List[m.Tree]]): g.Tree = {
+      val tripleDotQuasis = treess.flatten.collect{ case quasi: Quasi if quasi.rank == 2 => quasi }
+      if (tripleDotQuasis.length == 0) {
+        apply("scala.List", treess)
+      } else if (tripleDotQuasis.length == 1) {
+        if (treess.flatten.length == 1) reify(tripleDotQuasis(0))
+        else c.abort(tripleDotQuasis(0).pos, Errors.QuasiquoteTripleDotImplementationRestriction)
+      } else {
+        c.abort(tripleDotQuasis(1).pos, Errors.QuasiquoteAdjacentEllipsesInPattern(2))
+      }
     }
     def reify(x: Any): g.Tree = x match {
       case x: Quasi => unquote(x)
       case x: m.Tree => apply("scala.macros." + x.productPrefix, x.productIterator.toList)
       case Nil => path("scala.Nil")
-      case xs: List[_] => apply("scala.List", xs)
+      case xss @ List(_: List[_], _*) => treess(xss.asInstanceOf[List[List[m.Tree]]])
+      case xs @ List(_*) => trees(xs.asInstanceOf[List[m.Tree]])
       case None => path("scala.None")
       case x: Some[_] => apply("scala.Some", List(x.get))
       case x: Boolean => g.Literal(g.Constant(x))
