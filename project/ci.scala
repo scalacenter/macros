@@ -1,9 +1,9 @@
-package org.scalameta
+package org.scalamacros
 package build
 
 import sbt._
 
-trait Ci { self: ScalametaBuild =>
+trait Ci { self: ScalamacrosBuild =>
 
   // NOTE: Invokes given commands in a CI environment, meaning:
   //   * Commands are invoked with scalaVersion set to ScalaVersion

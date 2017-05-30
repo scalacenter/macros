@@ -1,4 +1,4 @@
-package org.scalameta
+package org.scalamacros
 package os
 
 import java.io._

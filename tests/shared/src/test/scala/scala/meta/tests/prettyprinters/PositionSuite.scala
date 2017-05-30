@@ -1,12 +1,12 @@
-package scala.meta.tests
+package scala.macros.tests
 package prettyprinters
 
 import org.junit._
 import org.junit.runner._
 import org.junit.runners._
 import org.junit.Assert._
-import scala.meta.io._
-import scala.meta.inputs._
+import scala.macros.io._
+import scala.macros.inputs._
 
 @RunWith(classOf[JUnit4])
 class PositionSuite {

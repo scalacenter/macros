@@ -2,8 +2,6 @@ package scala.macros.internal
 package engines.scalac
 package semantic
 
-import scala.meta.internal.prettyprinters._
-
 trait Semantic extends scala.macros.semantic.Semantic with Abstracts { self: Universe =>
   type Symbol = g.Symbol
 

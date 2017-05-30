@@ -1,6 +1,6 @@
-package org.scalameta
+package org.scalamacros
 
-import org.scalameta.build._
+import org.scalamacros.build._
 
-trait ScalametaBuild extends Ci with Versions
-package object build extends ScalametaBuild
+trait ScalamacrosBuild extends Ci with Versions
+package object build extends ScalamacrosBuild

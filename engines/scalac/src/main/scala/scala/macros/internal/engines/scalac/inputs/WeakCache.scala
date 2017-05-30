@@ -4,7 +4,7 @@ package inputs
 
 import java.lang.ref.WeakReference
 import scala.collection.mutable.WeakHashMap
-import scala.meta.internal._
+import scala.macros.internal._
 
 class WeakCache[T, U] {
   private val t2u = new WeakHashMap[T, WeakReference[U]]

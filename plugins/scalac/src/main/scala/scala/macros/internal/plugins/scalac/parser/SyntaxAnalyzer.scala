@@ -390,8 +390,8 @@ abstract class SyntaxAnalyzer extends NscSyntaxAnalyzer with ReflectToolkit {
         def failMacroEngine(ex: Exception): _root_.scala.Nothing = {
           val requiredEngine = ${"new-style " + engineVersion.toString}
           var msg = "macro cannot be expanded, because it was compiled by an incompatible engine"
-          msg += (_root_.scala.meta.internal.prettyprinters.EOL + " found   : " + foundEngine)
-          msg += (_root_.scala.meta.internal.prettyprinters.EOL + " required: " + requiredEngine)
+          msg += (_root_.scala.macros.internal.prettyprinters.EOL + " found   : " + foundEngine)
+          msg += (_root_.scala.macros.internal.prettyprinters.EOL + " required: " + requiredEngine)
           ex.printStackTrace
           $cName.abort($cName.enclosingPosition, msg)
         }

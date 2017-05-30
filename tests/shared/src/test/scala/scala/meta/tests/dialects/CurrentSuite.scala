@@ -1,13 +1,13 @@
-package scala.meta.tests
+package scala.macros.tests
 package dialects
 
 import org.junit._
 import org.junit.runner._
 import org.junit.runners._
 import org.junit.Assert._
-import scala.meta.config._
-import scala.meta.Dialect
-import scala.meta.dialects._
+import scala.macros.config._
+import scala.macros.Dialect
+import scala.macros.dialects._
 
 @RunWith(classOf[JUnit4])
 class CurrentSuite {

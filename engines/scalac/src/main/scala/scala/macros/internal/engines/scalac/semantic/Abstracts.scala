@@ -4,7 +4,7 @@ package semantic
 
 import scala.reflect.macros.contexts.Context
 import scala.reflect.internal.{Flags => gf}
-import scala.meta.internal.prettyprinters._
+import scala.macros.internal.prettyprinters._
 
 trait Abstracts extends scala.macros.semantic.Mirrors { self: Universe =>
   case class Mirror(c: Context)

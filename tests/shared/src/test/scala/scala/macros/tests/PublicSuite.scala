@@ -5,7 +5,7 @@ import org.junit._
 import org.junit.runner._
 import org.junit.runners._
 import org.junit.Assert._
-import scala.meta.tests.helpers._
+import scala.macros.tests.helpers._
 import scala.macros._
 
 @RunWith(classOf[JUnit4])

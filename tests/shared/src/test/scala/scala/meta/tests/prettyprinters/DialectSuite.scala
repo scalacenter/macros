@@ -1,11 +1,11 @@
-package scala.meta.tests
+package scala.macros.tests
 package prettyprinters
 
 import org.junit._
 import org.junit.runner._
 import org.junit.runners._
 import org.junit.Assert._
-import scala.meta.dialects._
+import scala.macros.dialects._
 
 @RunWith(classOf[JUnit4])
 class DialectSuite {

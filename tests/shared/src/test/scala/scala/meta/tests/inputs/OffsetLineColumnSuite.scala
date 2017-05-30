@@ -1,12 +1,12 @@
-package scala.meta.tests
+package scala.macros.tests
 package inputs
 
 import org.junit._
 import org.junit.runner._
 import org.junit.runners._
 import org.junit.Assert._
-import scala.meta.inputs._
-import scala.meta.internal.prettyprinters._
+import scala.macros.inputs._
+import scala.macros.internal.prettyprinters._
 
 @RunWith(classOf[JUnit4])
 class OffsetLineColumnSuite {

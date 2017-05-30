@@ -1,12 +1,12 @@
-package scala.meta.tests
+package scala.macros.tests
 package prettyprinters
 
 import org.junit._
 import org.junit.runner._
 import org.junit.runners._
 import org.junit.Assert._
-import scala.meta.prettyprinters._
-import scala.meta.tests.helpers._
+import scala.macros.prettyprinters._
+import scala.macros.tests.helpers._
 
 @RunWith(classOf[JUnit4])
 class StandardSuite extends TypecheckHelpers {

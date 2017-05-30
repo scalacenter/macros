@@ -1,11 +1,11 @@
-package org.scalameta
+package org.scalamacros
 package build
 
 import scala.compat.Platform.EOL
 import scala.io._
-import org.scalameta.os._
+import org.scalamacros.os._
 
-trait Versions { self: ScalametaBuild =>
+trait Versions { self: ScalamacrosBuild =>
 
   lazy val LanguageVersion = sys.env.getOrElse("SCALA_VERSION", Scala211)
   lazy val LanguageVersions = List(Scala210, Scala211, Scala212, Scala213, Dotty)

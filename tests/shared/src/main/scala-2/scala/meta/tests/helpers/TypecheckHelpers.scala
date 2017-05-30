@@ -1,4 +1,4 @@
-package scala.meta.tests
+package scala.macros.tests
 package helpers
 
 import org.junit.Assert._
@@ -26,11 +26,10 @@ trait TypecheckHelpers {
   // Here's an example from the quasiquote suite:
   //
   //   assert(typecheckError("""
-  //     import scala.meta.quasiquotes._
-  //     import scala.meta.dialects.Scala211
+  //     import scala.macros._
   //     val q"type $name[$X] = $Y" = q"type List[+A] = List[A]"
   //   """) === """
-  //     |<macro>:4: not found: value X
+  //     |<macro>:3: not found: value X
   //     |      val q"type $name[$X] = $Y" = q"type List[+A] = List[A]"
   //     |                        ^
   //   """.trim.stripMargin)

@@ -12,7 +12,7 @@ if [ -n "$DRONE_PULL_REQUEST" ] ; then
     echo "CLA check for $author successful";
   else
     echo "CLA check for $author failed";
-    echo "Please sign the Scala CLA to contribute to Scalameta";
+    echo "Please sign the Scala CLA to contribute to Scala macros";
     echo "Go to https://www.lightbend.com/contribute/cla/scala and then resubmit this pull request";
     exit 1;
   fi;

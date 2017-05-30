@@ -1,4 +1,4 @@
-package scala.meta.tests
+package scala.macros.tests
 package helpers
 
 import org.junit.Assume._

@@ -1,4 +1,4 @@
-import org.scalameta.build._
+import org.scalamacros.build._
 import org.scalajs.sbtplugin.ScalaJSCrossVersion
 
 // ==========================================
@@ -6,39 +6,27 @@ import org.scalajs.sbtplugin.ScalaJSCrossVersion
 // ==========================================
 
 {
-  println(s"[info] Welcome to scalameta $BuildVersion")
-  name := "scalametaRoot"
+  println(s"[info] Welcome to Scala macros $BuildVersion")
+  name := "scalamacrosRoot"
 }
 nonPublishableSettings
 commands += CiCommand("ci-test", List("test"))
 commands += CiCommand("ci-publish", List("publish"))
 
-lazy val core = crossProject
+lazy val scalamacros = crossProject
   .in(file("core"))
   .enablePlugins(BuildInfoPlugin)
   .jsConfigure(_.enablePlugins(ScalaJSBundlerPlugin))
   .settings(
     publishableSettings,
     version := CoreVersion,
-    description := "Platform-independent interfaces for syntactic and semantic APIs of Scalameta"
+    description := "Platform-independent interfaces for new-style Scala macros"
   )
   .jsSettings(
     npmDependencies in Compile += "shelljs" -> "0.7.7"
   )
-lazy val coreJVM = core.jvm
-lazy val coreJS = core.js
-
-lazy val profilesMacros = crossProject
-  .in(file("profiles/macros"))
-  .enablePlugins(BuildInfoPlugin)
-  .settings(
-    publishableSettings,
-    version := CoreVersion,
-    description := "Platform-independent interfaces for new-style Scala macros"
-  )
-  .dependsOn(core)
-lazy val profilesMacrosJVM = profilesMacros.jvm
-lazy val profilesMacrosJS = profilesMacros.js
+lazy val scalamacrosJVM = scalamacros.jvm
+lazy val scalamacrosJS = scalamacros.js
 
 lazy val enginesScalac = project
   .in(file("engines/scalac"))
@@ -46,11 +34,11 @@ lazy val enginesScalac = project
   .settings(
     publishableSettings,
     version := EngineScalacVersion,
-    crossScalaVersions := List(Scala211),
+    crossScalaVersions := List(Scala211), // TODO: support other versions of Scalac
     description := "Scalac implementation of interfaces for new-style Scala macros",
     libraryDependencies += "org.scala-lang" % "scala-compiler" % scalaVersion.value
   )
-  .dependsOn(profilesMacrosJVM)
+  .dependsOn(scalamacrosJVM)
 
 lazy val pluginsScalac = project
   .in(file("plugins/scalac"))
@@ -58,7 +46,7 @@ lazy val pluginsScalac = project
   .settings(
     pluginSettings,
     version := PluginScalacVersion,
-    crossScalaVersions := List(Scala211),
+    crossScalaVersions := List(Scala211), // TODO: support other versions of Scalac
     description := "Scalac integration for new-style Scala macros",
     libraryDependencies += "org.scala-lang" % "scala-compiler" % scalaVersion.value
     // resolvers += Resolver.bintrayRepo("scalameta", "maven"),
@@ -71,14 +59,14 @@ lazy val tests = crossProject
   .enablePlugins(BuildInfoPlugin)
   .settings(
     nonPublishableSettings,
-    description := "Scalameta tests",
+    description := "Tests for new-style Scala macros",
     libraryDependencies += "junit" % "junit" % "4.12",
     libraryDependencies ++= (
       if (isDotty.value) Nil
       else Seq("org.scala-lang" % "scala-reflect" % scalaVersion.value)
     )
   )
-  .dependsOn(profilesMacros)
+  .dependsOn(scalamacros)
 lazy val testsJVM = tests.jvm
 lazy val testsJS = tests.js
 
@@ -114,7 +102,7 @@ lazy val sharedSettings = Def.settings(
       case _ => CrossVersion.binary
     }
   },
-  organization := "org.scalameta",
+  organization := "org.scalamacros",
   scalacOptions ++= Seq("-deprecation", "-feature", "-unchecked", "-Xfatal-warnings"),
   logBuffered := false,
   incOptions := incOptions.value.withLogRecompileOnMacro(false),
@@ -124,7 +112,7 @@ lazy val sharedSettings = Def.settings(
     scalaVersion,
     version
   ),
-  buildInfoPackage := "scala.meta.internal.config." + name.value,
+  buildInfoPackage := "scala.macros.internal.config." + name.value,
   buildInfoObject := "BuildInfo",
   libraryDependencies += "junit" % "junit" % "4.12" % "test",
   libraryDependencies += "com.novocode" % "junit-interface" % "0.11" % "test",
@@ -163,40 +151,30 @@ lazy val pluginSettings = Def.settings(
 
 lazy val publishableSettings = Def.settings(
   sharedSettings,
-  bintrayOrganization := Some("scalameta"),
+  bintrayOrganization := Some("scalamacros"),
   publishArtifact.in(Compile) := true,
   publishArtifact.in(Test) := false,
   publishMavenStyle := true,
   pomIncludeRepository := { x =>
     false
   },
-  licenses += "BSD" -> url("https://github.com/scalameta/scalameta/blob/master/LICENSE.md"),
+  licenses += "BSD" -> url("https://github.com/scalamacros/scalamacros/blob/master/LICENSE.md"),
   pomExtra := (
-    <url>https://github.com/scalameta/scalameta</url>
-    <inceptionYear>2014</inceptionYear>
+    <url>https://github.com/scalamacros/scalamacros</url>
+    <inceptionYear>2017</inceptionYear>
     <scm>
-      <url>git://github.com/scalameta/scalameta.git</url>
-      <connection>scm:git:git://github.com/scalameta/scalameta.git</connection>
+      <url>git://github.com/scalamacros/scalamacros.git</url>
+      <connection>scm:git:git://github.com/scalamacros/scalamacros.git</connection>
     </scm>
     <issueManagement>
       <system>GitHub</system>
-      <url>https://github.com/scalameta/scalameta/issues</url>
+      <url>https://github.com/scalamacros/scalamacros/issues</url>
     </issueManagement>
     <developers>
       <developer>
         <id>xeno-by</id>
         <name>Eugene Burmako</name>
         <url>http://xeno.by</url>
-      </developer>
-      <developer>
-        <id>densh</id>
-        <name>Denys Shabalin</name>
-        <url>http://den.sh</url>
-      </developer>
-      <developer>
-        <id>olafurpg</id>
-        <name>Ólafur Páll Geirsson</name>
-        <url>https://geirsson.com/</url>
       </developer>
     </developers>
   )
