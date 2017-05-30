@@ -1,8 +1,8 @@
 package scala.macros
 package semantic
 
-private[scala] trait Operations { self: Universe =>
-  private[scala] trait SymbolBasedOps extends FlagBasedOps {
+private[macros] trait Operations { self: Universe =>
+  private[macros] trait SymbolBasedOps extends FlagBasedOps {
     protected implicit def m: Mirror
     protected def sym: Symbol
     protected def flags: Long = abstracts.symFlags(sym)
@@ -14,7 +14,7 @@ private[scala] trait Operations { self: Universe =>
     def denot(pre: Type): Denotation = abstracts.symDenot(sym, pre)
   }
 
-  private[scala] trait FlagBasedOps {
+  private[macros] trait FlagBasedOps {
     protected def flags: Long
     private def hasFlags(flags: Long) = (this.flags & flags) == flags
     def isVal: Boolean = hasFlags(VAL)
@@ -44,8 +44,8 @@ private[scala] trait Operations { self: Universe =>
     def isInline: Boolean = hasFlags(INLINE)
   }
 
-  private[scala] type SymFilter = Symbol => Boolean
-  private[scala] trait MemberBasedOps[M] {
+  private[macros] type SymFilter = Symbol => Boolean
+  private[macros] trait MemberBasedOps[M] {
     protected implicit def m: Mirror
     protected def members(f: SymFilter): List[M]
     protected def members(name: String, f: SymFilter): List[M]

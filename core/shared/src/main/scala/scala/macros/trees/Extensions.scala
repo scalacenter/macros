@@ -5,7 +5,7 @@ import scala.reflect._
 import scala.macros.internal.prettyprinters._
 import scala.macros.internal.trees._
 
-private[scala] trait Extensions extends Gensym with TreeSyntax with TreeStructure {
+private[macros] trait Extensions extends Gensym with TreeSyntax with TreeStructure {
   self: Universe =>
 
   implicit class XtensionTreesTree(tree: Tree) extends Prettyprinted {

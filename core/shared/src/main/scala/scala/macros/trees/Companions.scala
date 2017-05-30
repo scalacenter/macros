@@ -1,9 +1,9 @@
 package scala.macros
 package trees
 
-private[scala] trait Companions { self: Universe =>
-  private[scala] val treeCompanions: TreeCompanions = new TreeCompanions {}
-  private[scala] trait TreeCompanions {
+private[macros] trait Companions { self: Universe =>
+  private[macros] val treeCompanions: TreeCompanions = new TreeCompanions {}
+  private[macros] trait TreeCompanions {
     trait NameAnonymousCompanion {
       def apply(): Term.Name with Type.Name
       def unapply(tree: Any): Boolean

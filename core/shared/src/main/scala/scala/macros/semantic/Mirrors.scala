@@ -5,12 +5,12 @@ package semantic
 
 import scala.macros.internal.prettyprinters._
 
-private[scala] trait Mirrors { self: Universe =>
+private[macros] trait Mirrors { self: Universe =>
   type Mirror >: Null <: AnyRef
 
   // NOTE: Not moved to Abstracts.scala to be consistent with Expansion.scala in profiles/macros.
-  private[scala] def abstracts: MirrorAbstracts
-  private[scala] trait MirrorAbstracts {
+  private[macros] def abstracts: MirrorAbstracts
+  private[macros] trait MirrorAbstracts {
     def refDenot(ref: Ref)(implicit m: Mirror): Denotation
     def termTpe(term: Term)(implicit m: Mirror): Type
     def sym(id: String)(implicit m: Mirror): Symbol

@@ -1,7 +1,7 @@
 package scala.macros
 package semantic
 
-private[scala] trait Semantic
+private[macros] trait Semantic
     extends Denotations
     with Flags
     with Mirrors

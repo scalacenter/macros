@@ -1,7 +1,7 @@
 package scala.macros
 package dialects
 
-private[scala] trait Dialects {
+private[macros] trait Dialects {
   implicit val Scala210: Dialect = Dialect(
     allowAndTypes = false,
     allowAtForExtractorVarargs = true,

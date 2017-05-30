@@ -17,8 +17,8 @@ package object macros
     with scala.macros.semantic.Aliases
     with scala.macros.Universe {
 
-  private[scala] val universe = new ThreadLocal[scala.macros.Universe]
-  private[scala] def abstracts = {
+  private[macros] val universe = new ThreadLocal[scala.macros.Universe]
+  private[macros] def abstracts = {
     if (universe.get == null) sys.error("this API can only be called in a macro expansion")
     universe.get.abstracts.asInstanceOf[Abstracts]
   }

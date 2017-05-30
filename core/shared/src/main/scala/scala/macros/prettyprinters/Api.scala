@@ -3,7 +3,7 @@ package prettyprinters
 
 import scala.macros.internal.prettyprinters._
 
-private[scala] trait Api {
+private[macros] trait Api {
   implicit class XtensionSyntax[T](x: T) {
     def syntax(implicit syntax: Syntax[T]): String = {
       val p = new Prettyprinter
@@ -21,7 +21,7 @@ private[scala] trait Api {
   }
 }
 
-private[scala] trait Aliases {
+private[macros] trait Aliases {
   // NOTE: We don't expose any definitions in this package
   // as part of the package's public API that will show up in scala.macros.
 }

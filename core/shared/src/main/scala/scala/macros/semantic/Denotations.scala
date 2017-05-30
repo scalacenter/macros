@@ -3,7 +3,7 @@ package semantic
 
 import scala.macros.internal.prettyprinters._
 
-private[scala] trait Denotations { self: Universe =>
+private[macros] trait Denotations { self: Universe =>
   type Denotation >: Null <: AnyRef
 
   implicit def denotSyntaxInstance[T <: Denotation](implicit m: Mirror): Syntax[T] = {

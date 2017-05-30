@@ -1,7 +1,7 @@
 package scala.macros
 package semantic
 
-private[scala] trait Types { self: Universe =>
+private[macros] trait Types { self: Universe =>
   // TODO: Should types be merged with trees or separated from trees?
   // This design serves as a hopefully convincing argument for merging.
 

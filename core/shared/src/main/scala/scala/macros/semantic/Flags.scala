@@ -1,7 +1,7 @@
 package scala.macros
 package semantic
 
-private[scala] trait Flags {
+private[macros] trait Flags {
   final val VAL: Long = 1 << 0
   final val VAR: Long = 1 << 1
   final val DEF: Long = 1 << 2

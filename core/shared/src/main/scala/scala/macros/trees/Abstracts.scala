@@ -1,11 +1,11 @@
 package scala.macros
 package trees
 
-private[scala] trait Abstracts { self: Universe =>
+private[macros] trait Abstracts { self: Universe =>
   import treeCompanions._
 
-  private[scala] def abstracts: TreeAbstracts
-  private[scala] trait TreeAbstracts {
+  private[macros] def abstracts: TreeAbstracts
+  private[macros] trait TreeAbstracts {
     def treePos(tree: Tree): Position
     def nameValue(name: Name): String
     def nameUnapply(tree: Any): Option[String]

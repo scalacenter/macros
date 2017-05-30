@@ -1,7 +1,7 @@
 package scala.macros
 package trees
 
-private[scala] trait Trees extends Abstracts with Companions with Extensions {
+private[macros] trait Trees extends Abstracts with Companions with Extensions {
   self: Universe =>
 
   type Tree >: Null <: AnyRef // Tree.pos, Tree.syntax, Tree.structure
@@ -11,7 +11,7 @@ private[scala] trait Trees extends Abstracts with Companions with Extensions {
 
   type Name >: Null <: Ref // Name.value
   val Name: NameCompanion = new NameCompanion {}
-  private[scala] trait NameCompanion {
+  private[macros] trait NameCompanion {
     def unapply(tree: Any) = abstracts.nameUnapply(tree)
     def Anonymous = abstracts.NameAnonymous
     def Indeterminate = abstracts.NameIndeterminate
@@ -19,7 +19,7 @@ private[scala] trait Trees extends Abstracts with Companions with Extensions {
 
   type Lit >: Null <: Term with Type with Pat // Lit.value
   val Lit: LitCompanion = new LitCompanion {}
-  private[scala] trait LitCompanion {
+  private[macros] trait LitCompanion {
     def unapply(tree: Any) = abstracts.litUnapply(tree)
     def Unit = abstracts.LitUnit
     def Boolean = abstracts.LitBoolean
@@ -37,7 +37,7 @@ private[scala] trait Trees extends Abstracts with Companions with Extensions {
 
   type Term >: Null <: Stat
   val Term: TermCompanion = new TermCompanion {}
-  private[scala] trait TermCompanion { // Term.fresh
+  private[macros] trait TermCompanion { // Term.fresh
     type Ref >: Null <: Term with self.Ref
     def This = abstracts.TermThis
     def Super = abstracts.TermSuper
@@ -78,7 +78,7 @@ private[scala] trait Trees extends Abstracts with Companions with Extensions {
 
   type Type >: Null <: Tree
   val Type: TypeCompanion = new TypeCompanion {}
-  private[scala] trait TypeCompanion { // Type.fresh
+  private[macros] trait TypeCompanion { // Type.fresh
     type Ref >: Null <: Type with self.Ref
     type Name >: Null <: self.Name with Type.Ref
     def Name = abstracts.TypeName
@@ -110,7 +110,7 @@ private[scala] trait Trees extends Abstracts with Companions with Extensions {
 
   type Pat >: Null <: Tree
   val Pat: PatCompanion = new PatCompanion {}
-  private[scala] trait PatCompanion { // Pat.fresh
+  private[macros] trait PatCompanion { // Pat.fresh
     type Var >: Null <: Pat with Member.Term
     def Var = abstracts.PatVar
     def Wildcard = abstracts.PatWildcard
@@ -127,14 +127,14 @@ private[scala] trait Trees extends Abstracts with Companions with Extensions {
 
   type Member >: Null <: Tree
   val Member: MemberCompanion = new MemberCompanion {}
-  private[scala] trait MemberCompanion {
+  private[macros] trait MemberCompanion {
     type Term >: Null <: Member
     type Type >: Null <: Member
   }
 
   type Decl >: Null <: Stat
   val Decl: DeclCompanion = new DeclCompanion {}
-  private[scala] trait DeclCompanion {
+  private[macros] trait DeclCompanion {
     type Val >: Null <: Decl
     def Val = abstracts.DeclVal
     type Var >: Null <: Decl
@@ -147,7 +147,7 @@ private[scala] trait Trees extends Abstracts with Companions with Extensions {
 
   type Defn >: Null <: Stat
   val Defn: DefnCompanion = new DefnCompanion {}
-  private[scala] trait DefnCompanion {
+  private[macros] trait DefnCompanion {
     type Val >: Null <: Defn
     def Val = abstracts.DefnVal
     type Var >: Null <: Defn
@@ -168,7 +168,7 @@ private[scala] trait Trees extends Abstracts with Companions with Extensions {
 
   type Pkg >: Null <: Member.Term with Stat // Pkg.name
   val Pkg: PkgCompanion = new PkgCompanion {}
-  private[scala] trait PkgCompanion {
+  private[macros] trait PkgCompanion {
     def apply(ref: Term.Ref, stats: List[Stat]) = abstracts.PkgProper.apply(ref, stats)
     def unapply(tree: Any): Option[(Term.Ref, List[Stat])] = abstracts.PkgProper.unapply(tree)
     type Object >: Null <: Member.Term with Stat
@@ -177,7 +177,7 @@ private[scala] trait Trees extends Abstracts with Companions with Extensions {
 
   type Ctor >: Null <: Member
   val Ctor: CtorCompanion = new CtorCompanion {}
-  private[scala] trait CtorCompanion {
+  private[macros] trait CtorCompanion {
     type Primary >: Null <: Ctor
     def Primary = abstracts.CtorPrimary
     type Secondary >: Null <: Ctor with Stat
@@ -195,7 +195,7 @@ private[scala] trait Trees extends Abstracts with Companions with Extensions {
 
   type Mod >: Null <: Tree
   val Mod: ModCompanion = new ModCompanion {}
-  private[scala] trait ModCompanion {
+  private[macros] trait ModCompanion {
     def Annot = abstracts.ModAnnot
     def Private = abstracts.ModPrivate
     def Protected = abstracts.ModProtected
@@ -215,7 +215,7 @@ private[scala] trait Trees extends Abstracts with Companions with Extensions {
 
   type Enumerator >: Null <: Tree
   val Enumerator: EnumeratorCompanion = new EnumeratorCompanion {}
-  private[scala] trait EnumeratorCompanion {
+  private[macros] trait EnumeratorCompanion {
     def Generator = abstracts.EnumeratorGenerator
     def Val = abstracts.EnumeratorVal
     def Guard = abstracts.EnumeratorGuard
@@ -229,7 +229,7 @@ private[scala] trait Trees extends Abstracts with Companions with Extensions {
 
   type Importee >: Null <: Ref
   val Importee: ImporteeCompanion = new ImporteeCompanion {}
-  private[scala] trait ImporteeCompanion {
+  private[macros] trait ImporteeCompanion {
     def Wildcard = abstracts.ImporteeWildcard
     def Name = abstracts.ImporteeName
     def Rename = abstracts.ImporteeRename

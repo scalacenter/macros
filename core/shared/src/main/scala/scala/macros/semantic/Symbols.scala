@@ -3,7 +3,7 @@ package semantic
 
 import scala.macros.internal.prettyprinters._
 
-private[scala] trait Symbols { self: Universe =>
+private[macros] trait Symbols { self: Universe =>
   type Symbol >: Null <: AnyRef
   object Symbol {
     def apply(id: String)(implicit m: Mirror): Symbol = abstracts.sym(id)

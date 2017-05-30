@@ -4,7 +4,7 @@ package trees
 import scala.annotation.compileTimeOnly
 import scala.macros.internal.trees.Errors
 
-private[scala] trait Quasiquotes { self: Universe =>
+private[macros] trait Quasiquotes { self: Universe =>
   // NOTE: These are just stubs that must be taken care of by engines.
   implicit class XtensionQuasiquotes(val sc: StringContext) {
     trait InterpolatorSignature {

@@ -6,7 +6,7 @@ import scala.macros.trees.Trees
 
 trait TreeStructure { self: Trees =>
 
-  private[scala] implicit def treeStructure[T <: Tree]: Structure[T] = Structure { (p, tree) =>
+  private[macros] implicit def treeStructure[T <: Tree]: Structure[T] = Structure { (p, tree) =>
     // TODO: implement this
     ???
   }
