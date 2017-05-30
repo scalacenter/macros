@@ -31,7 +31,6 @@ class Macros(val c: Context) {
 
   private val QuasiquotePrefix = c.freshName("qq")
   private def holeName(i: Int) = g.TermName(QuasiquotePrefix + "$hole$" + i)
-  private def resultName(i: Int) = g.TermName(QuasiquotePrefix + "$result$" + i)
 
   private def expand: g.Tree = {
     val (input, mode) = obtainParameters()
@@ -227,18 +226,7 @@ class Macros(val c: Context) {
         val pattern = reify(tree)
         val (thenp, elsep) = {
           if (holes.isEmpty) (q"true", q"false")
-          else {
-            val resultNames = holes.zipWithIndex.map({ case (_, i) => resultName(i) })
-            val resultPatterns = resultNames.map(name => pq"$name")
-            val resultTerms = resultNames.map(name => q"$name")
-            val thenp = q"""
-              (..${holes.map(_.name)}) match {
-                case (..$resultPatterns) => _root_.scala.Some((..$resultTerms))
-                case _ => _root_.scala.None
-              }
-            """
-            (thenp, q"_root_.scala.None")
-          }
+          else (q"_root_.scala.Some((..${holes.map(_.name)}))", q"_root_.scala.None")
         }
         val matchp = pattern match {
           case g.Bind(_, g.Ident(g.termNames.WILDCARD)) => q"tree match { case $pattern => $thenp }"
