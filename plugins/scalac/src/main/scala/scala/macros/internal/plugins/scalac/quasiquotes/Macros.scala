@@ -146,11 +146,19 @@ class Macros(val c: Context) {
       val reifiedArgs = args.map(reify)
       g.Apply(reifiedFqn, reifiedArgs)
     }
-    def unquote(quasi: m.Tree): g.Tree = {
+    def unquote(quasi: m.Tree, optional: Boolean): g.Tree = {
       val pos = quasi.pos.absolutize
       val hole = mode.holes.find(h => pos.start <= h.pos.point && h.pos.point <= pos.end).get
-      if (mode.isTerm) hole.arg
-      else pq"${hole.name}"
+      if (mode.isTerm) {
+        if (optional) {
+          val captureOption = hole.arg.tpe.baseType(g.definitions.OptionClass) != g.NoType
+          if (captureOption) hole.arg else q"_root_.scala.Some(${hole.arg})"
+        } else {
+          hole.arg
+        }
+      } else {
+        pq"${hole.name}"
+      }
     }
     def trees(trees: List[m.Tree]): g.Tree = {
       def loop(trees: List[m.Tree], acc: g.Tree, prefix: List[m.Tree]): g.Tree = trees match {
@@ -191,7 +199,8 @@ class Macros(val c: Context) {
       }
     }
     def reify(x: Any): g.Tree = x match {
-      case x: Quasi => unquote(x)
+      case x: Quasi => unquote(x, optional = false)
+      case Some(x: Quasi) => unquote(x, optional = true)
       case x: m.Tree => apply("scala.macros." + x.productPrefix, x.productIterator.toList)
       case Nil => path("scala.Nil")
       case xss @ List(_: List[_], _*) => treess(xss.asInstanceOf[List[List[m.Tree]]])
