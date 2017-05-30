@@ -119,7 +119,7 @@ trait Abstracts extends scala.macros.trees.Abstracts with Positions { self: Univ
     }
 
     object LitSymbol extends LitSymbolCompanion {
-      def apply(value: scala.Symbol): Lit = ???
+      def apply(value: scala.Symbol): Lit = g.Literal(g.Constant(value))
       def unapply(gtree: Any): Option[scala.Symbol] = ???
     }
 

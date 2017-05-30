@@ -10,18 +10,22 @@ import scala.{meta => m}
 class Macros(val c: Context) {
   import c.{universe => g}
   import g.{Quasiquote, TreeTag, IdentTag, LiteralTag}
+  val QuasiquotePrefix = c.freshName("quasiquote")
 
   def apply(args: g.Tree*): g.Tree = expand
   def unapply(tree: g.Tree): g.Tree = expand
 
+  case class Hole(name: g.TermName, arg: g.Tree)
   sealed trait Mode {
     def isTerm: Boolean = this.isInstanceOf[Mode.Term]
     def isPattern: Boolean = this.isInstanceOf[Mode.Pattern]
-    def multiline: Boolean
+    def name: String
+    def multi: Boolean
+    def holes: List[Hole]
   }
   object Mode {
-    case class Term(prefix: String, multiline: Boolean) extends Mode
-    case class Pattern(prefix: String, multiline: Boolean, selectorDummy: g.Tree) extends Mode
+    case class Term(name: String, multi: Boolean, holes: List[Hole]) extends Mode
+    case class Pattern(name: String, multi: Boolean, dummy: g.Tree, holes: List[Hole]) extends Mode
   }
 
   private def expand: g.Tree = {
@@ -34,24 +38,30 @@ class Macros(val c: Context) {
     val expandee = c.macroApplication
     val source = expandee.pos.source
     val (parts, mode) = {
-      def isMultiline(fstPart: g.Tree) = {
+      def isMulti(fstPart: g.Tree) = {
         source.content(fstPart.pos.start - 2) == '"'
+      }
+      def mkHole(argi: (g.Tree, Int)) = {
+        val (arg, i) = argi
+        val name = g.TermName(QuasiquotePrefix + "$hole$" + i)
+        Hole(name, arg)
       }
       try {
         expandee match {
-          case q"$_($_.apply(..$parts)).$prefix.apply[..$_](..$args)" =>
+          case q"$_($_.apply(..$parts)).$name.apply[..$_](..$args)" =>
             require(parts.length == args.length + 1)
-            (parts, Mode.Term(prefix.toString, isMultiline(parts.head)))
-          case q"$_($_.apply(..$parts)).$prefix.unapply[..$_](${selectorDummy: g.Ident})" =>
-            require(selectorDummy.name == g.TermName("<unapply-selector>"))
-            val args = c.internal.subpatterns(selectorDummy).get
+            val holes = args.zipWithIndex.map(mkHole)
+            (parts, Mode.Term(name.toString, isMulti(parts.head), holes))
+          case q"$_($_.apply(..$parts)).$name.unapply[..$_](${dummy: g.Ident})" =>
+            require(dummy.name == g.TermName("<unapply-selector>"))
+            val args = c.internal.subpatterns(dummy).get
             require(parts.length == args.length + 1)
-            (parts, Mode.Pattern(prefix.toString, isMultiline(parts.head), selectorDummy))
+            val holes = args.zipWithIndex.map(mkHole)
+            (parts, Mode.Pattern(name.toString, isMulti(parts.head), dummy, holes))
         }
       } catch {
-        case ex: Exception =>
-          val message = s"unexpected quasiquote expandee: $expandee ${g.showRaw(expandee)}"
-          c.abort(expandee.pos, message)
+        case _: Exception =>
+          sys.error(s"unexpected quasiquote expandee: $expandee ${g.showRaw(expandee)}")
       }
     }
     val input = {
@@ -82,9 +92,44 @@ class Macros(val c: Context) {
 
   private def parseSkeleton(input: m.Input, mode: Mode): m.Tree = {
     try {
-      println(input)
-      println(mode)
-      ???
+      val dialect = m.Dialect(
+        allowAndTypes = true,
+        allowAtForExtractorVarargs = true,
+        allowColonForExtractorVarargs = true,
+        allowInlineIdents = true,
+        allowInlineMods = true,
+        allowLiteralTypes = true,
+        allowMultilinePrograms = mode.multi,
+        allowOrTypes = true,
+        allowPatUnquotes = mode.isPattern,
+        allowSpliceUnderscores = true,
+        allowTermUnquotes = mode.isTerm,
+        allowToplevelTerms = false,
+        allowTrailingCommas = true,
+        allowTraitParameters = true,
+        allowViewBounds = true,
+        allowWithTypes = true,
+        allowXmlLiterals = true,
+        toplevelSeparator = ""
+      )
+      val parsee = dialect(input)
+      val parsed = mode.name match {
+        case "q" => parsee.parse[m.Ctor].orElse(parsee.parse[m.Stat])
+        case "param" => parsee.parse[m.Term.Param]
+        case "t" => parsee.parse[m.Type]
+        case "tparam" => parsee.parse[m.Type.Param]
+        case "p" => parsee.parse[m.Case].orElse(parsee.parse[m.Pat])
+        case "init" => parsee.parse[m.Init]
+        case "self" => parsee.parse[m.Self]
+        case "template" => parsee.parse[m.Template]
+        case "mod" => parsee.parse[m.Mod]
+        case "enumerator" => parsee.parse[m.Enumerator]
+        case "importer" => parsee.parse[m.Importer]
+        case "importee" => parsee.parse[m.Importee]
+        case "source" => parsee.parse[m.Source]
+        case other => sys.error(s"unexpected quasiquote interpolator: $other")
+      }
+      parsed.get
     } catch {
       case m.TokenizeException(pos, message) => c.abort(pos, message)
       case m.ParseException(pos, message) => c.abort(pos, message)
@@ -92,7 +137,35 @@ class Macros(val c: Context) {
   }
 
   private def reifySkeleton(mtree: m.Tree, mode: Mode): g.Tree = {
-    ???
+    def path(fqn: String): g.Tree = {
+      val frags = fqn.split("\\.").toList
+      val root = g.Ident(g.TermName("_root_")): g.Tree
+      frags.foldLeft(root)((acc, curr) => g.Select(acc, g.TermName(curr)))
+    }
+    def apply(fqn: String, args: List[Any]): g.Tree = {
+      val reifiedFqn = path(fqn)
+      val reifiedArgs = args.map(reify)
+      g.Apply(reifiedFqn, reifiedArgs)
+    }
+    def reify(x: Any): g.Tree = x match {
+      case x: m.Tree => apply("scala.macros." + x.productPrefix, x.productIterator.toList)
+      case Nil => path("scala.Nil")
+      case xs: List[_] => apply("scala.List", xs)
+      case None => path("scala.None")
+      case x: Some[_] => apply("scala.Some", List(x.get))
+      case x: Boolean => g.Literal(g.Constant(x))
+      case x: Byte => g.Literal(g.Constant(x))
+      case x: Short => g.Literal(g.Constant(x))
+      case x: Char => g.Literal(g.Constant(x))
+      case x: Int => g.Literal(g.Constant(x))
+      case x: Float => g.Literal(g.Constant(x))
+      case x: Long => g.Literal(g.Constant(x))
+      case x: Double => g.Literal(g.Constant(x))
+      case x: String => g.Literal(g.Constant(x))
+      case x: Symbol => g.Literal(g.Constant(x))
+      case other => sys.error(s"unexpected reifee: ${other.getClass} $other")
+    }
+    reify(mtree)
   }
 
   private implicit def mpositionToGposition(pos: m.Position): g.Position = {
