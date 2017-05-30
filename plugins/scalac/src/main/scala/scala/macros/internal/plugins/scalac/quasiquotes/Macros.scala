@@ -11,24 +11,27 @@ import scala.{meta => m}
 
 class Macros(val c: Context) {
   import c.{universe => g}
-  import g.{Quasiquote, TreeTag, IdentTag, LiteralTag}
-  val QuasiquotePrefix = c.freshName("quasiquote")
+  import g.{Quasiquote, TreeTag, IdentTag, LiteralTag, BindTag}
 
   def apply(args: g.Tree*): g.Tree = expand
   def unapply(tree: g.Tree): g.Tree = expand
 
-  case class Hole(name: g.TermName, arg: g.Tree) { def pos = arg.pos }
-  sealed trait Mode {
+  private case class Hole(name: g.TermName, arg: g.Tree) { def pos = arg.pos }
+  private sealed trait Mode {
     def isTerm: Boolean = this.isInstanceOf[Mode.Term]
     def isPattern: Boolean = this.isInstanceOf[Mode.Pattern]
     def name: String
     def multi: Boolean
     def holes: List[Hole]
   }
-  object Mode {
+  private object Mode {
     case class Term(name: String, multi: Boolean, holes: List[Hole]) extends Mode
     case class Pattern(name: String, multi: Boolean, dummy: g.Tree, holes: List[Hole]) extends Mode
   }
+
+  private val QuasiquotePrefix = c.freshName("qq")
+  private def holeName(i: Int) = g.TermName(QuasiquotePrefix + "$hole$" + i)
+  private def resultName(i: Int) = g.TermName(QuasiquotePrefix + "$result$" + i)
 
   private def expand: g.Tree = {
     val (input, mode) = obtainParameters()
@@ -40,14 +43,8 @@ class Macros(val c: Context) {
     val expandee = c.macroApplication
     val source = expandee.pos.source
     val (parts, mode) = {
-      def isMulti(fstPart: g.Tree) = {
-        source.content(fstPart.pos.start - 2) == '"'
-      }
-      def mkHole(argi: (g.Tree, Int)) = {
-        val (arg, i) = argi
-        val name = g.TermName(QuasiquotePrefix + "$hole$" + i)
-        Hole(name, arg)
-      }
+      def isMulti(fstPart: g.Tree) = source.content(fstPart.pos.start - 2) == '"'
+      def mkHole(argi: (g.Tree, Int)) = Hole(holeName(argi._2), argi._1)
       try {
         expandee match {
           case q"$_($_.apply(..$parts)).$name.apply[..$_](..$args)" =>
@@ -138,7 +135,7 @@ class Macros(val c: Context) {
     }
   }
 
-  private def reifySkeleton(mtree: m.Tree, mode: Mode): g.Tree = {
+  private def reifySkeleton(tree: m.Tree, mode: Mode): g.Tree = {
     def path(fqn: String): g.Tree = {
       val frags = fqn.split("\\.").toList
       val root = g.Ident(g.TermName("_root_")): g.Tree
@@ -153,7 +150,7 @@ class Macros(val c: Context) {
       val pos = quasi.pos.absolutize
       val hole = mode.holes.find(h => pos.start <= h.pos.point && h.pos.point <= pos.end).get
       if (mode.isTerm) hole.arg
-      else ???
+      else pq"${hole.name}"
     }
     def trees(trees: List[m.Tree]): g.Tree = {
       def loop(trees: List[m.Tree], acc: g.Tree, prefix: List[m.Tree]): g.Tree = trees match {
@@ -213,7 +210,33 @@ class Macros(val c: Context) {
       case x: Symbol => g.Literal(g.Constant(x))
       case other => sys.error(s"unexpected reifee: ${other.getClass} $other")
     }
-    reify(mtree)
+    mode match {
+      case Mode.Term(_, _, _) =>
+        reify(tree)
+      case Mode.Pattern(_, _, dummy, holes) =>
+        // inspired by https://github.com/densh/joyquote/blob/master/src/main/scala/JoyQuote.scala
+        val pattern = reify(tree)
+        val (thenp, elsep) = {
+          if (holes.isEmpty) (q"true", q"false")
+          else {
+            val resultNames = holes.zipWithIndex.map({ case (_, i) => resultName(i) })
+            val resultPatterns = resultNames.map(name => pq"$name")
+            val resultTerms = resultNames.map(name => q"$name")
+            val thenp = q"""
+              (..${holes.map(_.name)}) match {
+                case (..$resultPatterns) => _root_.scala.Some((..$resultTerms))
+                case _ => _root_.scala.None
+              }
+            """
+            (thenp, q"_root_.scala.None")
+          }
+        }
+        val matchp = pattern match {
+          case g.Bind(_, g.Ident(g.termNames.WILDCARD)) => q"tree match { case $pattern => $thenp }"
+          case _ => q"tree match { case $pattern => $thenp; case _ => $elsep }"
+        }
+        q"new { def unapply(tree: _root_.scala.Any) = $matchp }.unapply($dummy)"
+    }
   }
 
   private implicit def mpositionToGposition(pos: m.Position): g.Position = {
