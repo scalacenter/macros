@@ -11,14 +11,14 @@ trait Errors { self: ReflectToolkit =>
 
   def MissingLibraryDependencyOnScalamacros(pos: Position): Unit = {
     val version = coreVersion.syntax
-    val dependency = s"""a library dependency on "org.scalamacros" %% "scalamacros" % "$version""""
-    reporter.error(pos, s"new-style macros require $dependency")
+    val ivy = s""""org.scalamacros" %% "scalamacros" % "$version""""
+    reporter.error(pos, s"new-style macros require libraryDependencies += $ivy")
   }
 
   def MissingPluginDependencyOnParadise(pos: Position): Unit = {
     val version = "2.1.0"
-    val dependency = s"""a plugin dependency on "org.scalamacros" %% "paradise" % "$version""""
-    reporter.error(pos, s"new-style macro annotations require $dependency")
+    val ivy = """"org.scalamacros" %% "paradise" % "$version" cross CrossVersion.full"""
+    reporter.error(pos, s"new-style macro annotations require addCompilerPlugin($ivy)")
   }
 
   def BadCoreVersion(pos: Position, found: String, required: String): Unit = {

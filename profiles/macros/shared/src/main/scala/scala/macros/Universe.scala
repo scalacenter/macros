@@ -1,8 +1,9 @@
 package scala.macros
 
 import scala.macros.inputs._
+import scala.macros.trees._
 
-private[scala] trait Universe extends scala.meta.Universe with Expansions {
+private[scala] trait Universe extends scala.meta.Universe with Expansions with Quasiquotes {
   private[scala] type Abstracts <: TreeAbstracts with MirrorAbstracts with ExpansionAbstracts
   private[scala] def abstracts: Abstracts
 

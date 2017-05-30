@@ -388,7 +388,7 @@ abstract class SyntaxAnalyzer extends NscSyntaxAnalyzer with ReflectToolkit {
       q"""
         var foundEngine = "old-style " + _root_.scala.util.Properties.versionNumberString
         def failMacroEngine(ex: Exception): _root_.scala.Nothing = {
-          val requiredEngine = ${engineVersion.toString}
+          val requiredEngine = ${"new-style " + engineVersion.toString}
           var msg = "macro cannot be expanded, because it was compiled by an incompatible engine"
           msg += (_root_.scala.meta.internal.prettyprinters.EOL + " found   : " + foundEngine)
           msg += (_root_.scala.meta.internal.prettyprinters.EOL + " required: " + requiredEngine)
@@ -427,7 +427,7 @@ abstract class SyntaxAnalyzer extends NscSyntaxAnalyzer with ReflectToolkit {
         }
         val ConfigPackage = "scala.macros.internal.config.package"
         val foundVersion = invokeEngineMethod(ConfigPackage, "engineVersion")
-        try foundEngine = foundVersion.toString
+        try foundEngine = "new-style " + foundVersion.toString
         catch { case ex: _root_.java.lang.ClassCastException => failMacroEngine(ex) }
 
         val ScalacUniverse = "scala.macros.internal.engines.scalac.Universe"

@@ -1,6 +1,7 @@
-Below you can find a comprehensive map between Scala's language constructs and various quasiquotes in scala.meta. If something's missing here, it's a bug that should be [submitted to our issue tracker](https://github.com/scalameta/scalameta/issues/new).
+Below you can find a comprehensive map between Scala's language constructs and various trees in Scalameta. If something's missing here, it's a bug that should be [submitted to our issue tracker](https://github.com/scalameta/scalameta/issues/new).
 
-This specification describes quasiquote syntax using a markedly condensed notation. If you have troubles decyphering it, consult the "Legend" section in the end of the document.
+This specification describes trees using a markedly condensed notation based on quasiquotes.
+If you have troubles decyphering it, consult the "Legend" section in the end of the document.
 
 ## Expressions (meta.Term)
 

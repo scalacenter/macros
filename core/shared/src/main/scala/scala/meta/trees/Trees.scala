@@ -1,7 +1,9 @@
 package scala.meta
 package trees
 
-private[scala] trait Trees extends Abstracts with Companions with Extensions { self: Universe =>
+private[scala] trait Trees extends Abstracts with Companions with Extensions {
+  self: Universe =>
+
   type Tree >: Null <: AnyRef // Tree.pos, Tree.syntax, Tree.structure
 
   type Ref >: Null <: Tree
