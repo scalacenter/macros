@@ -48,9 +48,9 @@ lazy val pluginsScalac = project
     version := PluginScalacVersion,
     crossScalaVersions := List(Scala211), // TODO: support other versions of Scalac
     description := "Scalac integration for new-style Scala macros",
-    libraryDependencies += "org.scala-lang" % "scala-compiler" % scalaVersion.value
-    // resolvers += Resolver.bintrayRepo("scalameta", "maven"),
-    // libraryDependencies += "org.scalameta" %% "scalameta" % "1.9.0-768-cf95688f"
+    libraryDependencies += "org.scala-lang" % "scala-compiler" % scalaVersion.value,
+    resolvers += Resolver.bintrayRepo("scalameta", "maven"),
+    libraryDependencies += "org.scalameta" %% "scalameta" % "1.9.0-768-cf95688f"
   )
   .dependsOn(enginesScalac)
 
