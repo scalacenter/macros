@@ -4,6 +4,7 @@ package quasiquotes
 
 import scala.language.implicitConversions
 import scala.reflect.macros.whitebox.Context
+import scala.reflect.internal.{util => gu}
 import scala.macros.internal.trees.Errors
 import scala.meta.internal.parsers.Absolutize._
 import scala.meta.internal.trees.Quasi
@@ -23,6 +24,7 @@ class Macros(val c: Context) {
     def name: String
     def multi: Boolean
     def holes: List[Hole]
+    def hole(pos: g.Position) = holes.find(h => pos.start <= h.pos.point && h.pos.point <= pos.end)
   }
   private object Mode {
     case class Term(name: String, multi: Boolean, holes: List[Hole]) extends Mode
@@ -145,18 +147,23 @@ class Macros(val c: Context) {
       val reifiedArgs = args.map(reify)
       g.Apply(reifiedFqn, reifiedArgs)
     }
-    def unquote(quasi: m.Tree, optional: Boolean): g.Tree = {
-      val pos = quasi.pos.absolutize
-      val hole = mode.holes.find(h => pos.start <= h.pos.point && h.pos.point <= pos.end).get
-      if (mode.isTerm) {
-        if (optional) {
-          val captureOption = hole.arg.tpe.baseType(g.definitions.OptionClass) != g.NoType
-          if (captureOption) hole.arg else q"_root_.scala.Some(${hole.arg})"
-        } else {
-          hole.arg
-        }
-      } else {
-        pq"${hole.name}"
+    def unquote(quasi: m.Tree): g.Tree = {
+      val hole = mode.hole(quasi.pos).get
+      if (mode.isTerm) hole.arg else pq"${hole.name}"
+    }
+    def treeopt(treeopt: Option[m.Tree]): g.Tree = {
+      treeopt match {
+        case Some(quasi: Quasi) =>
+          val reified = reify(quasi)
+          val autoOption = {
+            val hole = mode.hole(quasi.pos).get
+            mode.isTerm && hole.arg.tpe.baseType(g.definitions.OptionClass) == g.NoType
+          }
+          if (autoOption) q"_root_.scala.Some($reified)" else reified
+        case Some(tree) =>
+          apply("scala.Some", List(tree))
+        case None =>
+          path("scala.None")
       }
     }
     def trees(trees: List[m.Tree]): g.Tree = {
@@ -198,14 +205,13 @@ class Macros(val c: Context) {
       }
     }
     def reify(x: Any): g.Tree = x match {
-      case x: Quasi => unquote(x, optional = false)
-      case Some(x: Quasi) => unquote(x, optional = true)
+      case x: Quasi => unquote(x)
       case x: m.Tree => apply("scala.macros." + x.productPrefix, x.productIterator.toList)
       case Nil => path("scala.Nil")
       case xss @ List(_: List[_], _*) => treess(xss.asInstanceOf[List[List[m.Tree]]])
       case xs @ List(_*) => trees(xs.asInstanceOf[List[m.Tree]])
       case None => path("scala.None")
-      case x: Some[_] => apply("scala.Some", List(x.get))
+      case x: Some[_] => treeopt(x.asInstanceOf[Some[m.Tree]])
       case x: Boolean => g.Literal(g.Constant(x))
       case x: Byte => g.Literal(g.Constant(x))
       case x: Short => g.Literal(g.Constant(x))
@@ -237,7 +243,8 @@ class Macros(val c: Context) {
   }
 
   private implicit def mpositionToGposition(pos: m.Position): g.Position = {
-    // TODO: this is another instance of #383
-    c.macroApplication.pos.focus.withPoint(pos.absolutize.start)
+    val pos1 = pos.absolutize
+    val source = c.macroApplication.pos.source
+    new gu.RangePosition(source, pos1.start, pos1.start, pos1.end).asInstanceOf[g.Position]
   }
 }
