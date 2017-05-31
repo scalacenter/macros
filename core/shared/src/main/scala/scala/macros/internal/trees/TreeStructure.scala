@@ -2,9 +2,9 @@ package scala.macros.internal
 package trees
 
 import scala.macros.internal.prettyprinters._
-import scala.macros.trees.Trees
+import scala.macros.Universe
 
-trait TreeStructure { self: Trees =>
+trait TreeStructure { self: Universe =>
 
   private[macros] implicit def treeStructure[T <: Tree]: Structure[T] = Structure { (p, tree) =>
     // TODO: implement this

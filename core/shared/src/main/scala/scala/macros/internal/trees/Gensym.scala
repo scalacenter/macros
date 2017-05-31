@@ -2,9 +2,9 @@ package scala.macros.internal
 package trees
 
 import java.util.concurrent.atomic._
-import scala.macros.trees.Trees
+import scala.macros.Universe
 
-trait Gensym { self: Trees =>
+trait Gensym { self: Universe =>
   private val atomicInteger = new AtomicInteger()
 
   def gensym(prefix: String): String = {
