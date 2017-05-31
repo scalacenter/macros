@@ -45,7 +45,7 @@ pipeline:
 matrix:
   include:
     # Fresh Dotty builds can be found at http://repo1.maven.org/maven2/ch/epfl/lamp/dotty_0.1/maven-metadata.xml
-    - SCALA_VERSION: 0.1.1-bin-20170525-dffccfa-NIGHTLY
+    - SCALA_VERSION: 0.1.2-RC1
       DRONE_TEST: true
       DRONE_PUBLISH: true
     - SCALA_VERSION: 2.10.6
