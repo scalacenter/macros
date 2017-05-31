@@ -54,12 +54,12 @@ lazy val pluginsScalac = project
   )
   .dependsOn(enginesScalac)
 
-lazy val tests = crossProject
-  .in(file("tests"))
+lazy val testsApi = crossProject
+  .in(file("tests/api"))
   .enablePlugins(BuildInfoPlugin)
   .settings(
     nonPublishableSettings,
-    description := "Tests for new-style Scala macros",
+    description := "Tests of interfaces for new-style Scala macros",
     libraryDependencies += "junit" % "junit" % "4.12",
     libraryDependencies ++= (
       if (isDotty.value) Nil
@@ -67,8 +67,32 @@ lazy val tests = crossProject
     )
   )
   .dependsOn(scalamacros)
-lazy val testsJVM = tests.jvm
-lazy val testsJS = tests.js
+lazy val testsApiJVM = testsApi.jvm
+lazy val testsApiJS = testsApi.js
+
+lazy val testsMacros = crossProject
+  .in(file("tests/macros"))
+  .enablePlugins(BuildInfoPlugin)
+  .settings(
+    nonPublishableSettings,
+    description := "Tests of new-style Scala macros",
+    crossScalaVersions := List(Scala211), // TODO: support other versions of Scala
+    libraryDependencies += "junit" % "junit" % "4.12",
+    libraryDependencies += "org.scala-lang" % "scala-reflect" % scalaVersion.value,
+    addCompilerPlugin("org.scalamacros" %% "paradise" % "2.1.0" cross CrossVersion.full),
+    scalacOptions ++= {
+      val jar = Keys.`package`.in(pluginsScalac).in(Compile).value
+      val addPlugin = "-Xplugin:" + jar.getAbsolutePath
+      // Thanks Jason for this cool idea (taken from https://github.com/retronym/boxer)
+      // add plugin timestamp to compiler options to trigger recompile of
+      // main after editing the plugin. (Otherwise a 'clean' is needed.)
+      val dummy = "-Jdummy=" + jar.lastModified
+      Seq(addPlugin, dummy)
+    }
+  )
+  .dependsOn(scalamacros)
+lazy val testsMacrosJVM = testsMacros.jvm
+lazy val testsMacrosJS = testsMacros.js
 
 // ==========================================
 // Settings

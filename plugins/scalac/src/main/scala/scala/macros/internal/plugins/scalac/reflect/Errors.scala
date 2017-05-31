@@ -17,7 +17,7 @@ trait Errors { self: ReflectToolkit =>
 
   def MissingPluginDependencyOnParadise(pos: Position): Unit = {
     val version = "2.1.0"
-    val ivy = """"org.scalamacros" %% "paradise" % "$version" cross CrossVersion.full"""
+    val ivy = s""""org.scalamacros" %% "paradise" % "$version" cross CrossVersion.full"""
     reporter.error(pos, s"new-style macro annotations require addCompilerPlugin($ivy)")
   }
 
