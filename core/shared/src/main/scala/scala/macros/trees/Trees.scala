@@ -1,8 +1,7 @@
 package scala.macros
 package trees
 
-private[macros] trait Trees extends Abstracts with Companions with Extensions {
-  self: Universe =>
+private[macros] trait Trees extends Abstracts with Companions with Extensions { self: Universe =>
 
   type Tree >: Null <: AnyRef // Tree.pos, Tree.syntax, Tree.structure
 

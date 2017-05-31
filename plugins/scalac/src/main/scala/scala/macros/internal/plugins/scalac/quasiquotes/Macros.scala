@@ -171,12 +171,14 @@ class Macros(val c: Context) {
         case (quasi: Quasi) +: rest if quasi.rank == 1 =>
           if (acc.isEmpty) {
             if (prefix.isEmpty) loop(rest, reify(quasi), Nil)
-            else loop(rest, prefix.foldRight(acc)((curr, acc) => {
-              val currElement = reify(curr)
-              val alreadyLiftedList = acc.orElse(reify(quasi))
-              if (mode.isTerm) q"$currElement +: $alreadyLiftedList"
-              else pq"$currElement +: $alreadyLiftedList"
-            }), Nil)
+            else {
+              loop(rest, prefix.foldRight(acc)((curr, acc) => {
+                val currElement = reify(curr)
+                val alreadyLiftedList = acc.orElse(reify(quasi))
+                if (mode.isTerm) q"$currElement +: $alreadyLiftedList"
+                else pq"$currElement +: $alreadyLiftedList"
+              }), Nil)
+            }
           } else {
             if (mode.isTerm) loop(rest, q"$acc ++ ${reify(quasi)}", Nil)
             else c.abort(quasi.pos, Errors.QuasiquoteAdjacentEllipsesInPattern(quasi.rank))
@@ -194,7 +196,7 @@ class Macros(val c: Context) {
       loop(trees, g.EmptyTree, Nil)
     }
     def treess(treess: List[List[m.Tree]]): g.Tree = {
-      val tripleDotQuasis = treess.flatten.collect{ case quasi: Quasi if quasi.rank == 2 => quasi }
+      val tripleDotQuasis = treess.flatten.collect { case quasi: Quasi if quasi.rank == 2 => quasi }
       if (tripleDotQuasis.length == 0) {
         apply("scala.List", treess)
       } else if (tripleDotQuasis.length == 1) {
@@ -208,8 +210,8 @@ class Macros(val c: Context) {
       case x: Quasi => unquote(x)
       case x: m.Tree => apply("scala.macros." + x.productPrefix, x.productIterator.toList)
       case Nil => path("scala.Nil")
-      case xss @ List(_: List[_], _*) => treess(xss.asInstanceOf[List[List[m.Tree]]])
-      case xs @ List(_*) => trees(xs.asInstanceOf[List[m.Tree]])
+      case xss @ List(_: List[_], _ *) => treess(xss.asInstanceOf[List[List[m.Tree]]])
+      case xs @ List(_ *) => trees(xs.asInstanceOf[List[m.Tree]])
       case None => path("scala.None")
       case x: Some[_] => treeopt(x.asInstanceOf[Some[m.Tree]])
       case x: Boolean => g.Literal(g.Constant(x))

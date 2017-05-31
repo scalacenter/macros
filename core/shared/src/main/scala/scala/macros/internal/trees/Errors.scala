@@ -6,8 +6,8 @@ import scala.macros.internal.prettyprinters.EOL
 object Errors {
   final val QuasiquotesRequireCompilerSupport =
     "new-style quasiquotes require " +
-    """addCompilerPlugin("org.scalamacros" %% "scalac-plugin" % "..." cross CrossVersion.full);""" +
-    " consult http://scalamacros.org for more information."
+      """addCompilerPlugin("org.scalamacros" %% "scalac-plugin" % "..." cross CrossVersion.full);""" +
+      " consult http://scalamacros.org for more information."
 
   def QuasiquoteRankMismatch(found: Int, required: Int, hint: String = ""): String = {
     val s_found = "." * (found + 1) + "$"
@@ -20,13 +20,13 @@ object Errors {
   def QuasiquoteAdjacentEllipsesInPattern(rank: Int): String = {
     val hint = {
       "Note that you can extract a list into an unquote when pattern matching," + EOL +
-      "it just cannot follow another list either directly or indirectly."
+        "it just cannot follow another list either directly or indirectly."
     }
     QuasiquoteRankMismatch(rank, rank - 1, hint)
   }
 
   def QuasiquoteTripleDotImplementationRestriction: String = {
     "implementation restriction: can't mix ...$ with anything else in parameter lists." + EOL +
-    "See https://github.com/scalameta/scalameta/issues/406 for details."
+      "See https://github.com/scalameta/scalameta/issues/406 for details."
   }
 }
