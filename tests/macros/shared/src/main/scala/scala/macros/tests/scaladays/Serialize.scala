@@ -2,6 +2,7 @@ package scala.macros.tests
 package scaladays
 
 import scala.macros._
+import scala.language.experimental.macros
 
 trait Serialize[T] {
   def apply(x: T): String

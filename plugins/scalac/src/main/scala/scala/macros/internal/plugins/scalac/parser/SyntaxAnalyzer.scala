@@ -135,7 +135,7 @@ abstract class SyntaxAnalyzer extends NscSyntaxAnalyzer with ReflectToolkit {
             }
             val helperName = owner.name.inlineModuleName
             val helper1 = atPos(owner.pos)(q"object $helperName { ..${mstatss1.flatten} }")
-            List(owner1, helper1)
+            List(atPos(owner1.pos)(ImportScalaLanguageExperimentalMacros), owner1, helper1)
           } else {
             List(owner)
           }
@@ -317,7 +317,7 @@ abstract class SyntaxAnalyzer extends NscSyntaxAnalyzer with ReflectToolkit {
         }
         DefDef(mods4, name4, tparams4, vparamss4, tpt4, rhs4)
       }
-      val stats = List(atPos(tree.pos)(ImportScalaLanguageExperimentalMacros), macroDef)
+      val stats = List(macroDef)
       val mstats = List(shimDef, implDef, abiDef)
       (stats, mstats)
     }
