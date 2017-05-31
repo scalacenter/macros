@@ -20,6 +20,7 @@ lazy val scalamacros = crossProject
   .settings(
     publishableSettings,
     version := CoreVersion,
+    moduleName := CoreProduct,
     description := "Platform-independent interfaces for new-style Scala macros"
   )
   .jsSettings(
@@ -35,6 +36,7 @@ lazy val enginesScalac = project
     publishableSettings,
     version := EngineScalacVersion,
     crossScalaVersions := List(Scala211), // TODO: support other versions of Scalac
+    moduleName := EngineScalacProduct,
     description := "Scalac implementation of interfaces for new-style Scala macros",
     libraryDependencies += "org.scala-lang" % "scala-compiler" % scalaVersion.value
   )
@@ -47,6 +49,7 @@ lazy val pluginsScalac = project
     pluginSettings,
     version := PluginScalacVersion,
     crossScalaVersions := List(Scala211), // TODO: support other versions of Scalac
+    moduleName := PluginScalacProduct,
     description := "Scalac integration for new-style Scala macros",
     libraryDependencies += "org.scala-lang" % "scala-compiler" % scalaVersion.value,
     resolvers += Resolver.bintrayRepo("scalameta", "maven"),
@@ -134,7 +137,9 @@ lazy val sharedSettings = Def.settings(
   triggeredMessage.in(ThisBuild) := Watched.clearWhenTriggered,
   buildInfoKeys := Seq[BuildInfoKey](
     scalaVersion,
-    version
+    version,
+    name,
+    moduleName
   ),
   buildInfoPackage := "scala.macros.internal.config." + name.value,
   buildInfoObject := "BuildInfo",

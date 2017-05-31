@@ -2,16 +2,17 @@ package scala.macros.internal
 package plugins.scalac
 package reflect
 
+import scala.macros.internal.config.scalamacros.BuildInfo
 import scala.macros.internal.prettyprinters.EOL
-import scala.macros.coreVersion
 
 trait Errors { self: ReflectToolkit =>
   import global._
   import pluginDefinitions._
 
   def MissingLibraryDependencyOnScalamacros(pos: Position): Unit = {
-    val version = coreVersion.syntax
-    val ivy = s""""org.scalamacros" %% "scalamacros" % "$version""""
+    val moduleName = BuildInfo.moduleName
+    val moduleVersion = BuildInfo.version
+    val ivy = s""""org.scalamacros" %% "$moduleName" % "$moduleVersion""""
     reporter.error(pos, s"new-style macros require libraryDependencies += $ivy")
   }
 
