@@ -64,7 +64,8 @@ trait Versions { self: ScalamacrosBuild =>
     val preReleasePrefix = nextStableVersion
     val preReleaseSuffix = {
       val gitDescribeSuffix = {
-        val distance = os.git.distance("be06f2b229d93538f63e5ddde644fbde69e75afb", "HEAD")
+        val root = shell.check_output(s"git rev-list --max-parents=0 HEAD")
+        val distance = os.git.distance(root, "HEAD")
         val currentSha = os.git.currentSha().substring(0, 8)
         s"$distance-$currentSha"
       }
