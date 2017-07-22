@@ -19,7 +19,6 @@ object PatternMatching {
   (null: AnyRef) match { case Position.None => }
   (null: AnyRef) match { case _: Position.Range => }
   (null: AnyRef) match { case Position.Range(_, _, _) => }
-  (null: AnyRef) match { case _: AbsolutePath => }
   // (null: AnyRef) match { case _: Term.This => }
   (null: AnyRef) match { case Term.This(_) => }
 }

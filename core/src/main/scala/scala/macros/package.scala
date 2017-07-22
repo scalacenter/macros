@@ -5,8 +5,6 @@ package object macros
     with scala.macros.config.Aliases
     with scala.macros.inputs.Api
     with scala.macros.inputs.Aliases
-    with scala.macros.io.Api
-    with scala.macros.io.Aliases
     with scala.macros.prettyprinters.Api
     with scala.macros.prettyprinters.Aliases
     with scala.macros.trees.Api

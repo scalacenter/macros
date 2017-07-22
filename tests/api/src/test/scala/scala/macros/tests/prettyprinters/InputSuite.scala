@@ -5,7 +5,7 @@ import org.junit._
 import org.junit.runner._
 import org.junit.runners._
 import org.junit.Assert._
-import scala.macros.io._
+import java.nio.file._
 import scala.macros.inputs._
 
 @RunWith(classOf[JUnit4])
@@ -19,7 +19,7 @@ class InputSuite {
 
   @Test
   def file: Unit = {
-    val input = Input.File(AbsolutePath("/foo.scala").get)
+    val input = Input.File(Paths.get("/foo.scala"))
     assertEquals("""/foo.scala""", input.syntax)
     assertEquals("""Input.File(Paths.get("/foo.scala"))""", input.structure)
   }
