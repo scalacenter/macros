@@ -21,27 +21,6 @@ object Input {
     lazy val chars = new Array[Char](0)
   }
 
-  final case class String(s: JString) extends Input {
-    lazy val chars = s.toArray
-  }
-
-  final case class Stream(stream: InputStream, charset: Charset) extends Input {
-    lazy val chars = new JString(CoreStreamIO.readBytes(stream), charset).toArray
-    override protected def structure(p: Prettyprinter) = {
-      p.raw("Input.Stream(<stream>")
-      if (charset.name != "UTF-8") p.raw(", ").str(charset)
-      p.raw(")")
-    }
-  }
-  object Stream {
-    def apply(stream: InputStream): Stream = apply(stream, Charset.forName("UTF-8"))
-  }
-
-  final case class LabeledString(label: JString, contents: JString) extends Input {
-    lazy val chars = contents.toArray
-    override protected def syntax(p: Prettyprinter) = p.raw(label)
-  }
-
   final case class File(path: AbsolutePath, charset: Charset) extends Input {
     lazy val chars = CoreFileIO.slurp(path, charset).toArray
     override protected def syntax(p: Prettyprinter) = p.stx(path)
@@ -59,10 +38,8 @@ object Input {
     def apply(file: JFile): File = apply(file, Charset.forName("UTF-8"))
   }
 
-  // NOTE: `start` and `end` are String.substring-style,
-  // i.e. `start` is inclusive and `end` is not.
-  // Therefore Slice.end can point to the last character of input plus one.
-  final case class Slice(input: Input, start: Int, end: Int) extends Input {
-    lazy val chars = input.chars.slice(start, end)
+  final case class VirtualFile(label: JString, contents: JString) extends Input {
+    lazy val chars = contents.toArray
+    override protected def syntax(p: Prettyprinter) = p.raw(label)
   }
 }

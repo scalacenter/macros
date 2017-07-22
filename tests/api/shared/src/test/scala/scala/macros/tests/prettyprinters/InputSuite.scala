@@ -18,27 +18,6 @@ class InputSuite {
   }
 
   @Test
-  def string: Unit = {
-    val input = Input.String("42")
-    assertEquals("""<string>""", input.syntax)
-    assertEquals("""Input.String("42")""", input.structure)
-  }
-
-  @Test
-  def stream: Unit = {
-    val input = Input.Stream(null)
-    assertEquals("""<stream>""", input.syntax)
-    assertEquals("""Input.Stream(<stream>)""", input.structure)
-  }
-
-  @Test
-  def labeledString: Unit = {
-    val input = Input.LabeledString("label", "42")
-    assertEquals("""label""", input.syntax)
-    assertEquals("""Input.LabeledString("label", "42")""", input.structure)
-  }
-
-  @Test
   def file: Unit = {
     val input = Input.File(AbsolutePath("/foo.scala").get)
     assertEquals("""/foo.scala""", input.syntax)
@@ -46,9 +25,9 @@ class InputSuite {
   }
 
   @Test
-  def slice: Unit = {
-    val input = Input.Slice(Input.String("42"), 1, 1)
-    assertEquals("""<slice>""", input.syntax)
-    assertEquals("""Input.Slice(Input.String("42"), 1, 1)""", input.structure)
+  def virtualFile: Unit = {
+    val input = Input.VirtualFile("label", "42")
+    assertEquals("""label""", input.syntax)
+    assertEquals("""Input.VirtualFile("label", "42")""", input.structure)
   }
 }
