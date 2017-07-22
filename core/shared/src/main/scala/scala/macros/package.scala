@@ -3,8 +3,6 @@ package scala
 package object macros
     extends scala.macros.config.Api
     with scala.macros.config.Aliases
-    with scala.macros.dialects.Api
-    with scala.macros.dialects.Aliases
     with scala.macros.inputs.Api
     with scala.macros.inputs.Aliases
     with scala.macros.io.Api

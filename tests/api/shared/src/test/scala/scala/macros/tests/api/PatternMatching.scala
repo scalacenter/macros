@@ -9,8 +9,6 @@ object PatternMatching {
   import scala.macros._
   (null: AnyRef) match { case _: Version => }
   (null: AnyRef) match { case Version(_, _, _, _, _) => }
-  (null: AnyRef) match { case _: Dialect => }
-  // (null: AnyRef) match { case Dialect(_, _, _, ...) => }
   (null: AnyRef) match { case _: Input => }
   (null: AnyRef) match { case Input.None => }
   (null: AnyRef) match { case _: Input.File => }

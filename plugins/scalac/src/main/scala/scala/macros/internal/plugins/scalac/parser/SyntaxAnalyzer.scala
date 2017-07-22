@@ -263,10 +263,6 @@ abstract class SyntaxAnalyzer extends NscSyntaxAnalyzer with ReflectToolkit {
           val vtparams3 = tparams.map(p => {
             atPos(p.pos)(ValDef(NoMods, p.name.toTermName, MacrosType, EmptyTree))
           })
-          val dialectParam3 = {
-            val name3 = unit.freshTermName("dialect$")
-            atPos(tree.pos)(ValDef(Modifiers(Flags.IMPLICIT), name3, MacrosDialect, EmptyTree))
-          }
           val mirrorParam3 = {
             val name3 = unit.freshTermName("mirror$")
             atPos(tree.pos)(ValDef(Modifiers(Flags.IMPLICIT), name3, MacrosMirror, EmptyTree))
@@ -276,8 +272,8 @@ abstract class SyntaxAnalyzer extends NscSyntaxAnalyzer with ReflectToolkit {
             atPos(tree.pos)(ValDef(Modifiers(Flags.IMPLICIT), name3, MacrosExpansion, EmptyTree))
           }
           val vcapabilities3 = {
-            if (isMacroAnnotation) List(dialectParam3, expansionParam3)
-            else List(dialectParam3, mirrorParam3, expansionParam3)
+            if (isMacroAnnotation) List(expansionParam3)
+            else List(mirrorParam3, expansionParam3)
           }
           List(List(thisParam3) ++ vvparams3 ++ vtparams3, vcapabilities3)
         }
@@ -377,12 +373,11 @@ abstract class SyntaxAnalyzer extends NscSyntaxAnalyzer with ReflectToolkit {
         }
       }
       val otherArgNames = otherArgDefs.map(_.name)
-      val dialectArgName = unit.freshTermName("dialect$")
       val mirrorArgName = unit.freshTermName("mirror$")
       val expansionArgName = unit.freshTermName("expansion$")
       val capabilityArgNames = {
-        if (isMacroAnnotation) List(dialectArgName, expansionArgName)
-        else List(dialectArgName, mirrorArgName, expansionArgName)
+        if (isMacroAnnotation) List(expansionArgName)
+        else List(mirrorArgName, expansionArgName)
       }
       val implName = name.inlineImplName
       q"""
@@ -438,7 +433,6 @@ abstract class SyntaxAnalyzer extends NscSyntaxAnalyzer with ReflectToolkit {
             catch { case ex: _root_.java.lang.ClassCastException => failMacroEngine(ex) }
           }
           ..$otherArgDefs
-          val $dialectArgName = _root_.scala.macros.Dialect.current
           val ScalacMirror = "scala.macros.internal.engines.scalac.semantic.Mirror"
           val $mirrorArgName = {
             val $mirrorArgName = invokeEngineMethod(ScalacMirror, "apply", $cName)

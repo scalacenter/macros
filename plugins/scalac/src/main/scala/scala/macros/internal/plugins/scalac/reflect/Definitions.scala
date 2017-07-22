@@ -93,7 +93,6 @@ trait Definitions { self: ReflectToolkit =>
     lazy val MacrosStat: Tree = apiRef("Stat")
     lazy val MacrosTerm: Tree = apiRef("Term")
     lazy val MacrosType: Tree = apiRef("Type")
-    lazy val MacrosDialect: Tree = apiRef("Dialect")
     lazy val MacrosMirror: Tree = apiRef("Mirror")
     lazy val MacrosExpansion: Tree = apiRef("Expansion")
 
