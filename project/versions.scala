@@ -9,22 +9,11 @@ trait Versions { self: ScalamacrosBuild =>
 
   lazy val LanguageVersion = sys.env.getOrElse("SCALA_VERSION", Scala211)
   lazy val LanguageVersions = List(Scala210, Scala211, Scala212, Scala213, Dotty)
-  lazy val Scala210 = readScalaVersionFromDroneYml("2.10.x")
-  lazy val Scala211 = readScalaVersionFromDroneYml("2.11.x")
-  lazy val Scala212 = readScalaVersionFromDroneYml("2.12.x")
-  lazy val Scala213 = readScalaVersionFromDroneYml("2.13.x")
-  lazy val Dotty = readScalaVersionFromDroneYml("0.1.x")
-  private def readScalaVersionFromDroneYml(series: String): String = {
-    val lines = Source.fromFile(".drone.yml")(Codec.UTF8).getLines.toList
-    val rxVersion = series.replace(".", "\\.").replace("x", ".*")
-    val rxMatrixEntry = ("""^.*?SCALA_VERSION:\s*(""" + rxVersion + """)\s*$""").r
-    val versions = lines.collect { case rxMatrixEntry(version) => version }
-    versions.distinct match {
-      case List(version) => version
-      case Nil => sys.error(s"no Scala version $series found in .drone.yml")
-      case versions => sys.error("multiple Scala versions $series found in .drone.yml")
-    }
-  }
+  lazy val Scala210 = "2.10.6"
+  lazy val Scala211 = "2.11.11"
+  lazy val Scala212 = "2.12.2"
+  lazy val Scala213 = "2.13.0-M1"
+  lazy val Dotty = "0.2.0"
 
   lazy val BuildVersion = computeProductVersionFromGit(BuildProduct).replace("2.0.0", "x.y.z")
   lazy val CoreVersion = computeProductVersionFromGit(CoreProduct)

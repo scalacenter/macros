@@ -9,8 +9,6 @@ import org.scalamacros.build._
   name := "scalamacrosRoot"
 }
 nonPublishableSettings
-commands += CiCommand("ci-test", List("test"))
-commands += CiCommand("ci-publish", List("publish"))
 
 lazy val scalamacros = project
   .in(file("core"))
