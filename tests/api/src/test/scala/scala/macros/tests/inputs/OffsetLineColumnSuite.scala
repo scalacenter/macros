@@ -11,7 +11,7 @@ import scala.macros.internal.prettyprinters._
 @RunWith(classOf[JUnit4])
 class OffsetLineColumnSuite {
   private def test(s: String)(expected: String): Unit = {
-    val content = Input.String(s)
+    val content = Input.VirtualFile("input", s)
     val points = 0.to(content.chars.length).map(i => Position.Range(content, i, i))
     val actual = points.map(p => s"${p.start} ${p.startLine} ${p.startColumn}").mkString(EOL)
     assertEquals(expected, actual)
