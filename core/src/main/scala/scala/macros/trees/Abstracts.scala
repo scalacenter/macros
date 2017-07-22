@@ -8,6 +8,7 @@ private[macros] trait Abstracts { self: Universe =>
   private[macros] trait TreeAbstracts {
     def treePos(tree: Tree): Position
     def nameValue(name: Name): String
+    def nameApply(value: String): Name
     def nameUnapply(tree: Any): Option[String]
     def litValue(lit: Lit): Any
     def litUnapply(tree: Any): Option[Any]

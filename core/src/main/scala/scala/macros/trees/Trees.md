@@ -119,13 +119,13 @@ If you have troubles decyphering it, consult the "Legend" section in the end of 
 
                 | Quasiquote
 ----------------|-------------------------------------------------
- Term Param     | `param"..$mods $ename: $tpeopt = $expropt"`
+ Term Param     | `param"..$mods $name: $tpeopt = $expropt"`
 
 ### Type Parameters (macros.Type.Param)
 
                 | Quasiquote
 ----------------|-------------------------------------------------
- Type Param     | `tparam"..$mods $tname[..$tparams] >: $tpeopt <: $tpeopt <% ..$tpes : ..$tpes"`
+ Type Param     | `tparam"..$mods $name[..$tparams] >: $tpeopt <: $tpeopt <% ..$tpes : ..$tpes"`
 
 ## Inits (macros.Init)
 

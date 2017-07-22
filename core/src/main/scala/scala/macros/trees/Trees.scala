@@ -11,6 +11,7 @@ private[macros] trait Trees extends Abstracts with Companions with Extensions { 
   type Name >: Null <: Ref // Name.value
   val Name: NameCompanion = new NameCompanion {}
   private[macros] trait NameCompanion {
+    def apply(value: String) = abstracts.nameApply(value)
     def unapply(tree: Any) = abstracts.nameUnapply(tree)
     def Anonymous = abstracts.NameAnonymous
     def Indeterminate = abstracts.NameIndeterminate

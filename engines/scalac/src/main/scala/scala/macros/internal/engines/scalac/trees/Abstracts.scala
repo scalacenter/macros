@@ -15,6 +15,11 @@ trait Abstracts extends scala.macros.trees.Abstracts with Positions { self: Univ
 
     def nameValue(name: Name): String = name.value
 
+    def nameApply(value: String): Name = {
+      if (value == "") Name.Anonymous()
+      else Name.Indeterminate(value)
+    }
+
     def nameUnapply(gtree: Any): Option[String] = gtree match {
       case tree: c.Name => Some(tree.value)
       case _ => None
@@ -53,7 +58,7 @@ trait Abstracts extends scala.macros.trees.Abstracts with Positions { self: Univ
     }
 
     object NameAnonymous extends NameAnonymousCompanion {
-      def apply(): Term.Name with Type.Name = c.NameAnonymous()
+      def apply(): Name = c.NameAnonymous()
       def unapply(gtree: Any): Boolean = gtree match {
         case tree: c.NameAnonymous => true
         case _ => false
@@ -140,7 +145,7 @@ trait Abstracts extends scala.macros.trees.Abstracts with Positions { self: Univ
 
     object TermName extends TermNameCompanion {
       def apply(value: String): Term.Name = {
-        new c.TermNameImpl(value)
+        new c.TermName(value)
       }
       def apply(sym: Symbol): Term.Name = {
         apply(sym.name.decoded).setSymbol(sym)
@@ -316,19 +321,23 @@ trait Abstracts extends scala.macros.trees.Abstracts with Positions { self: Univ
     object TermParam extends TermParamCompanion {
       def apply(
           mods: List[Mod],
-          name: Term.Name,
+          name: Name,
           decltpe: Option[Type],
           default: Option[Term]): Term.Param = {
+        val gname = name match {
+          case name: c.TermName => name.toGTermName
+          case _ => g.nme.WILDCARD
+        }
         val gtpt = decltpe.getOrElse(g.TypeTree())
         val gdefault = default.getOrElse(g.EmptyTree)
-        g.ValDef(mods.toGModifiers | gf.PARAM, name.toGTermName, gtpt, gdefault)
+        g.ValDef(mods.toGModifiers | gf.PARAM, gname, gtpt, gdefault)
       }
-      def unapply(gtree: Any): Option[(List[Mod], Term.Name, Option[Type], Option[Term])] = ???
+      def unapply(gtree: Any): Option[(List[Mod], Name, Option[Type], Option[Term])] = ???
     }
 
     object TypeName extends TypeNameCompanion {
       def apply(value: String): Type.Name = {
-        new c.TypeNameImpl(value)
+        new c.TypeName(value)
       }
       def apply(sym: Symbol): Type.Name = {
         apply(sym.name.decoded).setSymbol(sym)
@@ -450,13 +459,13 @@ trait Abstracts extends scala.macros.trees.Abstracts with Positions { self: Univ
     object TypeParam extends TypeParamCompanion {
       def apply(
           mods: List[Mod],
-          name: Type.Name,
+          name: Name,
           tparams: List[Type.Param],
           tbounds: Type.Bounds,
           vbounds: List[Type],
           cbounds: List[Type]): Type.Param = ???
       def unapply(gtree: Any)
-        : Option[(List[Mod], Type.Name, List[Type.Param], Type.Bounds, List[Type], List[Type])] =
+        : Option[(List[Mod], Name, List[Type.Param], Type.Bounds, List[Type], List[Type])] =
         ???
     }
 
@@ -701,8 +710,8 @@ trait Abstracts extends scala.macros.trees.Abstracts with Positions { self: Univ
     }
 
     object Self extends SelfCompanion {
-      def apply(name: Term.Name, decltpe: Option[Type]): Self = c.Self(name, decltpe)
-      def unapply(gtree: Any): Option[(Term.Name, Option[Type])] = gtree match {
+      def apply(name: Name, decltpe: Option[Type]): Self = c.Self(name, decltpe)
+      def unapply(gtree: Any): Option[(Name, Option[Type])] = gtree match {
         case tree: c.Self => c.Self.unapply(tree)
         case _ => None
       }
@@ -711,9 +720,13 @@ trait Abstracts extends scala.macros.trees.Abstracts with Positions { self: Univ
     implicit class XtensionSelf(self: Self) {
       def toGSelf: g.ValDef = {
         val Self(name, tpe) = self
+        val gname = name match {
+          case name: c.TermName => name.toGTermName
+          case _ => g.nme.WILDCARD
+        }
         val gmods = g.Modifiers(gf.PRIVATE)
         val gtpt = tpe.getOrElse(g.TypeTree())
-        g.ValDef(gmods, name.toGTermName, gtpt, g.EmptyTree).setPos(self.pos)
+        g.ValDef(gmods, gname, gtpt, g.EmptyTree).setPos(self.pos)
       }
     }
 
@@ -1066,8 +1079,8 @@ trait Abstracts extends scala.macros.trees.Abstracts with Positions { self: Univ
       }
     }
 
-    case class NameAnonymous() extends TermName with TypeName {
-      def value: String = "_"
+    case class NameAnonymous() extends Name {
+      def value: String = ""
     }
 
     case class NameIndeterminate(value: String) extends Name
@@ -1078,16 +1091,14 @@ trait Abstracts extends scala.macros.trees.Abstracts with Positions { self: Univ
     // scalac will be confused should the metaprogrammer decided to return those trees in expansion.
     // Luckily, not only g.Tree is not sealed, but also g.Ident is not final.
 
-    sealed trait TermName extends Name
-    class TermNameImpl(val value: String) extends g.Ident(g.TermName(value).encode) with TermName {
-      override def qualifier: g.Tree = super[TermName].qualifier
-      override val name: g.Name = super[TermName].name
+    class TermName(val value: String) extends g.Ident(g.TermName(value).encode) with Name {
+      override def qualifier: g.Tree = super[Name].qualifier
+      override val name: g.Name = super[Name].name
     }
 
-    sealed trait TypeName extends Name
-    class TypeNameImpl(val value: String) extends g.Ident(g.TypeName(value).encode) with TypeName {
-      override def qualifier: g.Tree = super[TypeName].qualifier
-      override val name: g.Name = super[TypeName].name
+    class TypeName(val value: String) extends g.Ident(g.TypeName(value).encode) with Name {
+      override def qualifier: g.Tree = super[Name].qualifier
+      override val name: g.Name = super[Name].name
     }
 
     case class Init(mtpe: Type, mname: Name, argss: List[List[Term]]) extends g.RefTree {
@@ -1095,7 +1106,7 @@ trait Abstracts extends scala.macros.trees.Abstracts with Positions { self: Univ
       def name: g.Name = mname.name
     }
 
-    case class Self(mname: Term.Name, decltpe: Option[Type]) extends g.DefTree {
+    case class Self(mname: Name, decltpe: Option[Type]) extends g.DefTree {
       def name: g.Name = mname.name
     }
 

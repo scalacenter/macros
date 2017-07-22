@@ -5,7 +5,7 @@ private[macros] trait Companions { self: Universe =>
   private[macros] val treeCompanions: TreeCompanions = new TreeCompanions {}
   private[macros] trait TreeCompanions {
     trait NameAnonymousCompanion {
-      def apply(): Term.Name with Type.Name
+      def apply(): Name
       def unapply(tree: Any): Boolean
     }
 
@@ -238,10 +238,10 @@ private[macros] trait Companions { self: Universe =>
     trait TermParamCompanion {
       def apply(
           mods: List[Mod],
-          name: Term.Name,
+          name: Name,
           decltpe: Option[Type],
           default: Option[Term]): Term.Param
-      def unapply(tree: Any): Option[(List[Mod], Term.Name, Option[Type], Option[Term])]
+      def unapply(tree: Any): Option[(List[Mod], Name, Option[Type], Option[Term])]
     }
 
     trait TypeNameCompanion {
@@ -353,13 +353,13 @@ private[macros] trait Companions { self: Universe =>
     trait TypeParamCompanion {
       def apply(
           mods: List[Mod],
-          name: Type.Name,
+          name: Name,
           tparams: List[Type.Param],
           tbounds: Type.Bounds,
           vbounds: List[Type],
           cbounds: List[Type]): Type.Param
       def unapply(tree: Any)
-        : Option[(List[Mod], Type.Name, List[Type.Param], Type.Bounds, List[Type], List[Type])]
+        : Option[(List[Mod], Name, List[Type.Param], Type.Bounds, List[Type], List[Type])]
     }
 
     trait PatVarCompanion {
@@ -548,8 +548,8 @@ private[macros] trait Companions { self: Universe =>
     }
 
     trait SelfCompanion {
-      def apply(name: Term.Name, decltpe: Option[Type]): Self
-      def unapply(tree: Any): Option[(Term.Name, Option[Type])]
+      def apply(name: Name, decltpe: Option[Type]): Self
+      def unapply(tree: Any): Option[(Name, Option[Type])]
     }
 
     trait TemplateCompanion {

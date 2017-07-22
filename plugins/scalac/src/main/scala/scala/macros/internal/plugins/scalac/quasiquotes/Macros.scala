@@ -82,7 +82,7 @@ class Macros(val c: Context) {
       }
       val result = {
         val content = new String(source.content)
-        if (source.file.file != null) m.Input.LabeledString(source.path, content)
+        if (source.file.file != null) m.Input.VirtualFile(source.path, content)
         else m.Input.String(content)
       }
       m.Input.Slice(result, start, end)
@@ -95,7 +95,11 @@ class Macros(val c: Context) {
       val dialect = m.Dialect(
         allowAndTypes = true,
         allowAtForExtractorVarargs = true,
+        allowCaseClassWithoutParameterList = true,
         allowColonForExtractorVarargs = true,
+        allowEnums = true,
+        allowImplicitByNameParameters = true,
+        allowImplicitFunctionTypes = true,
         allowInlineIdents = true,
         allowInlineMods = true,
         allowLiteralTypes = true,
