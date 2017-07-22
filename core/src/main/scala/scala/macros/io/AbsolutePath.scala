@@ -3,7 +3,6 @@ package io
 
 import java.io._
 import java.nio.file._
-import scala.macros.internal.io._
 import scala.macros.internal.prettyprinters._
 
 final class AbsolutePath private (value: String) extends Prettyprinted {
@@ -17,7 +16,7 @@ final class AbsolutePath private (value: String) extends Prettyprinted {
 
 object AbsolutePath {
   def apply(path: String): Option[AbsolutePath] = {
-    if (CorePathIO.isAbsolutePath(path)) Some(new AbsolutePath(path))
+    if (Paths.get(path).isAbsolute) Some(new AbsolutePath(path))
     else None
   }
 

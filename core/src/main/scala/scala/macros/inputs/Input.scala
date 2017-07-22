@@ -5,8 +5,8 @@ import java.io.{File => JFile, _}
 import java.lang.{String => JString}
 import java.nio.charset._
 import java.nio.file._
+import scala.io._
 import scala.macros.internal.inputs._
-import scala.macros.internal.io._
 import scala.macros.internal.prettyprinters._
 
 trait Input extends Pretty with InternalInput {
@@ -22,7 +22,7 @@ object Input {
   }
 
   final case class File(path: AbsolutePath, charset: Charset) extends Input {
-    lazy val chars = CoreFileIO.slurp(path, charset).toArray
+    lazy val chars = scala.io.Source.fromFile(path.toFile)(Codec(charset)).mkString.toArray
     override protected def syntax(p: Prettyprinter) = p.stx(path)
     override protected def structure(p: Prettyprinter) = {
       p.raw("Input.File(").str(path.toPath)

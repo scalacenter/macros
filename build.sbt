@@ -1,5 +1,4 @@
 import org.scalamacros.build._
-import org.scalajs.sbtplugin.ScalaJSCrossVersion
 
 // ==========================================
 // Projects
@@ -13,21 +12,15 @@ nonPublishableSettings
 commands += CiCommand("ci-test", List("test"))
 commands += CiCommand("ci-publish", List("publish"))
 
-lazy val scalamacros = crossProject
+lazy val scalamacros = project
   .in(file("core"))
   .enablePlugins(BuildInfoPlugin)
-  .jsConfigure(_.enablePlugins(ScalaJSBundlerPlugin))
   .settings(
     publishableSettings,
     version := CoreVersion,
     moduleName := CoreProduct,
     description := "Platform-independent interfaces for new-style Scala macros"
   )
-  .jsSettings(
-    npmDependencies in Compile += "shelljs" -> "0.7.7"
-  )
-lazy val scalamacrosJVM = scalamacros.jvm
-lazy val scalamacrosJS = scalamacros.js
 
 lazy val enginesScalac = project
   .in(file("engines/scalac"))
@@ -40,7 +33,7 @@ lazy val enginesScalac = project
     description := "Scalac implementation of interfaces for new-style Scala macros",
     libraryDependencies += "org.scala-lang" % "scala-compiler" % scalaVersion.value
   )
-  .dependsOn(scalamacrosJVM)
+  .dependsOn(scalamacros)
 
 lazy val pluginsScalac = project
   .in(file("plugins/scalac"))
@@ -57,7 +50,7 @@ lazy val pluginsScalac = project
   )
   .dependsOn(enginesScalac)
 
-lazy val testsApi = crossProject
+lazy val testsApi = project
   .in(file("tests/api"))
   .enablePlugins(BuildInfoPlugin)
   .settings(
@@ -70,10 +63,8 @@ lazy val testsApi = crossProject
     )
   )
   .dependsOn(scalamacros)
-lazy val testsApiJVM = testsApi.jvm
-lazy val testsApiJS = testsApi.js
 
-lazy val testsMacros = crossProject
+lazy val testsMacros = project
   .in(file("tests/macros"))
   .enablePlugins(BuildInfoPlugin)
   .settings(
@@ -94,8 +85,6 @@ lazy val testsMacros = crossProject
     }
   )
   .dependsOn(scalamacros)
-lazy val testsMacrosJVM = testsMacros.jvm
-lazy val testsMacrosJS = testsMacros.js
 
 // ==========================================
 // Settings
@@ -108,27 +97,18 @@ lazy val sharedSettings = Def.settings(
     assert(jdk == "1.8", "this build only supports JDK 1.8")
   },
   scalaVersion := LanguageVersion,
-  crossScalaVersions := {
-    // NOTE: Scala.js doesn't support Dotty yet
-    val bannedLanguageVersions = if (isScalaJSProject.value) List(Dotty) else Nil
-    LanguageVersions.diff(bannedLanguageVersions)
-  },
+  crossScalaVersions := LanguageVersions,
   unmanagedSourceDirectories.in(Compile) += {
-    val main = CrossType.Full.sharedSrcDir(baseDirectory.in(Compile).value, "main").get
+    val main = baseDirectory.in(Compile).value / "src" / "main"
     val epochSpecificName = if (isDotty.value) "scala-0" else "scala-2"
-    main / ".." / epochSpecificName
+    main / epochSpecificName
   },
   unmanagedSourceDirectories.in(Test) += {
-    val test = CrossType.Full.sharedSrcDir(baseDirectory.in(Test).value, "test").get
+    val test = baseDirectory.in(Test).value / "src" / "test"
     val epochSpecificName = if (isDotty.value) "scala-0" else "scala-2"
-    test / ".." / epochSpecificName
+    test / epochSpecificName
   },
-  crossVersion := {
-    crossVersion.value match {
-      case old @ ScalaJSCrossVersion.binary => old
-      case _ => CrossVersion.binary
-    }
-  },
+  crossVersion := CrossVersion.binary,
   organization := "org.scalamacros",
   scalacOptions ++= Seq("-deprecation", "-feature", "-unchecked", "-Xfatal-warnings"),
   logBuffered := false,
