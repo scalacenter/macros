@@ -11,8 +11,8 @@ During the last couple years, we've been working on a new macro system that will
 ### Status
 
 This repository contains a technology preview of the new macro system that features:
-  * Scalameta-based syntactic and semantic APIs that cross-compile against Scala 2.10, 2.11, 2.12, 2.13 and Dotty for both JVM and JS. The corresponding library is quite slim, being less than 500Kb in size.
-  * A prototype implementation of the new macro engine for Scala 2.11.11 that supports macro annotations and def macros.
+  * Scalameta-based syntactic and semantic APIs that cross-compile against Scala 2.12, 2.13 and Dotty. The corresponding library is quite slim, being less than 500Kb in size.
+  * A prototype implementation of the new macro engine for Scala 2.12.2 that supports macro annotations and def macros.
   * Examples of new-style macros, including [the @main annotation](tests/macros/shared/src/main/scala/scala/macros/tests/scaladays/main.scala) and [a new-style materializer](tests/macros/shared/src/main/scala/scala/macros/tests/scaladays/Serialize.scala).
 
 ### Roadmap

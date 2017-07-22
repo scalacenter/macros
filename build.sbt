@@ -26,7 +26,7 @@ lazy val enginesScalac = project
   .settings(
     publishableSettings,
     version := EngineScalacVersion,
-    crossScalaVersions := List(Scala211), // TODO: support other versions of Scalac
+    crossScalaVersions := List(Scala212), // TODO: support other versions of Scalac
     moduleName := EngineScalacProduct,
     description := "Scalac implementation of interfaces for new-style Scala macros",
     libraryDependencies += "org.scala-lang" % "scala-compiler" % scalaVersion.value
@@ -39,7 +39,7 @@ lazy val pluginsScalac = project
   .settings(
     pluginSettings,
     version := PluginScalacVersion,
-    crossScalaVersions := List(Scala211), // TODO: support other versions of Scalac
+    crossScalaVersions := List(Scala212), // TODO: support other versions of Scalac
     moduleName := PluginScalacProduct,
     description := "Scalac integration for new-style Scala macros",
     libraryDependencies += "org.scala-lang" % "scala-compiler" % scalaVersion.value,
@@ -68,7 +68,7 @@ lazy val testsMacros = project
   .settings(
     nonPublishableSettings,
     description := "Tests of new-style Scala macros",
-    crossScalaVersions := List(Scala211), // TODO: support other versions of Scala
+    crossScalaVersions := List(Scala212), // TODO: support other versions of Scala
     libraryDependencies += "junit" % "junit" % "4.12",
     libraryDependencies += "org.scala-lang" % "scala-reflect" % scalaVersion.value,
     addCompilerPlugin("org.scalamacros" %% "paradise" % "2.1.0" cross CrossVersion.full),

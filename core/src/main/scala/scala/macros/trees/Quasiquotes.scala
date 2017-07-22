@@ -1,7 +1,7 @@
 package scala.macros
 package trees
 
-import scala.macros.internal.annotation.compileTimeOnly
+import scala.annotation.compileTimeOnly
 import scala.macros.internal.trees.Errors
 
 private[macros] trait Quasiquotes { self: Universe =>

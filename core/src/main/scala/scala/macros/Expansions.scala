@@ -5,7 +5,7 @@ private[macros] trait Expansions { self: Universe =>
 
   // NOTE: Can't move this stuff to Abstracts.scala because then scalac produces invalid bytecode:
   // error while loading Abstracts, class file
-  // '.../profiles/macros/jvm/target/scala-2.11/classes/scala/macros/Abstracts.class'
+  // '.../profiles/macros/jvm/target/scala-2.12/classes/scala/macros/Abstracts.class'
   // has location not matching its contents: contains class scala.macros.
   private[macros] def abstracts: ExpansionAbstracts
   private[macros] trait ExpansionAbstracts {

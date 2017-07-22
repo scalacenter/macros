@@ -7,10 +7,8 @@ import org.scalamacros.os._
 
 trait Versions { self: ScalamacrosBuild =>
 
-  lazy val LanguageVersion = sys.env.getOrElse("SCALA_VERSION", Scala211)
-  lazy val LanguageVersions = List(Scala210, Scala211, Scala212, Scala213, Dotty)
-  lazy val Scala210 = "2.10.6"
-  lazy val Scala211 = "2.11.11"
+  lazy val LanguageVersion = sys.env.getOrElse("SCALA_VERSION", Scala212)
+  lazy val LanguageVersions = List(Scala212, Scala213, Dotty)
   lazy val Scala212 = "2.12.2"
   lazy val Scala213 = "2.13.0-M1"
   lazy val Dotty = "0.2.0"

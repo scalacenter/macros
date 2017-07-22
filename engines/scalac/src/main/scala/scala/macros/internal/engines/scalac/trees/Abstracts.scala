@@ -779,6 +779,8 @@ trait Abstracts extends scala.macros.trees.Abstracts with Positions { self: Univ
           val evdefs = gvdefs.zip(lvdefs).map {
             case (gvdef @ g.ValDef(_, _, tpt: g.TypeTree, _), g.ValDef(_, _, _, rhs)) =>
               g.copyValDef(gvdef)(tpt = tpt.original, rhs = rhs)
+            case _ =>
+              ??? // this is impossible
           }
           val edefs = evdefs ::: etdefs
           if (ctorMods.isTrait)
