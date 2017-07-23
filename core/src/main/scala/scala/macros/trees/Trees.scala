@@ -210,7 +210,7 @@ private[macros] trait Trees extends Abstracts with Companions with Extensions { 
     def Lazy = abstracts.ModLazy
     def ValParam = abstracts.ModValParam
     def VarParam = abstracts.ModVarParam
-    def Inline = abstracts.ModInline
+    def Macro = abstracts.ModMacro
   }
 
   type Enumerator >: Null <: Tree

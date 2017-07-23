@@ -980,10 +980,10 @@ trait Abstracts extends scala.macros.trees.Abstracts with Positions { self: Univ
       }
     }
 
-    object ModInline extends ModInlineCompanion {
-      def apply(): Mod = c.ModInline()
+    object ModMacro extends ModMacroCompanion {
+      def apply(): Mod = c.ModMacro()
       def unapply(gtree: Any): Boolean = gtree match {
-        case tree: c.ModInline => c.ModInline.unapply(tree)
+        case tree: c.ModMacro => c.ModMacro.unapply(tree)
         case _ => false
       }
     }
@@ -1142,7 +1142,7 @@ trait Abstracts extends scala.macros.trees.Abstracts with Positions { self: Univ
 
     case class ModVarParam() extends Mod
 
-    case class ModInline() extends Mod
+    case class ModMacro() extends Mod
 
     sealed trait Enumerator extends g.Tree
 

@@ -26,5 +26,4 @@ private[macros] trait Flags {
   final val CASE: Long = 1 << 21
   final val COVARIANT: Long = 1 << 22
   final val CONTRAVARIANT: Long = 1 << 23
-  final val INLINE: Long = 1 << 24
 }

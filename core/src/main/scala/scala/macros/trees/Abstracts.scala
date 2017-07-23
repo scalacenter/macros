@@ -126,7 +126,7 @@ private[macros] trait Abstracts { self: Universe =>
     def ModLazy: ModLazyCompanion
     def ModValParam: ModValParamCompanion
     def ModVarParam: ModVarParamCompanion
-    def ModInline: ModInlineCompanion
+    def ModMacro: ModMacroCompanion
     def EnumeratorGenerator: EnumeratorGeneratorCompanion
     def EnumeratorVal: EnumeratorValCompanion
     def EnumeratorGuard: EnumeratorGuardCompanion

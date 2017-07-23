@@ -4,7 +4,7 @@ package typechecker
 
 import scala.reflect.internal.util.ScalaClassLoader
 import scala.macros.internal.config.{engineVersion => foundEngineVersion}
-import scala.macros.internal.inlineMetadata
+import scala.macros.internal.newMacroMetadata
 import scala.macros.internal.plugins.scalac.reflect.ReflectToolkit
 import scala.macros.{coreVersion => foundCoreVersion}
 import scala.macros.Version
@@ -24,14 +24,14 @@ trait AnalyzerPlugins extends ReflectToolkit {
     private class PluginRuntimeResolver(sym: Symbol) extends MacroRuntimeResolver(sym) {
       override def resolveJavaReflectionRuntime(defaultClassLoader: ClassLoader): MacroRuntime = {
         // NOTE: defaultClassLoader only includes libraryClasspath + toolClasspath.
-        // We need to include pluginClasspath, so that the inline shim can instantiate
+        // We need to include pluginClasspath, so that the new macro shim can instantiate
         // ScalacUniverse and ScalacExpansion.
         super.resolveJavaReflectionRuntime(pluginMacroClassloader)
       }
     }
 
-    private val inlineRuntimesCache = perRunCaches.newWeakMap[Symbol, MacroRuntime]
-    private def inlineRuntime(expandee: Tree): Option[MacroRuntime] = {
+    private val newMacroRuntimesCache = perRunCaches.newWeakMap[Symbol, MacroRuntime]
+    private def newMacroRuntime(expandee: Tree): Option[MacroRuntime] = {
       def ensureCompatible(
           found: Version,
           required: Option[Version],
@@ -53,7 +53,7 @@ trait AnalyzerPlugins extends ReflectToolkit {
         }
         compatible
       }
-      val metadata = expandee.symbol.inlineMetadata.get
+      val metadata = expandee.symbol.newMacroMetadata.get
       val requiredCoreVersion = Version.parse(metadata.coreVersion)
       val requiredEngineVersion = Version.parse(metadata.engineVersion)
       val ok1 = ensureCompatible(foundCoreVersion, requiredCoreVersion, BadCoreVersion)
@@ -61,7 +61,7 @@ trait AnalyzerPlugins extends ReflectToolkit {
       if (ok1 && ok2) {
         macroLogVerbose(s"looking for macro implementation: ${expandee.symbol}")
         def mkResolver = new PluginRuntimeResolver(expandee.symbol).resolveRuntime()
-        Some(inlineRuntimesCache.getOrElseUpdate(expandee.symbol, mkResolver))
+        Some(newMacroRuntimesCache.getOrElseUpdate(expandee.symbol, mkResolver))
       } else {
         None
       }
@@ -75,7 +75,7 @@ trait AnalyzerPlugins extends ReflectToolkit {
     }
 
     override def pluginsMacroRuntime(expandee: Tree): Option[MacroRuntime] = {
-      if (expandee.symbol.inlineMetadata.nonEmpty) inlineRuntime(expandee)
+      if (expandee.symbol.newMacroMetadata.nonEmpty) newMacroRuntime(expandee)
       else if (QuasiquoteMethods.contains(expandee.symbol)) quasiquoteRuntime(expandee)
       else None
     }

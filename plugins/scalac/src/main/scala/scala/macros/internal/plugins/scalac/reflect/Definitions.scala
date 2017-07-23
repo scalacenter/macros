@@ -7,7 +7,7 @@ import scala.reflect.internal.Flags._
 import scala.tools.nsc.typechecker.Fingerprint._
 import scala.tools.reflect.FastTrack
 import scala.macros.internal.config.engineVersion
-import scala.macros.internal.inlineMetadata
+import scala.macros.internal.newMacroMetadata
 import scala.macros.internal.plugins.scalac.quasiquotes.Macros
 import scala.macros.{scalaVersion, coreVersion}
 import scala.macros.Version
@@ -21,58 +21,61 @@ trait Definitions { self: ReflectToolkit =>
 
   object pluginDefinitions {
     def hasLibraryDependencyOnScalamacros: Boolean = {
-      InlineMetadata != NoSymbol
+      NewMacroMetadata != NoSymbol
     }
 
     def hasPluginDependencyOnParadise: Boolean = {
       plugins.exists(_.name == "macroparadise")
     }
 
-    private lazy val InlineMetadata = getClassIfDefined("scala.macros.internal.inlineMetadata")
-    private def inlineMetadata(args: List[Tree]): Option[inlineMetadata] = args match {
+    private lazy val NewMacroMetadata = getClassIfDefined("scala.macros.internal.newMacroMetadata")
+    private def newMacroMetadata(args: List[Tree]): Option[newMacroMetadata] = args match {
       case List(Literal(Constant(coreVersion: String)), Literal(Constant(engineVersion: String))) =>
-        Some(new inlineMetadata(coreVersion, engineVersion))
+        Some(new newMacroMetadata(coreVersion, engineVersion))
       case _ =>
         None
     }
-    private def inlineMetadata(tree: Tree): Option[inlineMetadata] = tree match {
+    private def newMacroMetadata(tree: Tree): Option[newMacroMetadata] = tree match {
       case Apply(Select(New(tpt), nme.CONSTRUCTOR), args) =>
-        val isInlineMetadata = {
-          InlineMetadata != NoSymbol &&
-          tpt.tpe != null && tpt.tpe.typeSymbol == InlineMetadata
+        val isNewMacroMetadata = {
+          NewMacroMetadata != NoSymbol &&
+          tpt.tpe != null && tpt.tpe.typeSymbol == NewMacroMetadata
         }
-        if (isInlineMetadata) inlineMetadata(args) else None
+        if (isNewMacroMetadata) newMacroMetadata(args) else None
       case _ =>
         None
     }
-    private def inlineMetadata(ann: AnnotationInfo): Option[inlineMetadata] = {
-      val isInlineMetadata = InlineMetadata != NoSymbol && ann.tpe.typeSymbol == InlineMetadata
-      if (isInlineMetadata) inlineMetadata(ann.args) else None
+    private def newMacroMetadata(ann: AnnotationInfo): Option[newMacroMetadata] = {
+      val isNewMacroMetadata = {
+        NewMacroMetadata != NoSymbol &&
+        ann.tpe.typeSymbol == NewMacroMetadata
+      }
+      if (isNewMacroMetadata) newMacroMetadata(ann.args) else None
     }
 
     implicit class XtensionDefinitionsModifiers(mods: Modifiers) {
-      def markInline(pos: Position): Modifiers = {
-        if (InlineMetadata == NoSymbol) mods
+      def markNewMacro(pos: Position): Modifiers = {
+        if (NewMacroMetadata == NoSymbol) mods
         else {
           def arg(value: String) = Literal(Constant(value)).setType(ConstantType(Constant(value)))
           val args = List(arg(coreVersion.toString), arg(engineVersion.toString))
-          mods.withAnnotations(List(atPos(pos)(New(InlineMetadata.tpe, args: _*))))
+          mods.withAnnotations(List(atPos(pos)(New(NewMacroMetadata.tpe, args: _*))))
         }
       }
-      def isInline: Boolean = {
-        inlineMetadata.nonEmpty
+      def isNewMacro: Boolean = {
+        newMacroMetadata.nonEmpty
       }
-      def inlineMetadata: Option[inlineMetadata] = {
-        mods.annotations.map(pluginDefinitions.inlineMetadata).flatten.headOption
+      def newMacroMetadata: Option[newMacroMetadata] = {
+        mods.annotations.map(pluginDefinitions.newMacroMetadata).flatten.headOption
       }
     }
 
     implicit class XtensionDefinitionsSymbol(sym: Symbol) {
-      def isInline: Boolean = {
-        inlineMetadata.nonEmpty
+      def isNewMacro: Boolean = {
+        newMacroMetadata.nonEmpty
       }
-      def inlineMetadata: Option[inlineMetadata] = {
-        sym.annotations.map(pluginDefinitions.inlineMetadata).flatten.headOption
+      def newMacroMetadata: Option[newMacroMetadata] = {
+        sym.annotations.map(pluginDefinitions.newMacroMetadata).flatten.headOption
       }
     }
 

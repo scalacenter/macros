@@ -96,7 +96,7 @@ trait Abstracts extends scala.macros.semantic.Mirrors { self: Universe =>
         if (has(gf.CASE) || has(gf.CASEACCESSOR)) flags |= CASE
         if (sym.isType && has(gf.CONTRAVARIANT)) flags |= CONTRAVARIANT
         if (sym.isType && has(gf.COVARIANT)) flags |= COVARIANT
-        // TODO: INLINE
+        // TODO: MACRO
         flags
       }
 

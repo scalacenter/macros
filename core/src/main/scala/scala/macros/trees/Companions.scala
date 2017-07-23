@@ -627,7 +627,7 @@ private[macros] trait Companions { self: Universe =>
       def unapply(tree: Any): Boolean
     }
 
-    trait ModInlineCompanion {
+    trait ModMacroCompanion {
       def apply(): Mod
       def unapply(tree: Any): Boolean
     }

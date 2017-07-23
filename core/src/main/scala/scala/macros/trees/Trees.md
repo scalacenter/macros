@@ -163,7 +163,7 @@ If you have troubles decyphering it, consult the "Legend" section in the end of 
  Lazy          | `mod"lazy"`
  Val Param     | `mod"valparam"`
  Var Param     | `mod"varparam"`
- Inline        | `mod"inline"`
+ Macro         | `mod"macro"`
 
 ## Enumerators (macros.Enum)
 

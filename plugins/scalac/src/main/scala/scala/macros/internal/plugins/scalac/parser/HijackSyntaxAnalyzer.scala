@@ -27,7 +27,7 @@ trait HijackSyntaxAnalyzer { self: Plugin =>
     if (phasesSet.exists(_.phaseName == "parser")) { // `scalac -help` doesn't instantiate standard phases
       phasesSet -= phasesSet.find(_.phaseName == "parser").head
       phasesSet += pluginSyntaxAnalyzer
-      phasesDescMap(pluginSyntaxAnalyzer) = "parse source into ASTs (with support for inline defs)"
+      phasesDescMap(pluginSyntaxAnalyzer) = "parse source into ASTs (supports new-style macros)"
     }
 
     if (global.isInstanceOf[NscReplGlobal] && global.toString != "<hijacked global>") {

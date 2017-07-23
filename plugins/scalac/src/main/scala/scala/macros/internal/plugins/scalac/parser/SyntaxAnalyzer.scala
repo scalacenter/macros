@@ -35,7 +35,7 @@ abstract class SyntaxAnalyzer extends NscSyntaxAnalyzer with ReflectToolkit {
       super.funDefRest(start, nameOff, mods, name) match {
         case newmacro @ DefDef(mods, _, _, _, _, Block(_, _)) if mods.isMacro =>
           if (!hasLibraryDependencyOnScalamacros) MissingLibraryDependencyOnScalamacros(r2p(start))
-          copyDefDef(newmacro)(mods = mods.markInline(r2p(start)))
+          copyDefDef(newmacro)(mods = mods.markNewMacro(r2p(start)))
         case other =>
           other
       }
@@ -47,24 +47,24 @@ abstract class SyntaxAnalyzer extends NscSyntaxAnalyzer with ReflectToolkit {
     // However that strategy is much more complicated, so it doesn't fit this prototype.
 
     override def topStatSeq(): List[Tree] = {
-      super.topStatSeq().flatMap(stat => desugarNestedInlineDefs(stat, toplevel = true))
+      super.topStatSeq().flatMap(stat => desugarNewMacros(stat, toplevel = true))
     }
 
     override def templateStats(): List[Tree] = {
-      super.templateStats().flatMap(stat => desugarNestedInlineDefs(stat, toplevel = false))
+      super.templateStats().flatMap(stat => desugarNewMacros(stat, toplevel = false))
     }
 
     override def blockStatSeq(): List[Tree] = {
-      super.blockStatSeq().flatMap(stat => desugarNestedInlineDefs(stat, toplevel = false))
+      super.blockStatSeq().flatMap(stat => desugarNewMacros(stat, toplevel = false))
     }
 
-    private def desugarNestedInlineDefs(owner: Tree, toplevel: Boolean): List[Tree] = {
+    private def desugarNewMacros(owner: Tree, toplevel: Boolean): List[Tree] = {
       owner match {
         case owner: ImplDef =>
           val xstats1 = owner.impl.body.map {
-            case stat: DefDef if stat.mods.isInline =>
+            case stat: DefDef if stat.mods.isNewMacro =>
               if (toplevel) {
-                desugarInlineDef(owner, stat)
+                desugarNewMacro(owner, stat)
               } else {
                 val restr = "new-style macros must be declared in top-level classes and modules"
                 syntaxError(stat.pos.point, s"implementation restriction: $restr")
@@ -80,7 +80,7 @@ abstract class SyntaxAnalyzer extends NscSyntaxAnalyzer with ReflectToolkit {
               case cdef: ClassDef => copyClassDef(cdef)(impl = impl1)
               case mdef: ModuleDef => copyModuleDef(mdef)(impl = impl1)
             }
-            val helperName = owner.name.inlineModuleName
+            val helperName = owner.name.newMacroModuleName
             val helper1 = atPos(owner.pos)(q"object $helperName { ..${mstatss1.flatten} }")
             List(atPos(owner1.pos)(ImportScalaLanguageExperimentalMacros), owner1, helper1)
           } else {
@@ -91,15 +91,15 @@ abstract class SyntaxAnalyzer extends NscSyntaxAnalyzer with ReflectToolkit {
       }
     }
 
-    private def desugarInlineDef(owner: ImplDef, tree: DefDef): (List[Tree], List[Tree]) = {
+    private def desugarNewMacro(owner: ImplDef, tree: DefDef): (List[Tree], List[Tree]) = {
       val DefDef(mods, name, tparams, vparamss, tpt, rhs) = tree
       val isMacroAnnotation = {
         val isClass = owner.isInstanceOf[ClassDef]
         val extendsMacroAnnotation = owner.impl.parents.exists {
-          case Ident(InlineAnnotationParentName) => true
+          case Ident(NewMacroAnnotationParentName) => true
           case _ => false
         }
-        val hasTheRightName = name == InlineAnnotationMethodName
+        val hasTheRightName = name == NewMacroAnnotationMethodName
         isClass && extendsMacroAnnotation && hasTheRightName
       }
       if (isMacroAnnotation) {
@@ -107,7 +107,7 @@ abstract class SyntaxAnalyzer extends NscSyntaxAnalyzer with ReflectToolkit {
       }
       val macroDef = atPos(tree.pos) {
         def rhs1(tparams1: List[TypeDef]) = {
-          val result = Select(Ident(owner.name.inlineModuleName), name.inlineShimName)
+          val result = Select(Ident(owner.name.newMacroModuleName), name.newMacroShimName)
           atPos(tree.pos)({
             val targs = tparams1.map(p => atPos(p.pos)(Ident(p.name)))
             if (targs.nonEmpty) TypeApply(result, targs) else result
@@ -118,7 +118,7 @@ abstract class SyntaxAnalyzer extends NscSyntaxAnalyzer with ReflectToolkit {
           val name1 = TermName("macroTransform")
           val tparams1 = {
             if (tparams.nonEmpty) {
-              val where = s"on the annotation class instead of the inline method"
+              val where = s"on the annotation class instead of the macro"
               val message = s"new-style macro annotations must have type parameters $where"
               syntaxError(tree.pos.point, message)
               return (List(tree), Nil)
@@ -136,7 +136,7 @@ abstract class SyntaxAnalyzer extends NscSyntaxAnalyzer with ReflectToolkit {
           DefDef(mods1, name1, tparams1, vparamss1, tpt1, rhs1(Nil))
         } else {
           val mods1 = mods | Flags.MACRO
-          val name1 = name.inlineMacroName
+          val name1 = name.newMacroDefName
           val tparams1 = tparams // NOTE: intentionally not duplicated
           val vparamss1 = vparamss // NOTE: intentionally not duplicated
           val tpt1 = tpt // NOTE: intentionally not duplicated
@@ -145,7 +145,7 @@ abstract class SyntaxAnalyzer extends NscSyntaxAnalyzer with ReflectToolkit {
       }
       val shimDef = atPos(tree.pos) {
         val mods2 = NoMods
-        val name2 = name.inlineShimName
+        val name2 = name.newMacroShimName
         val tparams2 = tparams.map(_.duplicate)
         val cname2 = unit.freshTermName("c$")
         def cExprOf(tpt2: Tree): Tree = atPos(tpt2.pos) {
@@ -198,7 +198,7 @@ abstract class SyntaxAnalyzer extends NscSyntaxAnalyzer with ReflectToolkit {
       }
       val implDef = atPos(rhs.pos) {
         val mods3 = NoMods
-        val name3 = name.inlineImplName
+        val name3 = name.newMacroImplName
         val tparams3 = Nil
         val thisParamName3 = unit.freshTermName("prefix$")
         val vparamss3 = {
@@ -244,7 +244,7 @@ abstract class SyntaxAnalyzer extends NscSyntaxAnalyzer with ReflectToolkit {
         // Therefore, for optimal user experience we really want implDef to be named like that.
         val DefDef(_, name3, _, vparamss3, tpt3, _) = implDef
         val mods4 = NoMods
-        val name4 = name.inlineAbiName
+        val name4 = name.newMacroAbiName
         val tparams4 = Nil
         val vparamss4 = vparamss3.map(_.map(_.duplicate))
         val tpt4 = tpt3.duplicate
@@ -321,7 +321,7 @@ abstract class SyntaxAnalyzer extends NscSyntaxAnalyzer with ReflectToolkit {
         if (isMacroAnnotation) List(expansionArgName)
         else List(mirrorArgName, expansionArgName)
       }
-      val implName = name.inlineImplName
+      val implName = name.newMacroImplName
       q"""
         var foundEngine = "old-style " + _root_.scala.util.Properties.versionNumberString
         def failMacroEngine(ex: Exception): _root_.scala.Nothing = {

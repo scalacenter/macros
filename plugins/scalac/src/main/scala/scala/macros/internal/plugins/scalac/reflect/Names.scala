@@ -6,13 +6,13 @@ trait Names { self: ReflectToolkit =>
   import global._
 
   implicit class XtensionNames(name: Name) {
-    def inlineModuleName: TermName = TermName(name.toString + "$inline")
-    def inlineMacroName: TermName = TermName(name.toString)
-    def inlineShimName: TermName = TermName(name.toString + "$shim")
-    def inlineImplName: TermName = TermName(name.toString + "$macroExpandWithRuntime")
-    def inlineAbiName: TermName = TermName(name.toString)
+    def newMacroModuleName: TermName = TermName(name.toString + "$newmacro")
+    def newMacroDefName: TermName = TermName(name.toString)
+    def newMacroShimName: TermName = TermName(name.toString + "$shim")
+    def newMacroImplName: TermName = TermName(name.toString + "$macroExpandWithRuntime")
+    def newMacroAbiName: TermName = TermName(name.toString)
   }
 
-  val InlineAnnotationParentName = TypeName("MacroAnnotation")
-  val InlineAnnotationMethodName = TermName("apply")
+  val NewMacroAnnotationParentName = TypeName("MacroAnnotation")
+  val NewMacroAnnotationMethodName = TermName("apply")
 }

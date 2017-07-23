@@ -41,7 +41,6 @@ private[macros] trait Operations { self: Universe =>
     def isCase: Boolean = hasFlags(CASE)
     def isCovariant: Boolean = hasFlags(COVARIANT)
     def isContravariant: Boolean = hasFlags(CONTRAVARIANT)
-    def isInline: Boolean = hasFlags(INLINE)
   }
 
   private[macros] type SymFilter = Symbol => Boolean
