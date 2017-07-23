@@ -11,7 +11,7 @@ trait Versions { self: ScalamacrosBuild =>
   lazy val LanguageVersions = List(Scala212, Scala213, Dotty)
   lazy val Scala212 = "2.12.2"
   lazy val Scala213 = "2.13.0-M1"
-  lazy val Dotty = "0.2.0"
+  lazy val Dotty = "0.2.0-RC1"
 
   lazy val BuildVersion = computeProductVersionFromGit(BuildProduct).replace("2.0.0", "x.y.z")
   lazy val CoreVersion = computeProductVersionFromGit(CoreProduct)
