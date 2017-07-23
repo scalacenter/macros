@@ -1,0 +1,4 @@
+<plugin>
+  <name>scalamacros-plugins-scalac</name>
+  <classname>scala.macros.internal.plugins.scalac.Plugin</classname>
+</plugin>
