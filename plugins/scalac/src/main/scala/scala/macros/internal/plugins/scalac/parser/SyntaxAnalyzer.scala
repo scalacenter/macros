@@ -31,67 +31,14 @@ abstract class SyntaxAnalyzer extends NscSyntaxAnalyzer with ReflectToolkit {
       extends UnitParser(unit, Nil) {
     def this(unit: global.CompilationUnit) = this(unit, Nil)
 
-    private val INLINEkw = TermName("inline")
-    private def isInlineDef: Boolean = {
-      val isInline = in.token == IDENTIFIER && in.name == INLINEkw
-      isInline && skippingModifiers(in.token == DEF)
-    }
-    private def skippingModifiers[T](op: => T): T = {
-      lookingAhead(if (isModifier) skippingModifiers(op) else op)
-    }
-    override def isExprIntroToken(token: Token) = !isInlineDef && super.isExprIntroToken(token)
-    override def isDclIntro: Boolean = isInlineDef || super.isDclIntro
-
-    private def invoke(name: String, args: Any*): Any = {
-      val meth = classOf[Parser].getDeclaredMethods().find(_.getName == name).get
-      meth.setAccessible(true)
-      meth.invoke(this, args.asInstanceOf[Seq[AnyRef]]: _*)
-    }
-    private def normalizeModifiers(mods: Modifiers): Modifiers = {
-      invoke("normalizeModifiers", mods).asInstanceOf[Modifiers]
-    }
-    private def addMod(mods: Modifiers, mod: Long, pos: Position): Modifiers = {
-      invoke("addMod", mods, mod, pos).asInstanceOf[Modifiers]
-    }
-    private def tokenRange(token: TokenData): Position = {
-      invoke("tokenRange", token).asInstanceOf[Position]
-    }
-    private def flagTokens: Map[Int, Long] = {
-      invoke("flagTokens").asInstanceOf[Map[Int, Long]]
-    }
-    override def modifiers(): Modifiers = normalizeModifiers {
-      def loop(mods: Modifiers): Modifiers = in.token match {
-        case IDENTIFIER if isInlineDef =>
-          val pos = r2p(in.offset)
-          if (!hasLibraryDependencyOnScalamacros) MissingLibraryDependencyOnScalamacros(pos)
-          in.nextToken()
-          loop(mods.markInline(pos))
-        case PRIVATE | PROTECTED =>
-          loop(accessQualifierOpt(addMod(mods, flagTokens(in.token), tokenRange(in))))
-        case ABSTRACT | FINAL | SEALED | OVERRIDE | IMPLICIT | LAZY =>
-          loop(addMod(mods, flagTokens(in.token), tokenRange(in)))
-        case NEWLINE =>
-          in.nextToken()
-          loop(mods)
-        case _ =>
-          mods
+    override def funDefRest(start: Offset, nameOff: Offset, mods: Modifiers, name: Name): Tree = {
+      super.funDefRest(start, nameOff, mods, name) match {
+        case newmacro @ DefDef(mods, _, _, _, _, Block(_, _)) if mods.isMacro =>
+          if (!hasLibraryDependencyOnScalamacros) MissingLibraryDependencyOnScalamacros(r2p(start))
+          copyDefDef(newmacro)(mods = mods.markInline(r2p(start)))
+        case other =>
+          other
       }
-      loop(NoMods)
-    }
-    override def localModifiers(): Modifiers = {
-      def loop(mods: Modifiers): Modifiers = {
-        if (isInlineDef) {
-          val pos = r2p(in.offset)
-          if (!hasLibraryDependencyOnScalamacros) MissingLibraryDependencyOnScalamacros(pos)
-          in.nextToken()
-          loop(mods.markInline(pos))
-        } else if (isLocalModifier) {
-          loop(addMod(mods, flagTokens(in.token), tokenRange(in)))
-        } else {
-          mods
-        }
-      }
-      loop(NoMods)
     }
 
     // NOTE: This is an initial version of the transformation that implements new-style macros.
@@ -278,19 +225,14 @@ abstract class SyntaxAnalyzer extends NscSyntaxAnalyzer with ReflectToolkit {
           List(List(thisParam3) ++ vvparams3 ++ vtparams3, vcapabilities3)
         }
         val tpt3 = if (isMacroAnnotation) MacrosStat else MacrosTerm
-        val rhs3 = rhs match {
-          case Apply(Ident(TermName("meta")), List(block)) =>
-            object transformer extends Transformer {
-              override def transform(tree: Tree): Tree = tree match {
-                case This(tpnme.EMPTY) => atPos(tree.pos)(Ident(thisParamName3))
-                case tree => super.transform(tree)
-              }
+        val rhs3 = {
+          object transformer extends Transformer {
+            override def transform(tree: Tree): Tree = tree match {
+              case This(tpnme.EMPTY) => atPos(tree.pos)(Ident(thisParamName3))
+              case tree => super.transform(tree)
             }
-            transformer.transform(block)
-          case _ =>
-            val restr = "new-style macros must have bodies consisting of a single meta block"
-            syntaxError(rhs.pos.point, s"implementation restriction: $restr")
-            rhs
+          }
+          transformer.transform(rhs)
         }
         DefDef(mods3, name3, tparams3, vparamss3, tpt3, rhs3)
       }

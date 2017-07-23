@@ -12,7 +12,7 @@ object Serialize {
   implicit def int: Serialize[Int] = Serialize { x => x.toString }
   implicit def string: Serialize[String] = Serialize { x => "\"" + x + "\"" }
 
-  inline implicit def materialize[T]: Serialize[T] = meta {
+  implicit def materialize[T]: Serialize[T] = macro {
     val instance = Term.fresh("instance")
     val param = Term.fresh("x")
     val buf = Term.fresh("buf")
