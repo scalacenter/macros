@@ -27,6 +27,10 @@ The current maintainers (people who can merge pull requests) are:
 
 An up-to-date list of contributors is available here: https://github.com/scalamacros/scalamacros/graphs/contributors.
 
+### Documentation
+
+The usage docs are maintained with the main Scala docs here: http://docs.scala-lang.org/overviews/macros/overview.html
+
 ### Credits
 
 Over the years, many contributors influenced the design of Scala macros. Check out [Eugene Burmako's dissertation](https://infoscience.epfl.ch/record/226166?ln=en) for more information.
