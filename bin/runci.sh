@@ -3,8 +3,11 @@ set -eux
 TEST=${1}
 
 case "$TEST" in
+  "cla" )
+    ./bin/checkCLA.sh
+    ;;
   "scalafmt" )
-    ./scalafmt --test
+    ./bin/scalafmt --test
     ;;
   * )
     sbt $TEST

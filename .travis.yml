@@ -7,6 +7,7 @@ env:
   matrix:
   - CI_TEST: test
   - CI_TEST: scalafmt
+  - CI_TEST: cla
 
 cache:
   directories:
