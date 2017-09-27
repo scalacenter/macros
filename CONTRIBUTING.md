@@ -1,7 +1,5 @@
 # Contributor guide
 
-## About this document
-
 This guide is for people who would like to be involved in contributing to
 development of Scala Macros.
 
@@ -41,7 +39,8 @@ Adapted from [lihaoyi/ammonite](https://github.com/lihaoyi/Ammonite).
   for important things, unit tests (positive and negative), and a green build
   in [CI](https://travis-ci.org/scalacenter/macros).
 - **Format your code with scalafmt**. Run `./bin/scalafmt` from the project
-  root directory.
+  root directory. If you use IntelliJ, you can enable "Format on file save"
+  under Tools > Scalafmt > for current project".
 - **Be prepared to discuss/argue-for your changes if you want them merged**!
   You will probably need to refactor so your changes fit into the larger
   codebase - **If your code is hard to unit test, and you don't want to unit

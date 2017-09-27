@@ -1,22 +1,17 @@
-import org.scalamacros.build._
+import Version._
 
-// ==========================================
-// Projects
-// ==========================================
-
-{
-  println(s"[info] Welcome to Scala macros $BuildVersion")
-  name := "scalamacrosRoot"
+version in ThisBuild ~= (_.replace('+', '-'))
+name := {
+  println(s"[info] Welcome to Scala Macros ${version.value}")
+  "scalamacrosRoot"
 }
-nonPublishableSettings
+noPublish
 
 lazy val scalamacros = project
   .in(file("core"))
   .enablePlugins(BuildInfoPlugin)
   .settings(
-    publishableSettings,
-    version := CoreVersion,
-    moduleName := CoreProduct,
+    moduleName := "scalamacros",
     description := "Platform-independent interfaces for new-style Scala macros"
   )
 
@@ -24,10 +19,8 @@ lazy val enginesScalac = project
   .in(file("engines/scalac"))
   .enablePlugins(BuildInfoPlugin)
   .settings(
-    publishableSettings,
-    version := EngineScalacVersion,
-    crossScalaVersions := List(Scala212), // TODO: support other versions of Scalac
-    moduleName := EngineScalacProduct,
+    crossScalaVersions := List(scala212),
+    moduleName := "scalac-engine",
     description := "Scalac implementation of interfaces for new-style Scala macros",
     libraryDependencies += "org.scala-lang" % "scala-compiler" % scalaVersion.value
   )
@@ -38,13 +31,11 @@ lazy val pluginsScalac = project
   .enablePlugins(BuildInfoPlugin)
   .settings(
     pluginSettings,
-    version := PluginScalacVersion,
-    crossScalaVersions := List(Scala212), // TODO: support other versions of Scalac
-    moduleName := PluginScalacProduct,
+    crossScalaVersions := List(scala212),
+    moduleName := "scalac-plugin",
     description := "Scalac integration for new-style Scala macros",
     libraryDependencies += "org.scala-lang" % "scala-compiler" % scalaVersion.value,
-    resolvers += Resolver.bintrayRepo("scalameta", "maven"),
-    libraryDependencies += "org.scalameta" %% "scalameta" % "2.0.0-M1"
+    libraryDependencies += "org.scalameta" %% "scalameta" % "2.0.1"
   )
   .dependsOn(enginesScalac)
 
@@ -52,7 +43,7 @@ lazy val testsApi = project
   .in(file("tests/api"))
   .enablePlugins(BuildInfoPlugin)
   .settings(
-    nonPublishableSettings,
+    noPublish,
     description := "Tests of interfaces for new-style Scala macros",
     libraryDependencies += "junit" % "junit" % "4.12",
     libraryDependencies ++= (
@@ -66,9 +57,9 @@ lazy val testsMacros = project
   .in(file("tests/macros"))
   .enablePlugins(BuildInfoPlugin)
   .settings(
-    nonPublishableSettings,
+    noPublish,
     description := "Tests of new-style Scala macros",
-    crossScalaVersions := List(Scala212), // TODO: support other versions of Scala
+    crossScalaVersions := List(scala212),
     libraryDependencies += "junit" % "junit" % "4.12",
     libraryDependencies += "org.scala-lang" % "scala-reflect" % scalaVersion.value,
     addCompilerPlugin("org.scalamacros" %% "paradise" % "2.1.0" cross CrossVersion.full),
@@ -83,116 +74,3 @@ lazy val testsMacros = project
     }
   )
   .dependsOn(scalamacros)
-
-// ==========================================
-// Settings
-// ==========================================
-
-lazy val sharedSettings = Def.settings(
-  initialize := {
-    val _ = initialize.value
-    val jdk = sys.props("java.specification.version")
-    assert(jdk == "1.8", "this build only supports JDK 1.8")
-  },
-  scalaVersion := LanguageVersion,
-  crossScalaVersions := LanguageVersions,
-  unmanagedSourceDirectories.in(Compile) += {
-    val main = baseDirectory.in(Compile).value / "src" / "main"
-    val epochSpecificName = if (isDotty.value) "scala-0" else "scala-2"
-    main / epochSpecificName
-  },
-  unmanagedSourceDirectories.in(Test) += {
-    val test = baseDirectory.in(Test).value / "src" / "test"
-    val epochSpecificName = if (isDotty.value) "scala-0" else "scala-2"
-    test / epochSpecificName
-  },
-  crossVersion := CrossVersion.binary,
-  organization := "org.scalamacros",
-  scalacOptions ++= Seq("-deprecation", "-feature", "-unchecked", "-Xfatal-warnings"),
-  logBuffered := false,
-  incOptions := incOptions.value.withLogRecompileOnMacro(false),
-  updateOptions := updateOptions.value.withCachedResolution(true),
-  triggeredMessage.in(ThisBuild) := Watched.clearWhenTriggered,
-  buildInfoKeys := Seq[BuildInfoKey](
-    scalaVersion,
-    version,
-    name,
-    moduleName
-  ),
-  buildInfoPackage := "scala.macros.internal.config." + name.value,
-  buildInfoObject := "BuildInfo",
-  libraryDependencies += "junit" % "junit" % "4.12" % "test",
-  libraryDependencies += "com.novocode" % "junit-interface" % "0.11" % "test",
-  testOptions += Tests.Argument(TestFrameworks.JUnit, "-q", "-n")
-)
-
-lazy val pluginSettings = Def.settings(
-  publishableSettings,
-  crossVersion := CrossVersion.full,
-  unmanagedSourceDirectories.in(Compile) += {
-    val base = sourceDirectory.in(Compile).value
-    base / ("scala-" + scalaVersion.value)
-  },
-  test.in(assembly) := {},
-  logLevel.in(assembly) := Level.Error,
-  assemblyJarName.in(assembly) := {
-    name.value + "_" + scalaVersion.value + "-" + version.value + "-assembly.jar"
-  },
-  assemblyOption.in(assembly) ~= { _.copy(includeScala = false) },
-  Keys.`package`.in(Compile) := {
-    val slimJar = Keys.`package`.in(Compile).value
-    val fatJar = new File(crossTarget.value + "/" + assemblyJarName.in(assembly).value)
-    val _ = assembly.value
-    IO.copy(List(fatJar -> slimJar), overwrite = true)
-    slimJar
-  },
-  packagedArtifact.in(Compile).in(packageBin) := {
-    val temp = packagedArtifact.in(Compile).in(packageBin).value
-    val (art, slimJar) = temp
-    val fatJar = new File(crossTarget.value + "/" + assemblyJarName.in(assembly).value)
-    val _ = assembly.value
-    IO.copy(List(fatJar -> slimJar), overwrite = true)
-    (art, slimJar)
-  }
-)
-
-lazy val publishableSettings = Def.settings(
-  sharedSettings,
-  bintrayOrganization := Some("scalamacros"),
-  publishArtifact.in(Compile) := true,
-  publishArtifact.in(Test) := false,
-  publishMavenStyle := true,
-  pomIncludeRepository := { x =>
-    false
-  },
-  licenses += "BSD" -> url("https://github.com/scalamacros/scalamacros/blob/master/LICENSE.md"),
-  pomExtra := (
-    <url>https://github.com/scalamacros/scalamacros</url>
-    <inceptionYear>2017</inceptionYear>
-    <scm>
-      <url>git://github.com/scalamacros/scalamacros.git</url>
-      <connection>scm:git:git://github.com/scalamacros/scalamacros.git</connection>
-    </scm>
-    <issueManagement>
-      <system>GitHub</system>
-      <url>https://github.com/scalamacros/scalamacros/issues</url>
-    </issueManagement>
-    <developers>
-      <developer>
-        <id>xeno-by</id>
-        <name>Eugene Burmako</name>
-        <url>http://xeno.by</url>
-      </developer>
-    </developers>
-  )
-)
-
-lazy val nonPublishableSettings = Def.settings(
-  sharedSettings,
-  publishArtifact.in(Compile, packageDoc) := false,
-  publishArtifact.in(packageDoc) := false,
-  sources.in(Compile, doc) := Seq.empty,
-  packagedArtifacts := Map.empty,
-  publishArtifact := false,
-  publish := {}
-)
