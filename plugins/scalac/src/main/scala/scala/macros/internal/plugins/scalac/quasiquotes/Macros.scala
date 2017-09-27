@@ -92,7 +92,7 @@ class Macros(val c: Context) {
 
   private def parseSkeleton(input: m.Input, mode: Mode): m.Tree = {
     try {
-      val dialect = m.Dialect(
+      val dialect = m.dialects.Scala212.copy(
         allowAndTypes = true,
         allowAtForExtractorVarargs = true,
         allowCaseClassWithoutParameterList = true,
