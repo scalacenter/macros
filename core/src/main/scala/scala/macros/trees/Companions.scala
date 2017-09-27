@@ -240,7 +240,8 @@ private[macros] trait Companions { self: Universe =>
           mods: List[Mod],
           name: Name,
           decltpe: Option[Type],
-          default: Option[Term]): Term.Param
+          default: Option[Term]
+      ): Term.Param
       def unapply(tree: Any): Option[(List[Mod], Name, Option[Type], Option[Term])]
     }
 
@@ -357,9 +358,11 @@ private[macros] trait Companions { self: Universe =>
           tparams: List[Type.Param],
           tbounds: Type.Bounds,
           vbounds: List[Type],
-          cbounds: List[Type]): Type.Param
-      def unapply(tree: Any)
-        : Option[(List[Mod], Name, List[Type.Param], Type.Bounds, List[Type], List[Type])]
+          cbounds: List[Type]
+      ): Type.Param
+      def unapply(
+          tree: Any
+      ): Option[(List[Mod], Name, List[Type.Param], Type.Bounds, List[Type], List[Type])]
     }
 
     trait PatVarCompanion {
@@ -433,9 +436,11 @@ private[macros] trait Companions { self: Universe =>
           name: Term.Name,
           tparams: List[Type.Param],
           paramss: List[List[Term.Param]],
-          decltpe: Type): Decl.Def
+          decltpe: Type
+      ): Decl.Def
       def unapply(
-          tree: Any): Option[(List[Mod], Term.Name, List[Type.Param], List[List[Term.Param]], Type)]
+          tree: Any
+      ): Option[(List[Mod], Term.Name, List[Type.Param], List[List[Term.Param]], Type)]
     }
 
     trait DeclTypeCompanion {
@@ -443,7 +448,8 @@ private[macros] trait Companions { self: Universe =>
           mods: List[Mod],
           name: Type.Name,
           tparams: List[Type.Param],
-          bounds: Type.Bounds): Decl.Type
+          bounds: Type.Bounds
+      ): Decl.Type
       def unapply(tree: Any): Option[(List[Mod], Type.Name, List[Type.Param], Type.Bounds)]
     }
 
@@ -457,7 +463,8 @@ private[macros] trait Companions { self: Universe =>
           mods: List[Mod],
           pats: List[Pat],
           decltpe: Option[Type],
-          rhs: Option[Term]): Defn.Var
+          rhs: Option[Term]
+      ): Defn.Var
       def unapply(tree: Any): Option[(List[Mod], List[Pat], Option[Type], Option[Term])]
     }
 
@@ -468,9 +475,11 @@ private[macros] trait Companions { self: Universe =>
           tparams: List[Type.Param],
           paramss: List[List[Term.Param]],
           decltpe: Option[Type],
-          body: Term): Defn.Def
+          body: Term
+      ): Defn.Def
       def unapply(tree: Any): Option[
-        (List[Mod], Term.Name, List[Type.Param], List[List[Term.Param]], Option[Type], Term)]
+        (List[Mod], Term.Name, List[Type.Param], List[List[Term.Param]], Option[Type], Term)
+      ]
     }
 
     trait DefnMacroCompanion {
@@ -480,9 +489,11 @@ private[macros] trait Companions { self: Universe =>
           tparams: List[Type.Param],
           paramss: List[List[Term.Param]],
           decltpe: Option[Type],
-          body: Term): Defn.Macro
+          body: Term
+      ): Defn.Macro
       def unapply(tree: Any): Option[
-        (List[Mod], Term.Name, List[Type.Param], List[List[Term.Param]], Option[Type], Term)]
+        (List[Mod], Term.Name, List[Type.Param], List[List[Term.Param]], Option[Type], Term)
+      ]
     }
 
     trait DefnTypeCompanion {
@@ -496,9 +507,11 @@ private[macros] trait Companions { self: Universe =>
           name: Type.Name,
           tparams: List[Type.Param],
           ctor: Ctor.Primary,
-          templ: Template): Defn.Class
+          templ: Template
+      ): Defn.Class
       def unapply(
-          tree: Any): Option[(List[Mod], Type.Name, List[Type.Param], Ctor.Primary, Template)]
+          tree: Any
+      ): Option[(List[Mod], Type.Name, List[Type.Param], Ctor.Primary, Template)]
     }
 
     trait DefnTraitCompanion {
@@ -507,9 +520,11 @@ private[macros] trait Companions { self: Universe =>
           name: Type.Name,
           tparams: List[Type.Param],
           ctor: Ctor.Primary,
-          templ: Template): Defn.Trait
+          templ: Template
+      ): Defn.Trait
       def unapply(
-          tree: Any): Option[(List[Mod], Type.Name, List[Type.Param], Ctor.Primary, Template)]
+          tree: Any
+      ): Option[(List[Mod], Type.Name, List[Type.Param], Ctor.Primary, Template)]
     }
 
     trait DefnObjectCompanion {
@@ -538,7 +553,8 @@ private[macros] trait Companions { self: Universe =>
           name: Name,
           paramss: List[List[Term.Param]],
           init: Init,
-          stats: List[Stat]): Ctor.Secondary
+          stats: List[Stat]
+      ): Ctor.Secondary
       def unapply(tree: Any): Option[(List[Mod], Name, List[List[Term.Param]], Init, List[Stat])]
     }
 

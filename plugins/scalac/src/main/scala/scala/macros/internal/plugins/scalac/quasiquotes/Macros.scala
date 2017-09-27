@@ -176,12 +176,16 @@ class Macros(val c: Context) {
           if (acc.isEmpty) {
             if (prefix.isEmpty) loop(rest, reify(quasi), Nil)
             else {
-              loop(rest, prefix.foldRight(acc)((curr, acc) => {
-                val currElement = reify(curr)
-                val alreadyLiftedList = acc.orElse(reify(quasi))
-                if (mode.isTerm) q"$currElement +: $alreadyLiftedList"
-                else pq"$currElement +: $alreadyLiftedList"
-              }), Nil)
+              loop(
+                rest,
+                prefix.foldRight(acc)((curr, acc) => {
+                  val currElement = reify(curr)
+                  val alreadyLiftedList = acc.orElse(reify(quasi))
+                  if (mode.isTerm) q"$currElement +: $alreadyLiftedList"
+                  else pq"$currElement +: $alreadyLiftedList"
+                }),
+                Nil
+              )
             }
           } else {
             if (mode.isTerm) loop(rest, q"$acc ++ ${reify(quasi)}", Nil)
@@ -214,8 +218,8 @@ class Macros(val c: Context) {
       case x: Quasi => unquote(x)
       case x: m.Tree => apply("scala.macros." + x.productPrefix, x.productIterator.toList)
       case Nil => path("scala.Nil")
-      case xss @ List(_: List[_], _ *) => treess(xss.asInstanceOf[List[List[m.Tree]]])
-      case xs @ List(_ *) => trees(xs.asInstanceOf[List[m.Tree]])
+      case xss @ List(_: List[_], _*) => treess(xss.asInstanceOf[List[List[m.Tree]]])
+      case xs @ List(_*) => trees(xs.asInstanceOf[List[m.Tree]])
       case None => path("scala.None")
       case x: Some[_] => treeopt(x.asInstanceOf[Some[m.Tree]])
       case x: Boolean => g.Literal(g.Constant(x))

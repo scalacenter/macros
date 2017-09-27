@@ -102,7 +102,8 @@ class StandardSuite extends TypecheckHelpers {
   def prettyList: Unit = {
     assertTypecheckError(
       "don't know how to prettyprint syntax of scala.collection.immutable.Nil.type",
-      "Nil.syntax")
+      "Nil.syntax"
+    )
     assertEquals("Nil", Nil.structure)
     assertTypecheckError("don't know how to prettyprint syntax of List[Int]", "List(1).syntax")
     assertEquals("List(1)", List(1).structure)
