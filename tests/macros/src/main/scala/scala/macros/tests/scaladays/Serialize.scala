@@ -16,7 +16,7 @@ object Serialize {
     "\"" + x + "\""
   }
 
-  implicit def materialize[T]: Serialize[T] = macro {
+  def materialize[T]: Serialize[T] = macro {
     val instance = Term.fresh("instance")
     val param = Term.fresh("x")
     val buf = Term.fresh("buf")

@@ -5,7 +5,6 @@ import scala.macros._
 import scala.language.experimental.macros
 
 object TestMacros {
-//  implicit def syntax[T]: Int = macro {
-//    q"22"
-//  }
+  def syntax[T](a: T): String = macro Lit.String(a.syntax)
+  def structure[T](a: T): String = macro Lit.String(a.structure)
 }
