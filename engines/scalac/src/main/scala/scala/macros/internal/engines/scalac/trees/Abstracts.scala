@@ -95,42 +95,55 @@ trait Abstracts extends scala.macros.trees.Abstracts with Positions { self: Univ
 
     object LitChar extends LitCharCompanion {
       def apply(value: Char): Lit = g.Literal(g.Constant(value))
-      def unapply(gtree: Any): Option[Char] = ???
+      def unapply(gtree: Any): Option[Char] =
+        litUnapply(gtree).collect { case x: Char => x }
     }
 
     object LitInt extends LitIntCompanion {
       def apply(value: Int): Lit = g.Literal(g.Constant(value))
-      def unapply(gtree: Any): Option[Int] = ???
+      def unapply(gtree: Any): Option[Int] =
+        litUnapply(gtree).collect { case x: Int => x }
     }
 
     object LitFloat extends LitFloatCompanion {
       def apply(value: Float): Lit = g.Literal(g.Constant(value))
-      def unapply(gtree: Any): Option[Float] = ???
+      def unapply(gtree: Any): Option[Float] =
+        litUnapply(gtree).collect { case x: Float => x }
     }
 
     object LitLong extends LitLongCompanion {
       def apply(value: Long): Lit = g.Literal(g.Constant(value))
-      def unapply(gtree: Any): Option[Long] = ???
+      def unapply(gtree: Any): Option[Long] =
+        litUnapply(gtree).collect { case x: Long => x }
     }
 
     object LitDouble extends LitDoubleCompanion {
       def apply(value: Double): Lit = g.Literal(g.Constant(value))
-      def unapply(gtree: Any): Option[Double] = ???
+      def unapply(gtree: Any): Option[Double] =
+        litUnapply(gtree).collect { case x: Double => x }
     }
 
     object LitString extends LitStringCompanion {
       def apply(value: String): Lit = g.Literal(g.Constant(value))
-      def unapply(gtree: Any): Option[String] = ???
+      def unapply(gtree: Any): Option[String] =
+        litUnapply(gtree).collect { case s: String => s }
     }
 
     object LitSymbol extends LitSymbolCompanion {
       def apply(value: scala.Symbol): Lit = g.Literal(g.Constant(value))
-      def unapply(gtree: Any): Option[scala.Symbol] = ???
+      lazy val symApply = g.typeOf[scala.Symbol.type].member(g.TermName("apply"))
+      def unapply(gtree: Any): Option[scala.Symbol] = gtree match {
+        case apply @ g.Apply(_, g.Literal(g.Constant(name: String)) :: Nil)
+            if symApply == apply.symbol =>
+          Some(scala.Symbol(name))
+        case _ => None
+      }
     }
 
     object LitNull extends LitNullCompanion {
       def apply(): Lit = g.Literal(g.Constant(null))
-      def unapply(gtree: Any): Boolean = ???
+      def unapply(gtree: Any): Boolean =
+        litUnapply(gtree).contains(null)
     }
 
     object TermThis extends TermThisCompanion {

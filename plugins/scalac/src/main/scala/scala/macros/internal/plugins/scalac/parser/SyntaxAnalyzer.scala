@@ -33,7 +33,7 @@ abstract class SyntaxAnalyzer extends NscSyntaxAnalyzer with ReflectToolkit {
 
     override def funDefRest(start: Offset, nameOff: Offset, mods: Modifiers, name: Name): Tree = {
       super.funDefRest(start, nameOff, mods, name) match {
-        case newmacro @ DefDef(mods, _, _, _, _, Block(_, _)) if mods.isMacro =>
+        case newmacro @ DefDef(mods, _, _, _, _, Block(_, _) | Apply(_, _)) if mods.isMacro =>
           if (!hasLibraryDependencyOnScalamacros) MissingLibraryDependencyOnScalamacros(r2p(start))
           copyDefDef(newmacro)(mods = mods.markNewMacro(r2p(start)))
         case other =>
