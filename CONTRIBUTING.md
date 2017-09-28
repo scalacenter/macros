@@ -35,6 +35,9 @@ $ sbt testsMacros/test # integration tests for macro expansions
 
 Adapted from [lihaoyi/ammonite](https://github.com/lihaoyi/Ammonite).
 
+For larger contributions, please first open a ticket to discuss design and make
+sure your contribution fits the project's goals.
+
 - **All code PRs should come with**: a meaningful description, inline-comments
   for important things, unit tests (positive and negative), and a green build
   in [CI](https://travis-ci.org/scalacenter/macros).
@@ -52,8 +55,10 @@ Adapted from [lihaoyi/ammonite](https://github.com/lihaoyi/Ammonite).
   least three lines were tried, committed, and reverted/refactored, and more
   than 10 were tried without committing.
 - **Feel free to send Proof-Of-Concept PRs** that you don't intend to get merged.
+  The title of such PRs should be prefixed with "WIP".
 
 ## Getting help
 
-If you are unsure about anything, don't hesitate to ask in the
-[gitter channel](https://gitter.im/scalacenter/scalafix).
+If you have questions about contributing to Scala Macros, don't
+hesitate to ask in our
+[gitter channel](https://gitter.im/scalacenter/macros-contributors).

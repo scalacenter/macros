@@ -1,10 +1,8 @@
 import Version._
 
 version in ThisBuild ~= (_.replace('+', '-'))
-name := {
-  println(s"[info] Welcome to Scala Macros ${version.value}")
-  "scalamacrosRoot"
-}
+name := "scalamacrosRoot"
+onLoadMessage := s"Welcome to Scala Macros ${version.value}"
 noPublish
 
 lazy val scalamacros = project

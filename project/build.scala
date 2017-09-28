@@ -54,6 +54,7 @@ object ScalamacrosBuildPlugin extends AutoPlugin {
     lazy val noPublish = Def.settings(
       publishArtifact.in(Compile, packageDoc) := false,
       publishArtifact.in(packageDoc) := false,
+      publishArtifact.in(Compile, packageSrc) := false,
       sources.in(Compile, doc) := Seq.empty,
       packagedArtifacts := Map.empty,
       publishArtifact := false,
@@ -87,8 +88,6 @@ object ScalamacrosBuildPlugin extends AutoPlugin {
       )
     ),
     bintrayOrganization := Some("scalamacros"),
-    publishArtifact.in(Compile) := true,
-    publishArtifact.in(Test) := false,
     publishMavenStyle := true,
     pomIncludeRepository := { x =>
       false
