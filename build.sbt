@@ -7,26 +7,24 @@ noPublish
 
 lazy val scalamacros = project
   .in(file("core"))
-  .enablePlugins(BuildInfoPlugin)
   .settings(
     moduleName := "scalamacros",
     description := "Platform-independent interfaces for new-style Scala macros"
   )
+  .enablePlugins(BuildInfoPlugin)
 
 lazy val enginesScalac = project
   .in(file("engines/scalac"))
-  .enablePlugins(BuildInfoPlugin)
   .settings(
-    crossScalaVersions := List(scala212),
     moduleName := "scalac-engine",
     description := "Scalac implementation of interfaces for new-style Scala macros",
+    crossScalaVersions := List(scala212, scala213),
     libraryDependencies += "org.scala-lang" % "scala-compiler" % scalaVersion.value
   )
   .dependsOn(scalamacros)
 
 lazy val pluginsScalac = project
   .in(file("plugins/scalac"))
-  .enablePlugins(BuildInfoPlugin)
   .settings(
     pluginSettings,
     crossScalaVersions := List(scala212),
@@ -39,7 +37,6 @@ lazy val pluginsScalac = project
 
 lazy val testsApi = project
   .in(file("tests/api"))
-  .enablePlugins(BuildInfoPlugin)
   .settings(
     noPublish,
     description := "Tests of interfaces for new-style Scala macros",
@@ -53,12 +50,10 @@ lazy val testsApi = project
 
 lazy val testsMacros = project
   .in(file("tests/macros"))
-  .enablePlugins(BuildInfoPlugin)
   .settings(
     noPublish,
     description := "Tests of new-style Scala macros",
     crossScalaVersions := List(scala212),
-    libraryDependencies += "junit" % "junit" % "4.12",
     libraryDependencies += "org.scala-lang" % "scala-reflect" % scalaVersion.value,
     addCompilerPlugin("org.scalamacros" %% "paradise" % "2.1.0" cross CrossVersion.full),
     scalacOptions ++= {

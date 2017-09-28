@@ -1,7 +1,6 @@
 package scala.macros.internal
 package config
 
-import scala.macros.internal.config.enginesScalac.BuildInfo
 import scala.macros.Version
 
 private[macros] trait Api {
