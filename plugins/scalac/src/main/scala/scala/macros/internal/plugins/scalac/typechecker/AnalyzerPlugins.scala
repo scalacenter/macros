@@ -35,7 +35,8 @@ trait AnalyzerPlugins extends ReflectToolkit {
       def ensureCompatible(
           found: Version,
           required: Option[Version],
-          onError: (Position, String, String) => Unit): Boolean = {
+          onError: (Position, String, String) => Unit
+      ): Boolean = {
         val Version(foundMajor, _, _, foundSnapshot, _) = found
         val compatible = required match {
           case Some(Version(requiredMajor, _, _, requiredSnapshot, _)) =>

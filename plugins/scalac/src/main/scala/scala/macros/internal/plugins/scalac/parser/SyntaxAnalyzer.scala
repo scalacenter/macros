@@ -265,7 +265,8 @@ abstract class SyntaxAnalyzer extends NscSyntaxAnalyzer with ReflectToolkit {
         c: ValDef,
         vvparams: List[ValDef],
         vtparams: List[ValDef],
-        isMacroAnnotation: Boolean): Tree = {
+        isMacroAnnotation: Boolean
+    ): Tree = {
       val cName = c.name
       val thisArgName = unit.freshTermName("prefix$")
       val otherArgDefs = {

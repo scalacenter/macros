@@ -149,7 +149,8 @@ trait Abstracts extends scala.macros.semantic.Mirrors { self: Universe =>
     }
 
     def denotMembers(denot: Denotation, name: String, f: SymFilter)(
-        implicit m: Mirror): List[Denotation] = {
+        implicit m: Mirror
+    ): List[Denotation] = {
       typeMembers(denotInfo(denot), name, f)
     }
 
