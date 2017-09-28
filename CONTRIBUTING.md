@@ -25,10 +25,15 @@ I recommend to run the tests from the sbt console.
 ## Testing
 
 Tests are written using JUnit.
+It's best to start the sbt once and keep the same sbt shell running between
+test commands.
+The following commands assume you are inside the sbt shell
 
 ```sh
-$ sbt testsApi/test    # unit tests for public API
-$ sbt testsMacros/test # integration tests for macro expansions
+> testsApi/test    # unit tests for public API
+> testsMacros/test # integration tests for macro expansions
+> ++0.3.0-RC2      # switch scalaVersion to dotty
+> very test        # run all tests for all scalaVersion: 2.12, dotty, ...
 ```
 
 ## Opening pull requests
