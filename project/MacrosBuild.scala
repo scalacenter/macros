@@ -7,7 +7,6 @@ import sbt.Keys._
 import sbt._
 import sbt.plugins.JvmPlugin
 import sbtassembly.AssemblyPlugin.autoImport._
-import sbtbuildinfo.BuildInfoPlugin
 import sbtbuildinfo.BuildInfoPlugin.autoImport._
 
 object Version {
@@ -16,13 +15,13 @@ object Version {
   val dotty = "0.3.0-RC2"
 }
 
-object ScalamacrosBuildPlugin extends AutoPlugin {
+object MacrosBuild extends AutoPlugin {
   import Version._
-  override def requires: Plugins = JvmPlugin && BuildInfoPlugin
+  override def requires: Plugins = JvmPlugin
   override def trigger: PluginTrigger = allRequirements
 
   object autoImport {
-    lazy val pluginSettings = Def.settings(
+    lazy val pluginSettings: Seq[Def.Setting[_]] = Def.settings(
       crossVersion := CrossVersion.full,
       unmanagedSourceDirectories.in(Compile) += {
         val base = sourceDirectory.in(Compile).value
@@ -51,7 +50,7 @@ object ScalamacrosBuildPlugin extends AutoPlugin {
       }
     )
 
-    lazy val noPublish = Def.settings(
+    lazy val noPublish: Seq[Def.Setting[_]] = Def.settings(
       publishArtifact.in(Compile, packageDoc) := false,
       publishArtifact.in(packageDoc) := false,
       publishArtifact.in(Compile, packageSrc) := false,
@@ -62,10 +61,23 @@ object ScalamacrosBuildPlugin extends AutoPlugin {
     )
   }
 
+  lazy val defaultCompilerVersion = sys.env.get("SCALA_VERSION").fold(scala212) {
+    case "2.12" => scala212
+    case "2.13" => scala213
+    case "dotty" => dotty
+    case unsupported =>
+      throw new IllegalArgumentException(
+        s"SCALA_VERSION=$unsupported. Expected one of: dotty, 2.12, 2.13"
+      )
+  }
+
   override def globalSettings: Seq[Def.Setting[_]] = List(
-    scalaVersion := scala212,
-    crossScalaVersions := List(scala212),
+    scalaVersion := defaultCompilerVersion,
+    crossScalaVersions := List(scala212, scala213, dotty),
     crossVersion := CrossVersion.binary,
+    commands += Command.command("ci-test") { s =>
+      s"plz $defaultCompilerVersion test" :: s
+    },
     scalacOptions ++= Seq("-deprecation", "-feature", "-unchecked", "-Xfatal-warnings"),
     logBuffered := false,
     incOptions := incOptions.value.withLogRecompileOnMacro(false),
@@ -78,7 +90,7 @@ object ScalamacrosBuildPlugin extends AutoPlugin {
     testOptions += Tests.Argument(TestFrameworks.JUnit, "-q", "-n"),
     organization := "org.scalamacros",
     licenses := Seq(
-      "BSD" -> url("https://github.com/scalamacros/scalamacros/blob/master/LICENSE.md")
+      "BSD" -> url("https://github.com/scalacenter/macros/blob/master/LICENSE.md")
     ),
     homepage := Some(url(s"https://github.com/scalacenter/macros")),
     scmInfo := Some(
@@ -123,7 +135,7 @@ object ScalamacrosBuildPlugin extends AutoPlugin {
   )
 
   override def projectSettings: Seq[Def.Setting[_]] = List(
-    buildInfoPackage := "scala.macros.internal.config." + name.value,
+    buildInfoPackage := "scala.macros.internal.config",
     buildInfoKeys := Seq[BuildInfoKey](
       scalaVersion,
       version,

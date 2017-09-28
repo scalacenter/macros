@@ -5,7 +5,7 @@ import org.junit.Assume._
 
 trait TypecheckHelpers {
   def assertTypecheckError(error: String, code: String): Unit = {
-    assumeTrue("assertTypecheckError can be implemented in Dotty", false)
+    assumeTrue("assertTypecheckError is not yet implemented in Dotty", false)
     ???
   }
 }

@@ -5,9 +5,13 @@ jdk:
 - oraclejdk8
 env:
   matrix:
-  - CI_TEST: test
-  - CI_TEST: scalafmt
-  - CI_TEST: cla
+  - CI_TEST: ci-test
+    SCALA_VERSION: 2.12
+  - CI_TEST: ci-test
+    SCALA_VERSION: 2.13
+  - CI_TEST: ci-test
+    SCALA_VERSION: dotty
+  - CI_TEST: check
 
 cache:
   directories:
