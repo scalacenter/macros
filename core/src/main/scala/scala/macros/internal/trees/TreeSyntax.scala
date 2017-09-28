@@ -69,9 +69,8 @@ trait TreeSyntax { self: Universe =>
       case Lit.Symbol(sym) =>
         p.raw("'")
         p.raw(sym.name)
-      case els =>
-        println(s"ELS: $els (${els.getClass})")
-        pprint.log(els)
+      case _ =>
+        println(s"NotImplementedYet: $x (${x.getClass})")
         ???
     }
   }

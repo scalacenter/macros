@@ -78,7 +78,7 @@ trait TreeStructure { self: Universe =>
         p.raw(x.syntax)
         p.raw(")")
       case _ =>
-        pprint.log(x)
+        println(s"NotImplementedYet: $x (${x.getClass})")
         ???
     }
   }
