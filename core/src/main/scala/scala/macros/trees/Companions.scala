@@ -75,7 +75,7 @@ private[macros] trait Companions { self: Universe =>
     }
 
     trait TermThisCompanion {
-      def apply(qual: Name): Term.Ref
+      def apply(qual: Name): Term
       def unapply(tree: Any): Option[Name]
     }
 

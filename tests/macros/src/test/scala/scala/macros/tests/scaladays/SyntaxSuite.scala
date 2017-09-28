@@ -7,26 +7,38 @@ import org.junit.runners.JUnit4
 
 @RunWith(classOf[JUnit4])
 class SyntaxSuite {
-  @Test def syntaxChar: Unit = assertEquals("'2'", TestMacros.syntax('2'))
-  @Test def syntaxDouble: Unit = assertEquals("2.0d", TestMacros.syntax(2d))
-  @Test def syntaxFloat: Unit = assertEquals("2.0f", TestMacros.syntax(2f))
-  @Test def syntaxInt: Unit = assertEquals("2", TestMacros.syntax(2))
-  @Test def syntaxLong: Unit = assertEquals("2L", TestMacros.syntax(2L))
-  @Test def syntaxNull: Unit = assertEquals("null", TestMacros.syntax(null))
-  @Test def syntaxString: Unit = assertEquals("\"2\"", TestMacros.syntax("2"))
-  @Test def syntaxSymbol: Unit = assertEquals("'S", TestMacros.syntax('S))
+  import TestMacros.syntax
+  @Test def char: Unit = assertEquals("'2'", syntax('2'))
+  @Test def double: Unit = assertEquals("2.0d", syntax(2d))
+  @Test def float: Unit = assertEquals("2.0f", syntax(2f))
+  @Test def int: Unit = assertEquals("2", syntax(2))
+  @Test def long: Unit = assertEquals("2L", syntax(2L))
+  @Test def `null`: Unit = assertEquals("null", syntax(null))
+  @Test def string: Unit = assertEquals("\"2\"", syntax("2"))
+  @Test def symbol: Unit = assertEquals("'S", syntax('S))
 
   // special cases
-  @Test def syntaxDoubleNaN: Unit =
-    assertEquals("Double.NaN", TestMacros.syntax(Double.NaN))
-  @Test def syntaxDoublePosInf: Unit =
-    assertEquals("Double.PositiveInfinity", TestMacros.syntax(Double.PositiveInfinity))
-  @Test def syntaxDoubleNegInf: Unit =
-    assertEquals("Double.NegativeInfinity", TestMacros.syntax(Double.NegativeInfinity))
-  @Test def syntaxFloatNaN: Unit =
-    assertEquals("Float.NaN", TestMacros.syntax(Float.NaN))
-  @Test def syntaxFloatPosInf: Unit =
-    assertEquals("Float.PositiveInfinity", TestMacros.syntax(Float.PositiveInfinity))
-  @Test def syntaxFloatNegInf: Unit =
-    assertEquals("Float.NegativeInfinity", TestMacros.syntax(Float.NegativeInfinity))
+  @Test def doubleNaN: Unit =
+    assertEquals("Double.NaN", syntax(Double.NaN))
+  @Test def doublePosInf: Unit =
+    assertEquals("Double.PositiveInfinity", syntax(Double.PositiveInfinity))
+  @Test def doubleNegInf: Unit =
+    assertEquals("Double.NegativeInfinity", syntax(Double.NegativeInfinity))
+  @Test def floatNaN: Unit =
+    assertEquals("Float.NaN", syntax(Float.NaN))
+  @Test def floatPosInf: Unit =
+    assertEquals("Float.PositiveInfinity", syntax(Float.PositiveInfinity))
+  @Test def floatNegInf: Unit =
+    assertEquals("Float.NegativeInfinity", syntax(Float.NegativeInfinity))
+
+  val x = "a"
+  @Test def name: Unit = assertEquals("SyntaxSuite.this.x", syntax(x))
+
+  @Test def apply0: Unit =
+    assertEquals("\"a\".trim()", syntax("a".trim))
+  @Test def apply1: Unit =
+    assertEquals("\"a\".charAt(0)", syntax("a".charAt(0)))
+  @Test def apply2: Unit =
+    assertEquals("\"a\".substring(0, 1)", syntax("a".substring(0, 1)))
+
 }

@@ -69,7 +69,8 @@ trait Abstracts extends scala.macros.trees.Abstracts with Positions { self: Univ
       def apply(value: String): Name = c.NameIndeterminate(value)
       def unapply(gtree: Any): Option[String] = gtree match {
         case tree: c.NameIndeterminate => c.NameIndeterminate.unapply(tree)
-        case _ => None
+        case _ =>
+          None
       }
     }
 
@@ -147,8 +148,11 @@ trait Abstracts extends scala.macros.trees.Abstracts with Positions { self: Univ
     }
 
     object TermThis extends TermThisCompanion {
-      def apply(qual: Name): Term.Ref = ???
-      def unapply(gtree: Any): Option[Name] = ???
+      def apply(qual: Name): Term = g.This(qual.name.toTypeName)
+      def unapply(gtree: Any): Option[Name] = gtree match {
+        case g.This(g.TypeName(name)) => Some(c.NameIndeterminate(name))
+        case _ => None
+      }
     }
 
     object TermSuper extends TermSuperCompanion {
@@ -179,7 +183,10 @@ trait Abstracts extends scala.macros.trees.Abstracts with Positions { self: Univ
 
     object TermSelect extends TermSelectCompanion {
       def apply(qual: Term, name: Term.Name): Term.Ref = g.Select(qual, name.toGTermName)
-      def unapply(gtree: Any): Option[(Term, Term.Name)] = ???
+      def unapply(gtree: Any): Option[(Term, Term.Name)] = gtree match {
+        case g.Select(qual, name) => Some(qual -> new c.TermName(name.decoded))
+        case _ => None
+      }
     }
 
     object TermInterpolate extends TermInterpolateCompanion {
@@ -194,7 +201,11 @@ trait Abstracts extends scala.macros.trees.Abstracts with Positions { self: Univ
 
     object TermApply extends TermApplyCompanion {
       def apply(fun: Term, args: List[Term]): Term = g.Apply(fun, args)
-      def unapply(gtree: Any): Option[(Term, List[Term])] = ???
+      def unapply(gtree: Any): Option[(Term, List[Term])] = gtree match {
+        case gtree @ g.Apply(fun, args) if LitSymbol.symApply != gtree.symbol =>
+          Some(fun -> args.asInstanceOf[List[Term]])
+        case _ => None
+      }
     }
 
     object TermApplyType extends TermApplyTypeCompanion {
@@ -357,7 +368,7 @@ trait Abstracts extends scala.macros.trees.Abstracts with Positions { self: Univ
         apply(sym.name.decoded).setSymbol(sym)
       }
       def unapply(gtree: Any): Option[String] = gtree match {
-        case g.Ident(name: g.TypeName) => unapply(name.decoded)
+        case g.Ident(name: g.TypeName) => Some(name.decoded)
         case _ => None
       }
     }
