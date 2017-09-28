@@ -41,4 +41,5 @@ class StructureSuite {
       structure("a".substring(0, 1))
     )
 
+  // TODO(olafur) Type.Apply
 }

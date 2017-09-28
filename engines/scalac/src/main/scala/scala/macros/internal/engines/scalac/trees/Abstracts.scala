@@ -69,8 +69,7 @@ trait Abstracts extends scala.macros.trees.Abstracts with Positions { self: Univ
       def apply(value: String): Name = c.NameIndeterminate(value)
       def unapply(gtree: Any): Option[String] = gtree match {
         case tree: c.NameIndeterminate => c.NameIndeterminate.unapply(tree)
-        case _ =>
-          None
+        case _ => None
       }
     }
 
@@ -210,7 +209,10 @@ trait Abstracts extends scala.macros.trees.Abstracts with Positions { self: Univ
 
     object TermApplyType extends TermApplyTypeCompanion {
       def apply(fun: Term, targs: List[Type]): Term = g.TypeApply(fun, targs)
-      def unapply(gtree: Any): Option[(Term, List[Type])] = ???
+      def unapply(gtree: Any): Option[(Term, List[Type])] = gtree match {
+        case g.TypeApply(fun, args) => Some(fun, args)
+        case _ => None
+      }
     }
 
     object TermApplyInfix extends TermApplyInfixCompanion {
@@ -369,6 +371,12 @@ trait Abstracts extends scala.macros.trees.Abstracts with Positions { self: Univ
       }
       def unapply(gtree: Any): Option[String] = gtree match {
         case g.Ident(name: g.TypeName) => Some(name.decoded)
+        case tt @ g.TypeTree()
+            if tt.original == null &&
+              tt.symbol != null &&
+              !tt.symbol.info.isHigherKinded =>
+          // TODO(olafur) we may want to emit Type.Select instead of Type.Name here.
+          Some(tt.symbol.decodedName)
         case _ => None
       }
     }
@@ -398,7 +406,16 @@ trait Abstracts extends scala.macros.trees.Abstracts with Positions { self: Univ
 
     object TypeApply extends TypeApplyCompanion {
       def apply(tpe: Type, args: List[Type]): Type = g.AppliedTypeTree(tpe, args)
-      def unapply(gtree: Any): Option[(Type, List[Type])] = ???
+      def unapply(gtree: Any): Option[(Type, List[Type])] = gtree match {
+        // TODO(olafur) hack, shady stuff happening here.
+        case tt @ g.TypeTree()
+            if tt.original == null &&
+              tt.symbol != null &&
+              tt.symbol.info != null &&
+              tt.symbol.info.takesTypeArgs =>
+          Some(g.TypeTree(tt.symbol.info) -> tt.symbol.info.typeArgs.map(g.TypeTree))
+        case _ => None
+      }
     }
 
     object TypeApplyInfix extends TypeApplyInfixCompanion {

@@ -11,6 +11,22 @@ trait TreeSyntax { self: Universe =>
       case Term.This(qual) =>
         render(p, qual.asInstanceOf[T])
         p.raw(".this")
+      case Term.ApplyType(fun, targs) =>
+        render(p, fun.asInstanceOf[T])
+        p.raw("[")
+        targs match {
+          case Nil =>
+            sys.error(s"Expected nonempty list for Term.ApplyType $x")
+          case head :: tail =>
+            render(p, head.asInstanceOf[T])
+            tail.foreach { arg =>
+              p.raw(", ")
+              render(p, arg.asInstanceOf[T])
+            }
+        }
+        p.raw("]")
+      case Type.Apply(fun, targs) =>
+        p.raw(x.toString) // TODO(olafur) hack
       case Term.Apply(fun, args) =>
         render(p, fun.asInstanceOf[T])
         p.raw("(")

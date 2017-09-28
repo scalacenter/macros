@@ -41,4 +41,16 @@ class SyntaxSuite {
   @Test def apply2(): Unit =
     assertEquals("\"a\".substring(0, 1)", syntax("a".substring(0, 1)))
 
+  def add(a: Int)(b: Int): Int = a + b
+  @Test def applyCurry(): Unit =
+    assertEquals("SyntaxSuite.this.add(1)(2)", syntax(add(1)(2)))
+
+  def tpe[T](e: T) = e
+  @Test def typeApply(): Unit =
+    assertEquals("SyntaxSuite.this.tpe[Int](2)", syntax(tpe(2)))
+  val lst = List(1)
+  @Test def typeApplyHK(): Unit = {
+    assertEquals("SyntaxSuite.this.tpe[List[Int]](SyntaxSuite.this.lst)", syntax(tpe(lst)))
+  }
+
 }
