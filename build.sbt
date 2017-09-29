@@ -23,6 +23,16 @@ lazy val enginesScalac = project
   )
   .dependsOn(scalamacros)
 
+lazy val enginesDotc = project
+    .in(file("engines/dotc"))
+    .settings(
+      moduleName := "scalac-dotc",
+      description := "Dotc implementation of interfaces for new-style Scala macros",
+      crossScalaVersions := List(dotty),
+      libraryDependencies += "ch.epfl.lamp" %% "dotty-compiler" % dotty
+    )
+    .dependsOn(scalamacros)
+
 lazy val pluginsScalac = project
   .in(file("plugins/scalac"))
   .settings(
