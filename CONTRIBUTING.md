@@ -16,19 +16,26 @@ to [ask for help](#getting-help).
 ## Setting up an IDE
 
 The project should import in IntelliJ as any normal sbt project.
-Autocompletion should work fine for the core modules.
-IntelliJ may report false red squiggly marks inside `macro` blocks, which will
-hopefully get fixed once the def macro syntax is stabilizes.
+The project does use advanced and experimental Scala features which
+causes IntelliJ to report false red squiggly marks in many places,
+for example
+- inside `macro` blocks
+- for pattern matches on the abstract trees, example `case Term.Name`
 
-I recommend to run the tests from the sbt console.
+Always compile/test from the sbt console.
 
 ## Testing
 
 Tests are written using JUnit.
+It's best to start the sbt once and keep the same sbt shell running between
+test commands.
+The following commands assume you are inside the sbt shell
 
 ```sh
-$ sbt testsApi/test    # unit tests for public API
-$ sbt testsMacros/test # integration tests for macro expansions
+> testsApi/test    # unit tests for public API
+> testsMacros/test # integration tests for macro expansions
+> ++0.3.0-RC2      # switch scalaVersion to dotty
+> very test        # run all tests for all scalaVersion: 2.12, dotty, ...
 ```
 
 ## Opening pull requests

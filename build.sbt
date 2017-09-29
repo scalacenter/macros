@@ -54,6 +54,7 @@ lazy val testsMacros = project
     noPublish,
     description := "Tests of new-style Scala macros",
     crossScalaVersions := List(scala212),
+    scalacOptions += "-language:experimental.macros",
     libraryDependencies += "org.scala-lang" % "scala-reflect" % scalaVersion.value,
     addCompilerPlugin("org.scalamacros" %% "paradise" % "2.1.0" cross CrossVersion.full),
     scalacOptions ++= {

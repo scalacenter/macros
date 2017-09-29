@@ -95,47 +95,63 @@ trait Abstracts extends scala.macros.trees.Abstracts with Positions { self: Univ
 
     object LitChar extends LitCharCompanion {
       def apply(value: Char): Lit = g.Literal(g.Constant(value))
-      def unapply(gtree: Any): Option[Char] = ???
+      def unapply(gtree: Any): Option[Char] =
+        litUnapply(gtree).collect { case x: Char => x }
     }
 
     object LitInt extends LitIntCompanion {
       def apply(value: Int): Lit = g.Literal(g.Constant(value))
-      def unapply(gtree: Any): Option[Int] = ???
+      def unapply(gtree: Any): Option[Int] =
+        litUnapply(gtree).collect { case x: Int => x }
     }
 
     object LitFloat extends LitFloatCompanion {
       def apply(value: Float): Lit = g.Literal(g.Constant(value))
-      def unapply(gtree: Any): Option[Float] = ???
+      def unapply(gtree: Any): Option[Float] =
+        litUnapply(gtree).collect { case x: Float => x }
     }
 
     object LitLong extends LitLongCompanion {
       def apply(value: Long): Lit = g.Literal(g.Constant(value))
-      def unapply(gtree: Any): Option[Long] = ???
+      def unapply(gtree: Any): Option[Long] =
+        litUnapply(gtree).collect { case x: Long => x }
     }
 
     object LitDouble extends LitDoubleCompanion {
       def apply(value: Double): Lit = g.Literal(g.Constant(value))
-      def unapply(gtree: Any): Option[Double] = ???
+      def unapply(gtree: Any): Option[Double] =
+        litUnapply(gtree).collect { case x: Double => x }
     }
 
     object LitString extends LitStringCompanion {
       def apply(value: String): Lit = g.Literal(g.Constant(value))
-      def unapply(gtree: Any): Option[String] = ???
+      def unapply(gtree: Any): Option[String] =
+        litUnapply(gtree).collect { case s: String => s }
     }
 
     object LitSymbol extends LitSymbolCompanion {
       def apply(value: scala.Symbol): Lit = g.Literal(g.Constant(value))
-      def unapply(gtree: Any): Option[scala.Symbol] = ???
+      lazy val symApply = g.typeOf[scala.Symbol.type].member(g.TermName("apply"))
+      def unapply(gtree: Any): Option[scala.Symbol] = gtree match {
+        case apply @ g.Apply(_, g.Literal(g.Constant(name: String)) :: Nil)
+            if symApply == apply.symbol =>
+          Some(scala.Symbol(name))
+        case _ => None
+      }
     }
 
     object LitNull extends LitNullCompanion {
       def apply(): Lit = g.Literal(g.Constant(null))
-      def unapply(gtree: Any): Boolean = ???
+      def unapply(gtree: Any): Boolean =
+        litUnapply(gtree).contains(null)
     }
 
     object TermThis extends TermThisCompanion {
-      def apply(qual: Name): Term.Ref = ???
-      def unapply(gtree: Any): Option[Name] = ???
+      def apply(qual: Name): Term = g.This(qual.name.toTypeName)
+      def unapply(gtree: Any): Option[Name] = gtree match {
+        case g.This(g.TypeName(name)) => Some(c.NameIndeterminate(name))
+        case _ => None
+      }
     }
 
     object TermSuper extends TermSuperCompanion {
@@ -166,7 +182,10 @@ trait Abstracts extends scala.macros.trees.Abstracts with Positions { self: Univ
 
     object TermSelect extends TermSelectCompanion {
       def apply(qual: Term, name: Term.Name): Term.Ref = g.Select(qual, name.toGTermName)
-      def unapply(gtree: Any): Option[(Term, Term.Name)] = ???
+      def unapply(gtree: Any): Option[(Term, Term.Name)] = gtree match {
+        case g.Select(qual, name) => Some(qual -> new c.TermName(name.decoded))
+        case _ => None
+      }
     }
 
     object TermInterpolate extends TermInterpolateCompanion {
@@ -181,12 +200,23 @@ trait Abstracts extends scala.macros.trees.Abstracts with Positions { self: Univ
 
     object TermApply extends TermApplyCompanion {
       def apply(fun: Term, args: List[Term]): Term = g.Apply(fun, args)
-      def unapply(gtree: Any): Option[(Term, List[Term])] = ???
+      def unapply(gtree: Any): Option[(Term, List[Term])] = gtree match {
+        case gtree @ g.Apply(fun, args)
+            // NOTE(olafur) here we resugar scala.Symbol.apply("s") into 's,
+            // we may want to remove this special handling of symbols later
+            // down the road.
+            if !(fun.pos == gtree.pos && LitSymbol.symApply == gtree.symbol) =>
+          Some(fun -> args.asInstanceOf[List[Term]])
+        case _ => None
+      }
     }
 
     object TermApplyType extends TermApplyTypeCompanion {
       def apply(fun: Term, targs: List[Type]): Term = g.TypeApply(fun, targs)
-      def unapply(gtree: Any): Option[(Term, List[Type])] = ???
+      def unapply(gtree: Any): Option[(Term, List[Type])] = gtree match {
+        case g.TypeApply(fun, args) => Some(fun, args)
+        case _ => None
+      }
     }
 
     object TermApplyInfix extends TermApplyInfixCompanion {
@@ -343,8 +373,16 @@ trait Abstracts extends scala.macros.trees.Abstracts with Positions { self: Univ
       def apply(sym: Symbol): Type.Name = {
         apply(sym.name.decoded).setSymbol(sym)
       }
+      // TODO(olafur) Remove this or make private, matching on type trees is
+      // not good practice for macros.
       def unapply(gtree: Any): Option[String] = gtree match {
-        case g.Ident(name: g.TypeName) => unapply(name.decoded)
+        case g.Ident(name: g.TypeName) => Some(name.decoded)
+        case tt @ g.TypeTree()
+            if tt.original == null &&
+              tt.symbol != null &&
+              !tt.symbol.info.isHigherKinded =>
+          // TODO(olafur) we may want to emit Type.Select instead of Type.Name here.
+          Some(tt.symbol.decodedName)
         case _ => None
       }
     }
@@ -374,7 +412,17 @@ trait Abstracts extends scala.macros.trees.Abstracts with Positions { self: Univ
 
     object TypeApply extends TypeApplyCompanion {
       def apply(tpe: Type, args: List[Type]): Type = g.AppliedTypeTree(tpe, args)
-      def unapply(gtree: Any): Option[(Type, List[Type])] = ???
+      // TODO(olafur) Remove this or make private, matching on type trees is
+      // not good practice for macros.
+      def unapply(gtree: Any): Option[(Type, List[Type])] = gtree match {
+        case tt @ g.TypeTree()
+            if tt.original == null &&
+              tt.symbol != null &&
+              tt.symbol.info != null &&
+              tt.symbol.info.takesTypeArgs =>
+          Some(g.TypeTree(tt.symbol.info) -> tt.symbol.info.typeArgs.map(g.TypeTree))
+        case _ => None
+      }
     }
 
     object TypeApplyInfix extends TypeApplyInfixCompanion {
