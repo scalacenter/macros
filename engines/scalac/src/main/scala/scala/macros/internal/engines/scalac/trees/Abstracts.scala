@@ -201,7 +201,11 @@ trait Abstracts extends scala.macros.trees.Abstracts with Positions { self: Univ
     object TermApply extends TermApplyCompanion {
       def apply(fun: Term, args: List[Term]): Term = g.Apply(fun, args)
       def unapply(gtree: Any): Option[(Term, List[Term])] = gtree match {
-        case gtree @ g.Apply(fun, args) if LitSymbol.symApply != gtree.symbol =>
+        case gtree @ g.Apply(fun, args)
+            // NOTE(olafur) here we resugar scala.Symbol.apply("s") into 's,
+            // we may want to remove this special handling of symbols later
+            // down the road.
+            if !(fun.pos == gtree.pos && LitSymbol.symApply == gtree.symbol) =>
           Some(fun -> args.asInstanceOf[List[Term]])
         case _ => None
       }
@@ -369,6 +373,8 @@ trait Abstracts extends scala.macros.trees.Abstracts with Positions { self: Univ
       def apply(sym: Symbol): Type.Name = {
         apply(sym.name.decoded).setSymbol(sym)
       }
+      // TODO(olafur) Remove this or make private, matching on type trees is
+      // not good practice for macros.
       def unapply(gtree: Any): Option[String] = gtree match {
         case g.Ident(name: g.TypeName) => Some(name.decoded)
         case tt @ g.TypeTree()
@@ -406,8 +412,9 @@ trait Abstracts extends scala.macros.trees.Abstracts with Positions { self: Univ
 
     object TypeApply extends TypeApplyCompanion {
       def apply(tpe: Type, args: List[Type]): Type = g.AppliedTypeTree(tpe, args)
+      // TODO(olafur) Remove this or make private, matching on type trees is
+      // not good practice for macros.
       def unapply(gtree: Any): Option[(Type, List[Type])] = gtree match {
-        // TODO(olafur) hack, shady stuff happening here.
         case tt @ g.TypeTree()
             if tt.original == null &&
               tt.symbol != null &&

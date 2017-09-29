@@ -40,6 +40,8 @@ class SyntaxSuite {
     assertEquals("\"a\".charAt(0)", syntax("a".charAt(0)))
   @Test def apply2(): Unit =
     assertEquals("\"a\".substring(0, 1)", syntax("a".substring(0, 1)))
+  @Test def applySymbol(): Unit =
+    assertEquals("scala.Symbol.apply(\"S\")", syntax(scala.Symbol.apply("S")))
 
   def add(a: Int)(b: Int): Int = a + b
   @Test def applyCurry(): Unit =
