@@ -24,14 +24,14 @@ lazy val enginesScalac = project
   .dependsOn(scalamacros)
 
 lazy val enginesDotc = project
-    .in(file("engines/dotc"))
-    .settings(
-      moduleName := "scalac-dotc",
-      description := "Dotc implementation of interfaces for new-style Scala macros",
-      crossScalaVersions := List(dotty),
-      libraryDependencies += "ch.epfl.lamp" %% "dotty-compiler" % dotty
-    )
-    .dependsOn(scalamacros)
+  .in(file("engines/dotc"))
+  .settings(
+    moduleName := "dotc-engine",
+    description := "Dotc implementation of interfaces for new-style Scala macros",
+    crossScalaVersions := List(scala212, dotty),
+    libraryDependencies += "ch.epfl.lamp" %% "dotty-compiler" % dotty
+  )
+  .dependsOn(scalamacros)
 
 lazy val pluginsScalac = project
   .in(file("plugins/scalac"))
@@ -52,7 +52,7 @@ lazy val testsApi = project
     description := "Tests of interfaces for new-style Scala macros",
     libraryDependencies += "junit" % "junit" % "4.12",
     libraryDependencies ++= (
-      if (isDotty.value) Nil
+      if (isDotty.value) Seq("ch.epfl.lamp" %% "dotty-compiler" % scalaVersion.value)
       else Seq("org.scala-lang" % "scala-reflect" % scalaVersion.value)
     )
   )

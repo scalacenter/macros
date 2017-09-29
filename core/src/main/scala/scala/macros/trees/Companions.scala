@@ -86,7 +86,7 @@ private[macros] trait Companions { self: Universe =>
 
     trait TermNameCompanion {
       def apply(value: String): Term.Name
-      def apply(sym: Symbol): Term.Name
+      def apply(sym: Symbol)(implicit m: Mirror): Term.Name
       def unapply(tree: Any): Option[String]
     }
 
@@ -247,7 +247,7 @@ private[macros] trait Companions { self: Universe =>
 
     trait TypeNameCompanion {
       def apply(value: String): Type.Name
-      def apply(sym: Symbol): Type.Name
+      def apply(sym: Symbol)(implicit m: Mirror): Type.Name
       def unapply(tree: Any): Option[String]
     }
 

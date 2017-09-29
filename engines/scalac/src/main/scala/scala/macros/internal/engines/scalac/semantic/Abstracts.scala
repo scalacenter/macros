@@ -164,6 +164,14 @@ trait Abstracts extends scala.macros.semantic.Mirrors { self: Universe =>
     }
 
     implicit class XtensionToGType(tpe: Type) {
+      List[Int]
+      def foo(e: Int): String = ""
+      Type.Method
+      val x: Map[Int, List[String]] = null
+      // |   |  |                        |
+      "5"
+      5
+      untpd.Type
       def toGType: g.Type = tpe match {
         case gtpt: g.TypeTree => gtpt.tpe
         case _ => ???

@@ -12,10 +12,11 @@ import sbtbuildinfo.BuildInfoPlugin.autoImport._
 object Version {
   val scala212 = "2.12.3"
   val scala213 = "2.13.0-M1"
-  val dotty = "0.2.0-bin-20170820-e5f95d0-NIGHTLY"
+  // Using nonbootstrapped dotty for simpler experimentation.
+  val dotty = "0.4.0-bin-20170929-e4473b7-NIGHTLY-nonbootstrapped"
 }
 
-object MacrosBuild extends AutoPlugin {
+object Build extends AutoPlugin {
   import Version._
   override def requires: Plugins = JvmPlugin
   override def trigger: PluginTrigger = allRequirements
