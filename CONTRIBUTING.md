@@ -16,11 +16,13 @@ to [ask for help](#getting-help).
 ## Setting up an IDE
 
 The project should import in IntelliJ as any normal sbt project.
-Autocompletion should work fine for the core modules.
-IntelliJ may report false red squiggly marks inside `macro` blocks, which will
-hopefully get fixed once the def macro syntax is stabilizes.
+The project does use advanced and experimental Scala features which
+causes IntelliJ to report false red squiggly marks in many places,
+for example
+- inside `macro` blocks
+- for pattern matches on the abstract trees, example `case Term.Name`
 
-I recommend to run the tests from the sbt console.
+Always compile/test from the sbt console.
 
 ## Testing
 
