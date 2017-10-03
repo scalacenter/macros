@@ -17,7 +17,7 @@ private[macros] trait Trees extends Abstracts with Companions with Extensions { 
     def Indeterminate = abstracts.NameIndeterminate
   }
 
-  type Lit >: Null <: Tree // Term with Type with Pat // Lit.value
+  type Lit >: Null <: Term with Type with Pat
   val Lit: LitCompanion = new LitCompanion {}
   private[macros] trait LitCompanion {
     def unapply(tree: Any) = abstracts.litUnapply(tree)

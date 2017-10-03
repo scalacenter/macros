@@ -163,7 +163,7 @@ trait Abstracts extends scala.macros.trees.Abstracts with Positions { self: Univ
       def apply(value: String): Term.Name = {
         new c.TermName(value)
       }
-      def apply(sym: Symbol): Term.Name = {
+      def apply(sym: Symbol)(implicit m: Mirror): Term.Name = {
         apply(sym.name.decoded).setSymbol(sym)
       }
       def unapply(gtree: Any): Option[String] = gtree match {
@@ -370,7 +370,7 @@ trait Abstracts extends scala.macros.trees.Abstracts with Positions { self: Univ
       def apply(value: String): Type.Name = {
         new c.TypeName(value)
       }
-      def apply(sym: Symbol): Type.Name = {
+      def apply(sym: Symbol)(implicit m: Mirror): Type.Name = {
         apply(sym.name.decoded).setSymbol(sym)
       }
       // TODO(olafur) Remove this or make private, matching on type trees is

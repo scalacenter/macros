@@ -6,11 +6,7 @@ import scala.language.implicitConversions
 import scala.macros.inputs.Position
 import scala.macros.internal.prettyprinters.Prettyprinter
 import dotty.tools.dotc.core.Decorators.PreNamedString
-import dotty.tools.dotc.ast.untpd
 import dotty.tools.dotc.ast.tpd
-import dotty.tools.dotc.ast.tpd
-import dotty.tools.dotc.ast.untpd
-import dotty.tools.dotc.ast.untpd
 import dotty.tools.dotc.ast.untpd
 import dotty.tools.dotc.core.Constants.Constant
 import dotty.tools.dotc.core.Denotations
@@ -165,7 +161,10 @@ case class Universe(c: Context) extends macros.Universe {
     override def TypeSelect: TypeSelectCompanion = ???
     override def TypeProject: TypeProjectCompanion = ???
     override def TypeSingleton: TypeSingletonCompanion = ???
-    override def TypeApply: TypeApplyCompanion = ???
+    object TypeApply extends TypeApplyCompanion {
+      def apply(tpe: Type, args: List[Type]): Type = untpd.AppliedTypeTree(tpe, args)
+      def unapply(tree: Any): Option[(Type, List[Type])] = ???
+    }
     override def TypeApplyInfix: TypeApplyInfixCompanion = ???
     override def TypeFunction: TypeFunctionCompanion = ???
     override def TypeTuple: TypeTupleCompanion = ???
