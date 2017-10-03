@@ -13,7 +13,7 @@ object Version {
   val scala212 = "2.12.3"
   val scala213 = "2.13.0-M1"
   // Using nonbootstrapped dotty for simpler experimentation.
-  val dotty = "0.4.0-bin-20170929-e4473b7-NIGHTLY-nonbootstrapped"
+  val dotty = "0.4.0-bin-20171003-bc775af-NIGHTLY-nonbootstrapped"
 }
 
 object Build extends AutoPlugin {

@@ -1,6 +1,8 @@
 package scala.macros
 package trees
 
+import scala.reflect.ClassTag
+
 private[macros] trait Trees extends Abstracts with Companions with Extensions { self: Universe =>
 
   type Tree >: Null <: AnyRef // Tree.pos, Tree.syntax, Tree.structure

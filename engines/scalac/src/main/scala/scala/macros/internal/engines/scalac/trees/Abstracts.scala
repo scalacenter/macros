@@ -6,6 +6,7 @@ import scala.reflect.internal.{Flags => gf}
 import scala.reflect.internal.util.Collections._
 import scala.macros.inputs._
 import scala.macros.internal.engines.scalac.inputs._
+import scala.reflect.ClassTag
 
 trait Abstracts extends scala.macros.trees.Abstracts with Positions { self: Universe =>
   import treeCompanions._
@@ -80,17 +81,20 @@ trait Abstracts extends scala.macros.trees.Abstracts with Positions { self: Univ
 
     object LitBoolean extends LitBooleanCompanion {
       def apply(value: Boolean): Lit = g.Literal(g.Constant(value))
-      def unapply(gtree: Any): Option[Boolean] = ???
+      def unapply(gtree: Any): Option[Boolean] =
+        litUnapply(gtree).collect { case x: Boolean => x }
     }
 
     object LitByte extends LitByteCompanion {
       def apply(value: Byte): Lit = g.Literal(g.Constant(value))
-      def unapply(gtree: Any): Option[Byte] = ???
+      def unapply(gtree: Any): Option[Byte] =
+        litUnapply(gtree).collect { case x: Byte => x }
     }
 
     object LitShort extends LitShortCompanion {
       def apply(value: Short): Lit = g.Literal(g.Constant(value))
-      def unapply(gtree: Any): Option[Short] = ???
+      def unapply(gtree: Any): Option[Short] =
+        litUnapply(gtree).collect { case x: Short => x }
     }
 
     object LitChar extends LitCharCompanion {
@@ -173,6 +177,7 @@ trait Abstracts extends scala.macros.trees.Abstracts with Positions { self: Univ
     }
 
     implicit class XtensionTermName(tree: Term.Name) {
+      // TODO(olafur) attribute name with same type as parent select.
       def toGTermName: g.TermName = tree.name.toTermName
     }
 

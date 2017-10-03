@@ -33,4 +33,10 @@ private[macros] trait Extensions extends Gensym with TreeSyntax with TreeStructu
   implicit class XtensionTreesPat(pat: PatCompanion) {
     def fresh(prefix: String = "fresh") = Pat.Var(Term.Name(gensym(prefix)))
   }
+
+  implicit class XtensionTreesSyntacticTer(term: Term)(implicit m: Mirror) {
+    def select(name: String): Term = Term.Select(term, Term.Name(name))
+    def apply(args: List[Term]): Term = Term.Apply(term, args)
+  }
+
 }
