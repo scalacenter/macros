@@ -14,8 +14,8 @@ import dotty.tools.dotc.core.Symbols
 import dotty.tools.dotc.core.Types
 import dotty.tools.dotc.core.Contexts.Context
 import dotty.tools.dotc.core.Flags
-case class Universe(c: Context) extends macros.Universe {
-//  type Mirror = Context
+import dotty.tools.dotc.util.Positions
+case class Universe(prefix: untpd.Tree) extends macros.Universe {
   case class Mirror(ctx: Context)
   implicit def Mirror2Context(implicit m: Mirror): Context = m.ctx
   val XtensionDenotationsDenotation = null
@@ -46,6 +46,10 @@ case class Universe(c: Context) extends macros.Universe {
   type Denotation = d.Denotation
   type Symbol = Symbols.Symbol
 
+  implicit class XtensionTreeWithPosition(tree: Tree) {
+    def autoPos[T <: Tree] = tree.withPos(prefix.pos).asInstanceOf[T]
+  }
+
   type Abstracts = TreeAbstracts with MirrorAbstracts with ExpansionAbstracts
   object abstracts extends TreeAbstracts with MirrorAbstracts with ExpansionAbstracts {
     import treeCompanions._
@@ -59,73 +63,73 @@ case class Universe(c: Context) extends macros.Universe {
     override def NameAnonymous: NameAnonymousCompanion = ???
     override def NameIndeterminate: NameIndeterminateCompanion = ???
     object LitUnit extends LitUnitCompanion {
-      override def apply(): Lit = untpd.Literal(Constant(()))
+      override def apply(): Lit = untpd.Literal(Constant(())).autoPos
       override def unapply(tree: Any): Boolean = ???
     }
     object LitBoolean extends LitBooleanCompanion {
-      override def apply(value: Boolean): Lit = untpd.Literal(Constant(value))
+      override def apply(value: Boolean): Lit = untpd.Literal(Constant(value)).autoPos
       override def unapply(tree: Any): Option[Boolean] = ???
     }
     object LitByte extends LitByteCompanion {
-      override def apply(value: Byte): Lit = untpd.Literal(Constant(value))
+      override def apply(value: Byte): Lit = untpd.Literal(Constant(value)).autoPos
       override def unapply(tree: Any): Option[Byte] = ???
     }
     object LitShort extends LitShortCompanion {
-      override def apply(value: Short): Lit = untpd.Literal(Constant(value))
+      override def apply(value: Short): Lit = untpd.Literal(Constant(value)).autoPos
       override def unapply(tree: Any): Option[Short] = ???
     }
     object LitChar extends LitCharCompanion {
-      override def apply(value: Char): Lit = untpd.Literal(Constant(value))
+      override def apply(value: Char): Lit = untpd.Literal(Constant(value)).autoPos
       override def unapply(tree: Any): Option[Char] = ???
     }
     object LitInt extends LitIntCompanion {
-      override def apply(value: Int): Lit = untpd.Literal(Constant(value))
+      override def apply(value: Int): Lit = untpd.Literal(Constant(value)).autoPos
       override def unapply(tree: Any): Option[Int] = ???
     }
     object LitLong extends LitLongCompanion {
-      override def apply(value: Long): Lit = untpd.Literal(Constant(value))
+      override def apply(value: Long): Lit = untpd.Literal(Constant(value)).autoPos
       override def unapply(tree: Any): Option[Long] = ???
     }
     object LitFloat extends LitFloatCompanion {
-      override def apply(value: Float): Lit = untpd.Literal(Constant(value))
+      override def apply(value: Float): Lit = untpd.Literal(Constant(value)).autoPos
       override def unapply(tree: Any): Option[Float] = ???
     }
     object LitDouble extends LitDoubleCompanion {
-      override def apply(value: Double): Lit = untpd.Literal(Constant(value))
+      override def apply(value: Double): Lit = untpd.Literal(Constant(value)).autoPos
       override def unapply(tree: Any): Option[Double] = ???
     }
     object LitString extends LitStringCompanion {
-      override def apply(value: String): Lit = untpd.Literal(Constant(value))
+      override def apply(value: String): Lit = untpd.Literal(Constant(value)).autoPos
       override def unapply(tree: Any): Option[String] = ???
     }
     object LitSymbol extends LitSymbolCompanion {
-      override def apply(value: scala.Symbol): Lit = untpd.Literal(Constant(value))
+      override def apply(value: scala.Symbol): Lit = untpd.Literal(Constant(value)).autoPos
       override def unapply(tree: Any): Option[scala.Symbol] = ???
     }
     object LitNull extends LitNullCompanion {
-      override def apply(): Lit = untpd.Literal(Constant(null))
+      override def apply(): Lit = untpd.Literal(Constant(null)).autoPos
       override def unapply(tree: Any): Boolean = ???
     }
     override def TermThis: TermThisCompanion = ???
     override def TermSuper: TermSuperCompanion = ???
     object TermName extends TermNameCompanion {
-      override def apply(value: String): Term.Name = untpd.Ident(value.toTermName)
+      override def apply(value: String): Term.Name = untpd.Ident(value.toTermName).autoPos
       override def apply(sym: d.Symbol)(implicit m: Mirror): Term.Name =
-        tpd.ref(sym).asInstanceOf[Term.Name]
+        tpd.ref(sym).asInstanceOf[Term.Name].autoPos
       override def unapply(tree: Any): Option[String] = ???
     }
     object TermSelect extends TermSelectCompanion {
-      override def apply(qual: Tree, ident: Term.Name): Tree = untpd.Select(qual, ident.name)
+      override def apply(qual: Tree, ident: Term.Name): Tree = untpd.Select(qual, ident.name).autoPos
       override def unapply(tree: Any): Option[(untpd.Tree, untpd.Ident)] = ???
     }
     override def TermInterpolate: TermInterpolateCompanion = ???
     override def TermXml: TermXmlCompanion = ???
     object TermApply extends TermApplyCompanion {
-      override def apply(fun: Tree, args: List[Tree]): Tree = untpd.Apply(fun, args)
+      override def apply(fun: Tree, args: List[Tree]): Tree = untpd.Apply(fun, args).autoPos
       override def unapply(tree: Any): Option[(untpd.Tree, List[untpd.Tree])] = ???
     }
     object TermApplyType extends TermApplyTypeCompanion {
-      override def apply(fun: Tree, targs: List[Type]): Tree = untpd.TypeApply(fun, targs)
+      override def apply(fun: Tree, targs: List[Type]): Tree = untpd.TypeApply(fun, targs).autoPos
       override def unapply(tree: Any): Option[(untpd.Tree, List[tpd.Tree])] = ???
     }
     override def TermApplyInfix: TermApplyInfixCompanion = ???
@@ -154,15 +158,15 @@ case class Universe(c: Context) extends macros.Universe {
     override def TermRepeated: TermRepeatedCompanion = ???
     override def TermParam: TermParamCompanion = ???
     object TypeName extends TypeNameCompanion {
-      def apply(value: String): Type.Name = untpd.Ident(value.toTypeName)
-      def apply(sym: Symbol)(implicit m: Mirror): Type.Name = tpd.ref(sym).asInstanceOf[Type.Name]
+      def apply(value: String): Type.Name = untpd.Ident(value.toTypeName).autoPos
+      def apply(sym: Symbol)(implicit m: Mirror): Type.Name = tpd.ref(sym).asInstanceOf[Type.Name].autoPos
       def unapply(tree: Any): Option[String] = ???
     }
     override def TypeSelect: TypeSelectCompanion = ???
     override def TypeProject: TypeProjectCompanion = ???
     override def TypeSingleton: TypeSingletonCompanion = ???
     object TypeApply extends TypeApplyCompanion {
-      def apply(tpe: Type, args: List[Type]): Type = untpd.AppliedTypeTree(tpe, args)
+      def apply(tpe: Type, args: List[Type]): Type = untpd.AppliedTypeTree(tpe, args).autoPos
       def unapply(tree: Any): Option[(Type, List[Type])] = ???
     }
     override def TypeApplyInfix: TypeApplyInfixCompanion = ???
