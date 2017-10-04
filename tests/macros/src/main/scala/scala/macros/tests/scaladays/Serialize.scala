@@ -20,6 +20,7 @@ object Serialize {
     val instance = Term.fresh("instance")
     val param = Term.fresh("x")
     val buf = Term.fresh("buf")
+
     val fieldSerialization: List[Stat] = {
       val serializerss = T.vals.filter(_.isCase).map { f =>
         val namePart = Lit.String("\"" + f.name.value + "\": ")
@@ -45,11 +46,34 @@ object Serialize {
         val appendValue = Term.Apply(Term.Select(buf, Term.Name("++=")), valuePart :: Nil)
         List(appendName, appendValue)
       }
-      val separators = serializerss.map(_ => q"""$buf ++= ", """")
+      val separators = serializerss.map(
+        _ => Term.Apply(Term.Select(buf, Term.Name("++=")), Lit.String(",") :: Nil)
+      )
       serializerss.zip(separators).map({ case (ss, s) => ss :+ s }).flatten.dropRight(1)
     }
+    var stats = List.newBuilder[Stat]
+    stats += Defn.Val(
+      Nil,
+      List(Pat.Var(buf)),
+      None,
+      Term.New(
+        Init(
+          Type.Select(
+            Term.Select(Term.Name("_root_"), Term.Name("scala")),
+            Type.Name("StringBuilder")
+          ),
+          Name(""),
+          Nil
+        )
+      )
+    )
+    stats +=
+      Term.ApplyInfix(buf, Term.Name("++="), Nil, List(Lit.String("{ ")))
+    stats ++= fieldSerialization
+    stats += Term.ApplyInfix(buf, Term.Name("++="), Nil, List(Lit.String(" }")))
+    stats += Term.Select(buf, Term.Name("toString"))
     val defnObject: Stat = Defn.Object(
-      List(Mod.Implicit()),
+      List(),
       instance,
       Template(
         Nil,
@@ -67,28 +91,7 @@ object Serialize {
                 Type.Name("String")
               )
             ),
-            Term.Block(
-              Defn.Val(
-                Nil,
-                List(Pat.Var(buf)),
-                None,
-                Term.New(
-                  Init(
-                    Type.Select(
-                      Term.Select(Term.Name("_root_"), Term.Name("scala")),
-                      Type.Name("StringBuilder")
-                    ),
-                    Name(""),
-                    Nil
-                  )
-                )
-              ) ::
-                Term.ApplyInfix(buf, Term.Name("++="), Nil, List(Lit.String("{ "))) ::
-                (fieldSerialization ++ (Term
-                .ApplyInfix(buf, Term.Name("++="), Nil, List(Lit.String(" }"))) ::
-                Term.Select(buf, Term.Name("toString")) ::
-                Nil))
-            )
+            Term.Block(stats.result())
           )
         )
       )

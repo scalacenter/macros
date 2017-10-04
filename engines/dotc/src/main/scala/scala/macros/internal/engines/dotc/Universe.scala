@@ -15,9 +15,11 @@ import dotty.tools.dotc.core.Types
 import dotty.tools.dotc.core.Contexts.Context
 import dotty.tools.dotc.core.Flags
 import dotty.tools.dotc.util.Positions
+import dotty.tools.dotc.core.StdNames._
+
 case class Universe(prefix: untpd.Tree) extends macros.Universe {
-  case class Mirror(ctx: Context)
-  implicit def Mirror2Context(implicit m: Mirror): Context = m.ctx
+  type Mirror = Context
+
   val XtensionDenotationsDenotation = null
   val XtensionSemanticMemberType = null
   val XtensionSymbolsSymbol = null
@@ -27,18 +29,38 @@ case class Universe(prefix: untpd.Tree) extends macros.Universe {
   }
   type Tree = untpd.Tree
   type Name = untpd.Tree
+  type Template = untpd.Template
+  type Init = untpd.Tree
   type Ref = untpd.Tree
   type Term = untpd.Tree
-  override val Term = TermCompanion
+  override val Term: TermCompanion.type = TermCompanion
   object TermCompanion extends TermCompanion {
     type Ref = untpd.Tree
-//    type Name = untpd.Tree
+    type Name = untpd.Tree
+    type Param = untpd.ValDef
+  }
+  override val Pat: PatCompanion.type = PatCompanion
+  object PatCompanion extends PatCompanion {
+    type Var = Term.Name
   }
   type Type = untpd.Tree
-  override val Type = TypeCompanion
+  override val Type: TypeCompanion.type = TypeCompanion
   object TypeCompanion extends TypeCompanion {
     type Ref = untpd.Tree
-//    type Name = untpd.Tree
+    type Name = untpd.Tree
+    type Param = untpd.TypeDef
+  }
+  type Member = untpd.Tree
+  override val Member: MemberCompanion.type = MemberCompanion
+  object MemberCompanion extends MemberCompanion {
+    type Term = untpd.Tree
+    type Type = untpd.TypeDef
+  }
+  type Defn = untpd.Tree
+  override val Defn: DefnCompanion.type = DefnCompanion
+  object DefnCompanion extends DefnCompanion {
+    type Def = untpd.DefDef
+    type Val = untpd.ValDef
   }
   type Pat = untpd.Tree
   type Stat = untpd.Tree
@@ -55,7 +77,7 @@ case class Universe(prefix: untpd.Tree) extends macros.Universe {
     import treeCompanions._
     override def treePos(tree: Tree): Position = ???
     override def nameValue(name: Name): String = ???
-    override def nameApply(value: String): Name = ???
+    override def nameApply(value: String): Name = untpd.Ident(value.toTermName).autoPos
     override def nameUnapply(tree: Any): Option[String] = ???
     override def litValue(lit: Lit): Any = ???
     override def litUnapply(tree: Any): Option[Any] = ???
@@ -116,25 +138,42 @@ case class Universe(prefix: untpd.Tree) extends macros.Universe {
       override def apply(value: String): Term.Name = untpd.Ident(value.toTermName).autoPos
       override def apply(sym: d.Symbol)(implicit m: Mirror): Term.Name =
         tpd.ref(sym).asInstanceOf[Term.Name].autoPos
-      override def unapply(tree: Any): Option[String] = ???
+      override def unapply(tree: Any): Option[String] = tree match {
+        case untpd.Ident(name) => Some(name.toString)
+        case _ => None
+      }
     }
     object TermSelect extends TermSelectCompanion {
       def apply(qual: Term, name: Term.Name): Term.Ref = {
         untpd.Select(qual, name.asInstanceOf[untpd.Ident].name).autoPos
       }
-      override def unapply(tree: Any): Option[(Term.Ref, Term.Name)] = ???
+      override def unapply(tree: Any): Option[(Term.Ref, Term.Name)] = tree match {
+        case untpd.Select(t, name) if name.isTermName => Some((t, untpd.Ident(name)))
+        case _ => None
+      }
     }
     override def TermInterpolate: TermInterpolateCompanion = ???
     override def TermXml: TermXmlCompanion = ???
     object TermApply extends TermApplyCompanion {
       override def apply(fun: Tree, args: List[Tree]): Tree = untpd.Apply(fun, args).autoPos
-      override def unapply(tree: Any): Option[(untpd.Tree, List[untpd.Tree])] = ???
+      override def unapply(tree: Any): Option[(untpd.Tree, List[untpd.Tree])] = tree match {
+        case untpd.Apply(fun, args) => Some((fun, args))
+        case _ => None
+      }
     }
     object TermApplyType extends TermApplyTypeCompanion {
       override def apply(fun: Tree, targs: List[Type]): Tree = untpd.TypeApply(fun, targs).autoPos
       override def unapply(tree: Any): Option[(untpd.Tree, List[tpd.Tree])] = ???
     }
-    override def TermApplyInfix: TermApplyInfixCompanion = ???
+    object TermApplyInfix extends TermApplyInfixCompanion {
+      def apply(lhs: Term, op: Term.Name, targs: List[Type], args: List[Term]): Term = args match {
+        case arg :: Nil =>
+          untpd.InfixOp(lhs, op.asInstanceOf[untpd.Ident], arg)
+        case _ =>
+          untpd.Apply(untpd.Select(lhs, op.asInstanceOf[untpd.Ident].name.asTermName), args)
+      }
+      def unapply(tree: Any): Option[(Term, Term.Name, List[Type], List[Term])] = ???
+    }
     override def TermApplyUnary: TermApplyUnaryCompanion = ???
     override def TermAssign: TermAssignCompanion = ???
     override def TermReturn: TermReturnCompanion = ???
@@ -142,7 +181,14 @@ case class Universe(prefix: untpd.Tree) extends macros.Universe {
     override def TermAscribe: TermAscribeCompanion = ???
     override def TermAnnotate: TermAnnotateCompanion = ???
     override def TermTuple: TermTupleCompanion = ???
-    override def TermBlock: TermBlockCompanion = ???
+    object TermBlock extends TermBlockCompanion {
+      def apply(stats: List[Stat]): Term =
+        stats match {
+          case Nil => untpd.Block(stats, untpd.EmptyTree)
+          case _ => untpd.Block(stats.init, stats.last)
+        }
+      def unapply(tree: Any): Option[List[Stat]] = ???
+    }
     override def TermIf: TermIfCompanion = ???
     override def TermMatch: TermMatchCompanion = ???
     override def TermTry: TermTryCompanion = ???
@@ -153,18 +199,48 @@ case class Universe(prefix: untpd.Tree) extends macros.Universe {
     override def TermDo: TermDoCompanion = ???
     override def TermFor: TermForCompanion = ???
     override def TermForYield: TermForYieldCompanion = ???
-    override def TermNew: TermNewCompanion = ???
+    object TermNew extends TermNewCompanion {
+      def apply(init: Init): Term = init match {
+        case ApplySeq(fun, argss) =>
+          argss.foldLeft(untpd.Select(untpd.New(fun), nme.CONSTRUCTOR): untpd.Tree)(untpd.Apply)
+      }
+      def unapply(tree: Any): Option[Init] = ???
+    }
     override def TermNewAnonymous: TermNewAnonymousCompanion = ???
     override def TermPlaceholder: TermPlaceholderCompanion = ???
     override def TermEta: TermEtaCompanion = ???
     override def TermRepeated: TermRepeatedCompanion = ???
-    override def TermParam: TermParamCompanion = ???
+    object TermParam extends TermParamCompanion {
+      def apply(
+          mods: List[Mod],
+          name: Name,
+          decltpe: Option[Type],
+          default: Option[Term]
+      ): Term.Param = {
+        untpd
+          .ValDef(
+            name.asInstanceOf[untpd.Ident].name.asTermName,
+            decltpe.getOrElse(untpd.TypeTree()),
+            default.getOrElse(untpd.EmptyTree)
+          )
+          .withFlags(
+            Flags.TermParam
+          )
+          .autoPos
+      }
+      def unapply(tree: Any): Option[(List[Mod], Name, Option[Type], Option[Term])] = ???
+    }
     object TypeName extends TypeNameCompanion {
       def apply(value: String): Type.Name = untpd.Ident(value.toTypeName).autoPos
       def apply(sym: Symbol)(implicit m: Mirror): Type.Name = tpd.ref(sym).asInstanceOf[Type.Name].autoPos
       def unapply(tree: Any): Option[String] = ???
     }
-    override def TypeSelect: TypeSelectCompanion = ???
+    object TypeSelect extends TypeSelectCompanion {
+      def apply(qual: Term.Ref, name: Type.Name): Type.Ref =
+        untpd.Select(qual, name.asInstanceOf[untpd.Ident].name.asTypeName)
+      def unapply(tree: Any): Option[(Term.Ref, Type.Name)] = ???
+
+    }
     override def TypeProject: TypeProjectCompanion = ???
     override def TypeSingleton: TypeSingletonCompanion = ???
     object TypeApply extends TypeApplyCompanion {
@@ -188,7 +264,13 @@ case class Universe(prefix: untpd.Tree) extends macros.Universe {
     override def TypeMethod: TypeMethodCompanion = ???
     override def TypeLambda: TypeLambdaCompanion = ???
     override def TypeParam: TypeParamCompanion = ???
-    override def PatVar: PatVarCompanion = ???
+    object PatVar extends PatVarCompanion {
+      def apply(name: Term.Name): Pat.Var = name
+      def unapply(tree: Any): Option[Term.Name] = tree match {
+        case ident @ untpd.Ident(_) => Some(ident)
+        case _ => None
+      }
+    }
     override def PatWildcard: PatWildcardCompanion = ???
     override def PatSeqWildcard: PatSeqWildcardCompanion = ???
     override def PatBind: PatBindCompanion = ???
@@ -203,21 +285,101 @@ case class Universe(prefix: untpd.Tree) extends macros.Universe {
     override def DeclVar: DeclVarCompanion = ???
     override def DeclDef: DeclDefCompanion = ???
     override def DeclType: DeclTypeCompanion = ???
-    override def DefnVal: DefnValCompanion = ???
+    object DefnVal extends DefnValCompanion {
+      def apply(mods: List[Mod], pats: List[Pat], decltpe: Option[Type], rhs: Term): Defn.Val = {
+        val name = pats match {
+          case Pat.Var(name) :: Nil =>
+            name.asInstanceOf[untpd.Ident].name.asTermName
+          case els => sys.error(els.toString())
+        }
+
+        untpd
+          .ValDef(
+            name,
+            decltpe.getOrElse(untpd.TypeTree()),
+            rhs
+          )
+          .autoPos
+      }
+      def unapply(tree: Any): Option[(List[Mod], List[Pat], Option[Type], Term)] = ???
+
+    }
     override def DefnVar: DefnVarCompanion = ???
-    override def DefnDef: DefnDefCompanion = ???
+    object DefnDef extends DefnDefCompanion {
+      def apply(
+          mods: List[Mod],
+          name: Term.Name,
+          tparams: List[Type.Param],
+          paramss: List[List[Term.Param]],
+          decltpe: Option[Type],
+          body: Term
+      ): Defn.Def = {
+        untpd.DefDef(
+          name.asInstanceOf[untpd.Ident].name.asTermName,
+          tparams,
+          paramss,
+          decltpe.getOrElse(untpd.TypeTree()),
+          body
+        )
+      }
+
+      def unapply(tree: Any): Option[
+        (List[Mod], Term.Name, List[Type.Param], List[List[Term.Param]], Option[Type], Term)
+      ] = ???
+
+    }
     override def DefnMacro: DefnMacroCompanion = ???
     override def DefnType: DefnTypeCompanion = ???
     override def DefnClass: DefnClassCompanion = ???
     override def DefnTrait: DefnTraitCompanion = ???
-    override def DefnObject: DefnObjectCompanion = ???
+    object DefnObject extends DefnObjectCompanion {
+      def apply(mods: List[Mod], name: Term.Name, templ: Template): Defn.Object = {
+        untpd.ModuleDef(name.asInstanceOf[untpd.Ident].name.asTermName, templ).autoPos
+      }
+    }
     override def PkgProper: PkgProperCompanion = ???
     override def PkgObject: PkgObjectCompanion = ???
     override def CtorPrimary: CtorPrimaryCompanion = ???
     override def CtorSecondary: CtorSecondaryCompanion = ???
-    override def Init: InitCompanion = ???
-    override def Self: SelfCompanion = ???
-    override def Template: TemplateCompanion = ???
+
+    object ApplySeq {
+      def unapply(call: Tree): Option[(Tree, List[List[Tree]])] = {
+        def recur(
+            acc: List[List[Tree]],
+            term: untpd.Tree
+        ): (untpd.Tree, List[List[Tree]]) =
+          term match {
+            case Term.Apply(fun, args) =>
+              recur(args +: acc, fun) // inner-most is in the front
+            case fun => (fun, acc)
+          }
+
+        Some(recur(Nil, call))
+      }
+    }
+    object Init extends InitCompanion {
+      def apply(tpe: Type, name: Name, argss: List[List[Term]]): Init = {
+        argss.foldLeft(tpe)(untpd.Apply)
+      }
+      def unapply(arg: Any): Option[(Type, Name, List[List[Term]])] = arg match {
+        case ApplySeq(fun, argss) =>
+          Some((fun, Name(""), argss))
+        case _ => None
+      }
+    }
+    object Self extends SelfCompanion {
+      def apply(name: Name, decltpe: Option[Type]): Self = {
+        untpd
+          .ValDef(name.asInstanceOf[untpd.Ident].name.asTermName, decltpe.getOrElse(untpd.TypeTree()), untpd.EmptyTree)
+          .autoPos
+      }
+    }
+    object Template extends TemplateCompanion {
+      def apply(early: List[Stat], inits: List[Init], self: Self, stats: List[Stat]): Template = {
+        val constr = untpd.DefDef(nme.CONSTRUCTOR, Nil, Nil, untpd.TypeTree(), untpd.EmptyTree)
+        untpd.Template(constr, inits, untpd.EmptyValDef, stats)
+      }
+    }
     override def ModAnnot: ModAnnotCompanion = ???
     override def ModPrivate: ModPrivateCompanion = ???
     override def ModProtected: ModProtectedCompanion = ???
@@ -266,14 +428,15 @@ case class Universe(prefix: untpd.Tree) extends macros.Universe {
     override def denotSym(denot: Denotation)(implicit m: Mirror): Symbol = ???
     override def denotInfo(denot: Denotation)(implicit m: Mirror): Type = ???
     override def denotMembers(denot: Denotation, f: SymFilter)(implicit m: Mirror): List[Denotation] = ???
-    override def denotMembers(denot: Denotation, name: String, f: SymFilter)(implicit m: Mirror): List[Denotation] = ???
+    override def denotMembers(denot: Denotation, name: String, f: SymFilter)(implicit m: Mirror): List[Denotation] =
+      ???
     override def typeEqual(tpe1: Type, tpe2: Type)(implicit m: Mirror): Boolean = ???
     override def typeSubtype(tpe1: Type, tpe2: Type)(implicit m: Mirror): Boolean = ???
     override def typeWiden(tpe: Type)(implicit m: Mirror): Type = ???
     override def typeNarrow(tpe: Type)(implicit m: Mirror): Type = ???
-    override def typeMembers(untpe: Type, f: SymFilter)(implicit m: Mirror): List[Denotation] = {
+    override def typeMembers(untpdTree: Type, f: SymFilter)(implicit m: Mirror): List[Denotation] = {
       val buf = List.newBuilder[Denotation]
-      val tpe = untpe.asInstanceOf[tpd.TypeTree]
+      val tpe = untpdTree.asInstanceOf[tpd.Tree]
       tpe.tpe.memberDenots(
         Types.takeAllFilter,
         (name, _) => {

@@ -531,7 +531,6 @@ private[macros] trait Companions { self: Universe =>
 
     trait DefnObjectCompanion {
       def apply(mods: List[Mod], name: Term.Name, templ: Template): Defn.Object
-      def unapply(tree: Any): Option[(List[Mod], Term.Name, Template)]
     }
 
     trait PkgProperCompanion {
@@ -562,17 +561,15 @@ private[macros] trait Companions { self: Universe =>
 
     trait InitCompanion {
       def apply(tpe: Type, name: Name, argss: List[List[Term]]): Init
-      def unapply(tree: Any): Option[(Type, Name, List[List[Term]])]
+      def unapply(gtree: Any): Option[(Type, Name, List[List[Term]])]
     }
 
     trait SelfCompanion {
       def apply(name: Name, decltpe: Option[Type]): Self
-      def unapply(tree: Any): Option[(Name, Option[Type])]
     }
 
     trait TemplateCompanion {
       def apply(early: List[Stat], inits: List[Init], self: Self, stats: List[Stat]): Template
-      def unapply(tree: Any): Option[(List[Stat], List[Init], Self, List[Stat])]
     }
 
     trait ModAnnotCompanion {

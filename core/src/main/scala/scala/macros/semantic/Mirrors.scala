@@ -30,6 +30,11 @@ private[macros] trait Mirrors { self: Universe =>
     def denotInfo(denot: Denotation)(implicit m: Mirror): Type
     def denotMembers(denot: Denotation, f: SymFilter)(implicit m: Mirror): List[Denotation]
     def denotMembers(denot: Denotation, name: String, f: SymFilter)(implicit m: Mirror): List[Denotation]
+    // NOTE(olafur) caseFields is fairly ad-hoc, ideally we should
+    // find a more principled api to find the primary ctor parameters of
+    // a class that is still portable across compilers.
+    // T.vals.filter(_.isCase) works in scalac but not in dotc.
+    def caseFields(tpe: Type)(implicit m: Mirror): List[Denotation]
     def typeEqual(tpe1: Type, tpe2: Type)(implicit m: Mirror): Boolean
     def typeSubtype(tpe1: Type, tpe2: Type)(implicit m: Mirror): Boolean
     def typeWiden(tpe: Type)(implicit m: Mirror): Type

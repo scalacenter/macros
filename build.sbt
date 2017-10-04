@@ -80,8 +80,15 @@ lazy val testsMacros = project
   .dependsOn(scalamacros, enginesDotc)
 
 lazy val usesMacroSettings: Def.Initialize[Task[Seq[String]]] = Def.taskDyn {
-  if (isDotty.value) Def.task(Nil)
-  else
+  if (isDotty.value) {
+    Def.task {
+      if (sys.env.contains("CI")) {
+        // assert transformations respect Dotty compiler invariants
+        "-Ycheck:all" ::
+          Nil
+      } else Nil
+    }
+  } else
     Def.task {
       val jar = Keys.`package`.in(pluginsScalac).in(Compile).value
       val addPlugin = "-Xplugin:" + jar.getAbsolutePath

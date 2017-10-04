@@ -78,7 +78,7 @@ private[macros] trait Trees extends Abstracts with Companions with Extensions { 
     def Param = abstracts.TermParam
   }
 
-  type Type >: Null <: Tree
+  type Type >: Null
   val Type: TypeCompanion = new TypeCompanion {}
   private[macros] trait TypeCompanion { // Type.fresh
     type Ref >: Null <: Type with self.Ref

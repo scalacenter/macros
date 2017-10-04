@@ -52,9 +52,9 @@ object Expander {
         val className = if (methodOwner.isPackageObject) {
           // if macro is defined in a package object
           // the implementation is located relative to the package not the `package$` module
-          methodOwner.owner.showFullName + "$" + "$inline"
+          methodOwner.owner.showFullName + "$" + "$macro"
         } else {
-          javaClassName(methodOwner) + "$inline"
+          javaClassName(methodOwner) + "$macro"
         }
 
         // reflect macros definition
@@ -75,10 +75,10 @@ object Expander {
                 .asInstanceOf[NamedType]
             )
           else prefix
-        val trees = prefix2 :: targs ++ argss.flatten
+        val paramss: List[Object] = prefix2 :: targs ++ (argss.flatten :+ ctx)
         try {
           val res = macros.internal.withUniverse(tb) {
-            impl.invoke(null, trees: _*).asInstanceOf[untpd.Tree]
+            impl.invoke(null, paramss: _*).asInstanceOf[untpd.Tree]
           }
           println(" => {" + res.show + "}")
           res
