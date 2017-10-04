@@ -1,4 +1,5 @@
 import Version._
+import sbt.Def
 
 version in ThisBuild ~= (_.replace('+', '-'))
 name := "scalamacrosRoot"
@@ -58,6 +59,18 @@ lazy val testsApi = project
   )
   .dependsOn(scalamacros)
 
+lazy val lib = project
+  .in(file("lib"))
+  .settings(
+    noPublish,
+    description := "Library built with macros",
+    crossScalaVersions := List(scala212),
+    scalacOptions += "-language:experimental.macros",
+    libraryDependencies += "org.scala-lang" % "scala-reflect" % scalaVersion.value,
+    scalacOptions ++= usesMacroSettings.value
+  )
+  .dependsOn(scalamacros)
+
 lazy val testsMacros = project
   .in(file("tests/macros"))
   .settings(
@@ -67,14 +80,16 @@ lazy val testsMacros = project
     scalacOptions += "-language:experimental.macros",
     libraryDependencies += "org.scala-lang" % "scala-reflect" % scalaVersion.value,
     addCompilerPlugin("org.scalamacros" %% "paradise" % "2.1.0" cross CrossVersion.full),
-    scalacOptions ++= {
-      val jar = Keys.`package`.in(pluginsScalac).in(Compile).value
-      val addPlugin = "-Xplugin:" + jar.getAbsolutePath
-      // Thanks Jason for this cool idea (taken from https://github.com/retronym/boxer)
-      // add plugin timestamp to compiler options to trigger recompile of
-      // main after editing the plugin. (Otherwise a 'clean' is needed.)
-      val dummy = "-Jdummy=" + jar.lastModified
-      Seq(addPlugin, dummy)
-    }
+    scalacOptions ++= usesMacroSettings.value
   )
-  .dependsOn(scalamacros)
+  .dependsOn(scalamacros, lib)
+
+lazy val usesMacroSettings: Def.Initialize[Task[Seq[String]]] = Def.task {
+  val jar = Keys.`package`.in(pluginsScalac).in(Compile).value
+  val addPlugin = "-Xplugin:" + jar.getAbsolutePath
+  // Thanks Jason for this cool idea (taken from https://github.com/retronym/boxer)
+  // add plugin timestamp to compiler options to trigger recompile of
+  // main after editing the plugin. (Otherwise a 'clean' is needed.)
+  val dummy = "-Jdummy=" + jar.lastModified
+  Seq(addPlugin, dummy)
+}

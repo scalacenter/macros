@@ -48,6 +48,10 @@ trait TreeStructure { self: Universe =>
         p.raw("Type.Name(\"")
         p.raw(value)
         p.raw("\")")
+      case Lit.Boolean(value) =>
+        p.raw("Lit.Boolean(")
+        p.raw(value.toString)
+        p.raw(")")
       case Lit.Char(_) =>
         p.raw("Lit.Char(")
         p.raw(x.syntax)

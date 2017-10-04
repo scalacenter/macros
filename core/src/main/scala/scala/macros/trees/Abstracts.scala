@@ -1,6 +1,8 @@
 package scala.macros
 package trees
 
+import scala.reflect.ClassTag
+
 private[macros] trait Abstracts { self: Universe =>
   import treeCompanions._
 
