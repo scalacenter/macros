@@ -20,7 +20,7 @@ object Serialize {
     val instance = Term.fresh("instance")
     val param = Term.fresh("x")
     val buf = Term.fresh("buf")
-    val fieldSerialization = {
+    val fieldSerialization: List[Stat] = {
       val serializerss = T.vals.filter(_.isCase).map { f =>
         val namePart = Lit.String("\"" + f.name.value + "\": ")
         val appendName = Term.Apply(Term.Select(buf, Term.Name("++=")), namePart :: Nil)
@@ -48,7 +48,7 @@ object Serialize {
       val separators = serializerss.map(_ => q"""$buf ++= ", """")
       serializerss.zip(separators).map({ case (ss, s) => ss :+ s }).flatten.dropRight(1)
     }
-    val defnObject = Defn.Object(
+    val defnObject: Stat = Defn.Object(
       List(Mod.Implicit()),
       instance,
       Template(
@@ -60,7 +60,7 @@ object Serialize {
             Nil,
             Term.Name("apply"),
             Nil,
-            List(List(Term.Param(Nil, param, Some(T), None))),
+            List(List(Term.Param.apply(Nil, param, Some(T), None))),
             Some(
               Type.Select(
                 Term.Select(Term.Select(Term.Name("_root_"), Term.Name("java")), Term.Name("lang")),
