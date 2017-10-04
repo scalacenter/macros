@@ -32,13 +32,13 @@ case class Universe(prefix: untpd.Tree) extends macros.Universe {
   override val Term = TermCompanion
   object TermCompanion extends TermCompanion {
     type Ref = untpd.Tree
-    type Name = untpd.Ident
+//    type Name = untpd.Tree
   }
   type Type = untpd.Tree
   override val Type = TypeCompanion
   object TypeCompanion extends TypeCompanion {
     type Ref = untpd.Tree
-    type Name = untpd.Ident
+//    type Name = untpd.Tree
   }
   type Pat = untpd.Tree
   type Stat = untpd.Tree
@@ -119,8 +119,10 @@ case class Universe(prefix: untpd.Tree) extends macros.Universe {
       override def unapply(tree: Any): Option[String] = ???
     }
     object TermSelect extends TermSelectCompanion {
-      override def apply(qual: Tree, ident: Term.Name): Tree = untpd.Select(qual, ident.name).autoPos
-      override def unapply(tree: Any): Option[(untpd.Tree, untpd.Ident)] = ???
+      def apply(qual: Term, name: Term.Name): Term.Ref = {
+        untpd.Select(qual, name.asInstanceOf[untpd.Ident].name).autoPos
+      }
+      override def unapply(tree: Any): Option[(Term.Ref, Term.Name)] = ???
     }
     override def TermInterpolate: TermInterpolateCompanion = ???
     override def TermXml: TermXmlCompanion = ???

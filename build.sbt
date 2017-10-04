@@ -59,37 +59,36 @@ lazy val testsApi = project
   )
   .dependsOn(scalamacros)
 
-lazy val lib = project
-  .in(file("lib"))
-  .settings(
-    noPublish,
-    description := "Library built with macros",
-    crossScalaVersions := List(scala212),
-    scalacOptions += "-language:experimental.macros",
-    libraryDependencies += "org.scala-lang" % "scala-reflect" % scalaVersion.value,
-    scalacOptions ++= usesMacroSettings.value
-  )
-  .dependsOn(scalamacros)
-
 lazy val testsMacros = project
   .in(file("tests/macros"))
   .settings(
     noPublish,
     description := "Tests of new-style Scala macros",
-    crossScalaVersions := List(scala212),
+    crossScalaVersions := List(scala212, dotty),
     scalacOptions += "-language:experimental.macros",
-    libraryDependencies += "org.scala-lang" % "scala-reflect" % scalaVersion.value,
-    addCompilerPlugin("org.scalamacros" %% "paradise" % "2.1.0" cross CrossVersion.full),
+    libraryDependencies ++= {
+      if (isDotty.value) {
+        Nil
+      } else {
+        "org.scala-lang" % "scala-reflect" % scalaVersion.value ::
+          compilerPlugin("org.scalamacros" %% "paradise" % "2.1.0" cross CrossVersion.full) ::
+          Nil
+      }
+    },
     scalacOptions ++= usesMacroSettings.value
   )
-  .dependsOn(scalamacros, lib)
+  .dependsOn(scalamacros, enginesDotc)
 
-lazy val usesMacroSettings: Def.Initialize[Task[Seq[String]]] = Def.task {
-  val jar = Keys.`package`.in(pluginsScalac).in(Compile).value
-  val addPlugin = "-Xplugin:" + jar.getAbsolutePath
-  // Thanks Jason for this cool idea (taken from https://github.com/retronym/boxer)
-  // add plugin timestamp to compiler options to trigger recompile of
-  // main after editing the plugin. (Otherwise a 'clean' is needed.)
-  val dummy = "-Jdummy=" + jar.lastModified
-  Seq(addPlugin, dummy)
+lazy val usesMacroSettings: Def.Initialize[Task[Seq[String]]] = Def.taskDyn {
+  if (isDotty.value) Def.task(Nil)
+  else
+    Def.task {
+      val jar = Keys.`package`.in(pluginsScalac).in(Compile).value
+      val addPlugin = "-Xplugin:" + jar.getAbsolutePath
+      // Thanks Jason for this cool idea (taken from https://github.com/retronym/boxer)
+      // add plugin timestamp to compiler options to trigger recompile of
+      // main after editing the plugin. (Otherwise a 'clean' is needed.)
+      val dummy = "-Jdummy=" + jar.lastModified
+      Seq(addPlugin, dummy)
+    }
 }
