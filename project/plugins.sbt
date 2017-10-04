@@ -8,3 +8,4 @@ addSbtPlugin(
   "com.eed3si9n" % "sbt-assembly" % "0.14.5" exclude ("org.apache.maven", "maven-plugin-api")
 )
 addSbtPlugin("ch.epfl.scala" % "sbt-release-early" % "1.2.0")
+resolvers += Resolver.bintrayRepo("scalamacros", "maven")
