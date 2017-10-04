@@ -15,9 +15,10 @@ import dotty.tools.dotc.core.Types
 import dotty.tools.dotc.core.Contexts.Context
 import dotty.tools.dotc.core.Flags
 import dotty.tools.dotc.util.Positions
+
 case class Universe(prefix: untpd.Tree) extends macros.Universe {
-  case class Mirror(ctx: Context)
-  implicit def Mirror2Context(implicit m: Mirror): Context = m.ctx
+  type Mirror = Context
+
   val XtensionDenotationsDenotation = null
   val XtensionSemanticMemberType = null
   val XtensionSymbolsSymbol = null
@@ -29,16 +30,16 @@ case class Universe(prefix: untpd.Tree) extends macros.Universe {
   type Name = untpd.Tree
   type Ref = untpd.Tree
   type Term = untpd.Tree
-  override val Term = TermCompanion
+  override val Term: TermCompanion.type = TermCompanion
   object TermCompanion extends TermCompanion {
     type Ref = untpd.Tree
-//    type Name = untpd.Tree
+    type Name = untpd.Tree
   }
   type Type = untpd.Tree
-  override val Type = TypeCompanion
+  override val Type: TypeCompanion.type = TypeCompanion
   object TypeCompanion extends TypeCompanion {
     type Ref = untpd.Tree
-//    type Name = untpd.Tree
+    type Name = untpd.Tree
   }
   type Pat = untpd.Tree
   type Stat = untpd.Tree
@@ -116,19 +117,28 @@ case class Universe(prefix: untpd.Tree) extends macros.Universe {
       override def apply(value: String): Term.Name = untpd.Ident(value.toTermName).autoPos
       override def apply(sym: d.Symbol)(implicit m: Mirror): Term.Name =
         tpd.ref(sym).asInstanceOf[Term.Name].autoPos
-      override def unapply(tree: Any): Option[String] = ???
+      override def unapply(tree: Any): Option[String] = tree match {
+        case untpd.Ident(name) => Some(name.toString)
+        case _ => None
+      }
     }
     object TermSelect extends TermSelectCompanion {
       def apply(qual: Term, name: Term.Name): Term.Ref = {
         untpd.Select(qual, name.asInstanceOf[untpd.Ident].name).autoPos
       }
-      override def unapply(tree: Any): Option[(Term.Ref, Term.Name)] = ???
+      override def unapply(tree: Any): Option[(Term.Ref, Term.Name)] = tree match {
+        case untpd.Select(t, name) if name.isTermName => Some((t, untpd.Ident(name)))
+        case _ => None
+      }
     }
     override def TermInterpolate: TermInterpolateCompanion = ???
     override def TermXml: TermXmlCompanion = ???
     object TermApply extends TermApplyCompanion {
       override def apply(fun: Tree, args: List[Tree]): Tree = untpd.Apply(fun, args).autoPos
-      override def unapply(tree: Any): Option[(untpd.Tree, List[untpd.Tree])] = ???
+      override def unapply(tree: Any): Option[(untpd.Tree, List[untpd.Tree])] = tree match {
+        case untpd.Apply(fun, args) => Some((fun, args))
+        case _ => None
+      }
     }
     object TermApplyType extends TermApplyTypeCompanion {
       override def apply(fun: Tree, targs: List[Type]): Tree = untpd.TypeApply(fun, targs).autoPos
@@ -271,9 +281,9 @@ case class Universe(prefix: untpd.Tree) extends macros.Universe {
     override def typeSubtype(tpe1: Type, tpe2: Type)(implicit m: Mirror): Boolean = ???
     override def typeWiden(tpe: Type)(implicit m: Mirror): Type = ???
     override def typeNarrow(tpe: Type)(implicit m: Mirror): Type = ???
-    override def typeMembers(untpe: Type, f: SymFilter)(implicit m: Mirror): List[Denotation] = {
+    override def typeMembers(untpdTree: Type, f: SymFilter)(implicit m: Mirror): List[Denotation] = {
       val buf = List.newBuilder[Denotation]
-      val tpe = untpe.asInstanceOf[tpd.TypeTree]
+      val tpe = untpdTree.asInstanceOf[tpd.Tree]
       tpe.tpe.memberDenots(
         Types.takeAllFilter,
         (name, _) => {

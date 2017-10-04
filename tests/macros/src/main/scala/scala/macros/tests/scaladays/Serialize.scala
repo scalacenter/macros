@@ -45,11 +45,11 @@ object Serialize {
         val appendValue = Term.Apply(Term.Select(buf, Term.Name("++=")), valuePart :: Nil)
         List(appendName, appendValue)
       }
-      val separators = serializerss.map(_ => q"""$buf ++= ", """")
+      val separators = serializerss.map(_ => Term.Apply(Term.Select(buf, Term.Name("++=")), Lit.String(",") :: Nil))
       serializerss.zip(separators).map({ case (ss, s) => ss :+ s }).flatten.dropRight(1)
     }
     val defnObject: Stat = Defn.Object(
-      List(Mod.Implicit()),
+      List(),
       instance,
       Template(
         Nil,
