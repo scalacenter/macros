@@ -14,19 +14,31 @@ import dotty.tools.dotc.core.Symbols
 import dotty.tools.dotc.core.Types
 import dotty.tools.dotc.core.Contexts.Context
 import dotty.tools.dotc.core.Flags
-import dotty.tools.dotc.util.Positions
 import dotty.tools.dotc.core.StdNames._
 
+/*
+ * Dotty implementation of scala.macros.Universe API.
+ *
+ * Beware, this file contains a lot of asInstanceOf casts. We may need to massage
+ * the public api a bit to make fewer assumptions about inheritance relationships
+ * between compiler tree nodes.
+ *
+ * We only implement the methods that we use from the current set of tests.
+ *
+ * NOTE. We put everything in a single file here for now. Me (olafur) and Fengyun
+ * want to refactor the public API first before we reorganize the code in this
+ * file.
+ */
 case class Universe(prefix: untpd.Tree) extends macros.Universe {
   type Mirror = Context
 
+  // NOTE(olafur) these are here to shadow unwanted extension methods in the
+  // public API. We should separate the core from the public api to avoid
+  // this in the future.
   val XtensionDenotationsDenotation = null
   val XtensionSemanticMemberType = null
   val XtensionSymbolsSymbol = null
-  object d {
-    type Denotation = Denotations.Denotation
-    type Symbol = Symbols.Symbol
-  }
+
   type Tree = untpd.Tree
   type Name = untpd.Tree
   type Template = untpd.Template
@@ -65,7 +77,7 @@ case class Universe(prefix: untpd.Tree) extends macros.Universe {
   type Pat = untpd.Tree
   type Stat = untpd.Tree
   type Lit = untpd.Tree
-  type Denotation = d.Denotation
+  type Denotation = Denotations.Denotation
   type Symbol = Symbols.Symbol
 
   implicit class XtensionTreeWithPosition(tree: Tree) {
@@ -138,7 +150,7 @@ case class Universe(prefix: untpd.Tree) extends macros.Universe {
     override def TermSuper: TermSuperCompanion = ???
     object TermName extends TermNameCompanion {
       override def apply(value: String): Term.Name = untpd.Ident(value.toTermName).autoPos
-      override def apply(sym: d.Symbol)(implicit m: Mirror): Term.Name =
+      override def apply(sym: Symbol)(implicit m: Mirror): Term.Name =
         tpd.ref(sym).asInstanceOf[Term.Name].autoPos
       override def unapply(tree: Any): Option[String] = tree match {
         case untpd.Ident(name) => Some(name.toString)
@@ -148,6 +160,8 @@ case class Universe(prefix: untpd.Tree) extends macros.Universe {
     object TermSelect extends TermSelectCompanion {
       def apply(qual: Term, name: Term.Name): Term.Ref = name match {
         case untpd.Select(_, name) =>
+          // NOTE(olafur) Term.Name can sometimes be a Term.Select when
+          // tpd.ref(Symbol) is used to construct a Term.Name
           untpd.Select(qual, name)
         case ident: untpd.Ident =>
           untpd.Select(qual, ident.name).autoPos
@@ -238,7 +252,10 @@ case class Universe(prefix: untpd.Tree) extends macros.Universe {
     }
     object TypeName extends TypeNameCompanion {
       def apply(value: String): Type.Name = untpd.Ident(value.toTypeName).autoPos
-      def apply(sym: Symbol)(implicit m: Mirror): Type.Name = tpd.ref(sym).asInstanceOf[Type.Name].autoPos
+      // NOTE(olafur): Term.Name(Symbol) is not guaranteed to return a untpd.Ident.
+      // Maybe this method should be moved elsewhere and return a Term.Ref instead.
+      def apply(sym: Symbol)(implicit m: Mirror): Type.Name =
+        tpd.ref(sym).asInstanceOf[Type.Name].autoPos
       def unapply(tree: Any): Option[String] = ???
     }
     object TypeSelect extends TypeSelectCompanion {
@@ -417,11 +434,7 @@ case class Universe(prefix: untpd.Tree) extends macros.Universe {
     override def sym(id: String)(implicit m: Mirror): Symbol = ???
     override def symSyntax(p: Prettyprinter, sym: Symbol)(implicit m: Mirror): Unit = ???
     override def symStructure(p: Prettyprinter, sym: Symbol)(implicit m: Mirror): Unit = ???
-    override def symName(sym: Symbol)(implicit m: Mirror): Name = {
-      val x = untpd.Ident(sym.name)
-      println(x.toString)
-      x
-    }
+    override def symName(sym: Symbol)(implicit m: Mirror): Name = untpd.Ident(sym.name)
     override def symFlags(sym: Symbol)(implicit m: Mirror): Long = {
       var flags = 0L
       if (sym.is(Flags.Case)) flags |= CASE

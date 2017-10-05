@@ -11,6 +11,8 @@ object Assert {
       .select("Assert")
 
     cond match {
+      // NOTE(olafur) we should not do stringly based pattern matching here.
+      // Ideally, we should be using the semantic API for this.
       case Term.Apply(Term.Select(qual, Term.Name("==")), arg :: Nil) =>
         root.select("assertEquals").apply(qual :: arg :: Nil)
       case _ =>

@@ -10,6 +10,11 @@ import dotty.tools.dotc.core.Types.TermRef
 import dotty.tools.dotc.core.Decorators._
 import dotty.tools.dotc.core.Symbols.Symbol
 
+/**
+  * This object is reflectively invoked from dotty-compiler to expand macros.
+  * The code here depends on scala.macros._ and can therefore not be
+  * merged into dotty-compiler (yet).
+  */
 object Expander {
   object ExtractApply {
     def unapply(
@@ -43,7 +48,7 @@ object Expander {
     }
   }
 
-  /** Expand def macros */
+  /** Reflective entrypoint for expanding macros in Dotty. */
   def expandDefMacro(tree: tpd.Tree)(implicit ctx: Context): untpd.Tree =
     tree match {
       case ExtractApply(methodSelect @ MethodSelect(prefix, method), targs, argss) =>

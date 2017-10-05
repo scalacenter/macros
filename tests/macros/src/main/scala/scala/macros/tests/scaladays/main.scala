@@ -4,6 +4,7 @@ package scaladays
 import scala.macros._
 import scala.language.experimental.macros
 
+// NOTE(olafur) Macro Annotations are yet to be determined.
 //class main extends MacroAnnotation {
 //  def apply(defn: Any): Any = macro {
 //    val q"..$mods object $name extends ..$inits { $self => ..$stats }" = defn

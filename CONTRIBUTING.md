@@ -34,8 +34,14 @@ The following commands assume you are inside the sbt shell
 ```sh
 > testsApi/test    # unit tests for public API
 > testsMacros/test # integration tests for macro expansions
-> ++0.3.0-RC2      # switch scalaVersion to dotty
+> enableDotty      # switch scalaVersion to dotty
 > very test        # run all tests for all scalaVersion: 2.12, dotty, ...
+
+# (temporary) you need to clean the entire project before running macro
+# tests in Dotty to prevent
+# [error] (scalamacros/compile:compileIncremental) java.lang.NoClassDefFoundError: scala/macros/trees/Trees
+> enableDotty
+> ; clean ; testsMacros/test
 ```
 
 ## Opening pull requests

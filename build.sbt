@@ -106,6 +106,8 @@ lazy val usesMacroSettings: Def.Initialize[Task[Seq[String]]] = Def.taskDyn {
 lazy val dotcEngineClasspath = Def.taskDyn[Classpath] {
   if (isDotty.value) {
     Def.task {
+      // NOTE(olafur) this is a temporary workaround to dynamically
+      // dependsOn(enginesDotc) only when scalaVersion:=dotty.
       val _ = compile.in(enginesDotc, Compile).value
       val cp =
         classDirectory.in(enginesDotc, Compile).value

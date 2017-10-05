@@ -27,23 +27,15 @@ object Serialize {
         val appendName = Term.Apply(Term.Select(buf, Term.Name("++=")), namePart :: Nil)
         val valueRef = Term.Select(param, Term.Name(f.sym))
         val valuePart =
-          Term.Apply(
-            Term.Select(
-              Term.ApplyType(
-                Term.Select(
-                  Term.Select(
-                    Term.Select(Term.Name("_root_"), Term.Name("scala")),
-                    Term.Name("Predef")
-                  ),
-                  Term.Name("implicitly")
-                ),
-                List(Type.Apply(Type.Name("Serialize"), List(f.info)))
-              ),
-              Term.Name("apply")
-            ),
-            List(valueRef)
-          )
-        val appendValue = Term.Apply(Term.Select(buf, Term.Name("++=")), valuePart :: Nil)
+          Term
+            .Name("_root_")
+            .select("scala")
+            .select("Predef")
+            .select("implicitly")
+            .applyType(Type.Apply(Type.Name("Serialize"), List(f.info)) :: Nil)
+            .select("apply")
+            .apply(valueRef :: Nil)
+        val appendValue = buf.select("++=").apply(valuePart :: Nil)
         List(appendName, appendValue)
       }
       val separators = serializerss.map(
@@ -59,7 +51,7 @@ object Serialize {
       Term.New(
         Init(
           Type.Select(
-            Term.Select(Term.Name("_root_"), Term.Name("scala")),
+            Term.Name("_root_").select("scala"),
             Type.Name("StringBuilder")
           ),
           Name(""),
@@ -67,8 +59,7 @@ object Serialize {
         )
       )
     )
-    stats +=
-      Term.ApplyInfix(buf, Term.Name("++="), Nil, List(Lit.String("{ ")))
+    stats += Term.ApplyInfix(buf, Term.Name("++="), Nil, List(Lit.String("{ ")))
     stats ++= fieldSerialization
     stats += Term.ApplyInfix(buf, Term.Name("++="), Nil, List(Lit.String(" }")))
     stats += Term.Select(buf, Term.Name("toString"))
@@ -87,7 +78,7 @@ object Serialize {
             List(List(Term.Param.apply(Nil, param, Some(T), None))),
             Some(
               Type.Select(
-                Term.Select(Term.Select(Term.Name("_root_"), Term.Name("java")), Term.Name("lang")),
+                Term.Name("_root_").select("java").select("lang"),
                 Type.Name("String")
               )
             ),
