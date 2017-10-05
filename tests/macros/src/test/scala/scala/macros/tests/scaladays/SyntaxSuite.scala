@@ -5,13 +5,12 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 
+// NOTE(olafur): these are temporarily commented out because
+// we want to get the SerializeSuite tests merged first.
+/*
 @RunWith(classOf[JUnit4])
 class SyntaxSuite {
   import TestMacros.syntax
-
-  @Test def foo(): Unit = ()
-
-  /*
 
   @Test def char(): Unit = assertEquals("'2'", syntax('2'))
   @Test def double(): Unit = assertEquals("2.0d", syntax(2d))
@@ -60,6 +59,5 @@ class SyntaxSuite {
     assertEquals("SyntaxSuite.this.tpe[List[Int]](SyntaxSuite.this.lst)", syntax(tpe(lst)))
   }
 
-  */
-
 }
+ */

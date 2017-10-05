@@ -22,7 +22,7 @@ object Serialize {
     val buf = Term.fresh("buf")
 
     val fieldSerialization: List[Stat] = {
-      val serializerss = T.vals.filter(_.isCase).map { f =>
+      val serializerss = T.caseFields.map { f =>
         val namePart = Lit.String("\"" + f.name.value + "\": ")
         val appendName = Term.Apply(Term.Select(buf, Term.Name("++=")), namePart :: Nil)
         val valueRef = Term.Select(param, Term.Name(f.sym))
@@ -47,7 +47,7 @@ object Serialize {
         List(appendName, appendValue)
       }
       val separators = serializerss.map(
-        _ => Term.Apply(Term.Select(buf, Term.Name("++=")), Lit.String(",") :: Nil)
+        _ => Term.Apply(Term.Select(buf, Term.Name("++=")), Lit.String(", ") :: Nil)
       )
       serializerss.zip(separators).map({ case (ss, s) => ss :+ s }).flatten.dropRight(1)
     }

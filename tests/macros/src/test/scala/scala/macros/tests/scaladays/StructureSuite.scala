@@ -5,12 +5,12 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 
+// NOTE(olafur): these are temporarily commented out because
+// we want to get the SerializeSuite tests merged first.
+/*
 @RunWith(classOf[JUnit4])
 class StructureSuite {
   import TestMacros.structure
-
-  @Test def foo(): Unit = ()
-  /*
 
   @Test def char(): Unit = assertEquals("Lit.Char('2')", structure('2'))
   @Test def double(): Unit = assertEquals("Lit.Double(2.0d)", structure(2d))
@@ -44,7 +44,5 @@ class StructureSuite {
       structure("a".substring(0, 1))
     )
 
-  */
-
-  // TODO(olafur) Type.Apply
 }
+ */

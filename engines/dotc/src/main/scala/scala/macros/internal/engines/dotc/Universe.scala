@@ -76,7 +76,9 @@ case class Universe(prefix: untpd.Tree) extends macros.Universe {
   object abstracts extends TreeAbstracts with MirrorAbstracts with ExpansionAbstracts {
     import treeCompanions._
     override def treePos(tree: Tree): Position = ???
-    override def nameValue(name: Name): String = ???
+    override def nameValue(name: Name): String = {
+      name.asInstanceOf[untpd.Ident].name.toString
+    }
     override def nameApply(value: String): Name = untpd.Ident(value.toTermName).autoPos
     override def nameUnapply(tree: Any): Option[String] = ???
     override def litValue(lit: Lit): Any = ???
@@ -144,11 +146,15 @@ case class Universe(prefix: untpd.Tree) extends macros.Universe {
       }
     }
     object TermSelect extends TermSelectCompanion {
-      def apply(qual: Term, name: Term.Name): Term.Ref = {
-        untpd.Select(qual, name.asInstanceOf[untpd.Ident].name).autoPos
+      def apply(qual: Term, name: Term.Name): Term.Ref = name match {
+        case untpd.Select(_, name) =>
+          untpd.Select(qual, name)
+        case ident: untpd.Ident =>
+          untpd.Select(qual, ident.name).autoPos
       }
       override def unapply(tree: Any): Option[(Term.Ref, Term.Name)] = tree match {
-        case untpd.Select(t, name) if name.isTermName => Some((t, untpd.Ident(name)))
+        case untpd.Select(t, name) if name.isTermName =>
+          Some((t, untpd.Ident(name)))
         case _ => None
       }
     }
@@ -411,7 +417,11 @@ case class Universe(prefix: untpd.Tree) extends macros.Universe {
     override def sym(id: String)(implicit m: Mirror): Symbol = ???
     override def symSyntax(p: Prettyprinter, sym: Symbol)(implicit m: Mirror): Unit = ???
     override def symStructure(p: Prettyprinter, sym: Symbol)(implicit m: Mirror): Unit = ???
-    override def symName(sym: Symbol)(implicit m: Mirror): Name = ???
+    override def symName(sym: Symbol)(implicit m: Mirror): Name = {
+      val x = untpd.Ident(sym.name)
+      println(x.toString)
+      x
+    }
     override def symFlags(sym: Symbol)(implicit m: Mirror): Long = {
       var flags = 0L
       if (sym.is(Flags.Case)) flags |= CASE
@@ -425,8 +435,10 @@ case class Universe(prefix: untpd.Tree) extends macros.Universe {
     override def symMembers(sym: Symbol, name: String, f: SymFilter)(implicit m: Mirror): List[Symbol] = ???
     override def denotSyntax(p: Prettyprinter, denot: Denotation)(implicit m: Mirror): Unit = ???
     override def denotStructure(p: Prettyprinter, denot: Denotation)(implicit m: Mirror): Unit = ???
-    override def denotSym(denot: Denotation)(implicit m: Mirror): Symbol = ???
-    override def denotInfo(denot: Denotation)(implicit m: Mirror): Type = ???
+    override def denotSym(denot: Denotation)(implicit m: Mirror): Symbol =
+      denot.symbol
+    override def denotInfo(denot: Denotation)(implicit m: Mirror): Type =
+      untpd.TypeTree(denot.info(m))
     override def denotMembers(denot: Denotation, f: SymFilter)(implicit m: Mirror): List[Denotation] = ???
     override def denotMembers(denot: Denotation, name: String, f: SymFilter)(implicit m: Mirror): List[Denotation] =
       ???
@@ -434,6 +446,16 @@ case class Universe(prefix: untpd.Tree) extends macros.Universe {
     override def typeSubtype(tpe1: Type, tpe2: Type)(implicit m: Mirror): Boolean = ???
     override def typeWiden(tpe: Type)(implicit m: Mirror): Type = ???
     override def typeNarrow(tpe: Type)(implicit m: Mirror): Type = ???
+    override def caseFields(tpe: Type)(implicit m: Mirror): List[Denotation] = {
+      val tp = tpe.asInstanceOf[tpd.Tree].tpe
+      tp.memberDenots(
+          Types.fieldFilter,
+          (name, buf) => {
+            buf ++= tp.member(name).altsWith(_ is Flags.ParamAccessor)
+          }
+        )
+        .toList
+    }
     override def typeMembers(untpdTree: Type, f: SymFilter)(implicit m: Mirror): List[Denotation] = {
       val buf = List.newBuilder[Denotation]
       val tpe = untpdTree.asInstanceOf[tpd.Tree]

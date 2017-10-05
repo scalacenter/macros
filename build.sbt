@@ -29,7 +29,8 @@ lazy val enginesDotc = project
   .settings(
     moduleName := "dotc-engine",
     description := "Dotc implementation of interfaces for new-style Scala macros",
-    crossScalaVersions := List(scala212, dotty),
+    scalaVersion := dotty,
+    crossScalaVersions := List(dotty),
     libraryDependencies += "ch.epfl.lamp" %% "dotty-compiler" % dotty
   )
   .dependsOn(scalamacros)
@@ -75,9 +76,10 @@ lazy val testsMacros = project
           Nil
       }
     },
+    dependencyClasspath.in(Test) ++= dotcEngineClasspath.value,
     scalacOptions ++= usesMacroSettings.value
   )
-  .dependsOn(scalamacros, enginesDotc)
+  .dependsOn(scalamacros)
 
 lazy val usesMacroSettings: Def.Initialize[Task[Seq[String]]] = Def.taskDyn {
   if (isDotty.value) {
@@ -88,7 +90,7 @@ lazy val usesMacroSettings: Def.Initialize[Task[Seq[String]]] = Def.taskDyn {
           Nil
       } else Nil
     }
-  } else
+  } else {
     Def.task {
       val jar = Keys.`package`.in(pluginsScalac).in(Compile).value
       val addPlugin = "-Xplugin:" + jar.getAbsolutePath
@@ -98,4 +100,19 @@ lazy val usesMacroSettings: Def.Initialize[Task[Seq[String]]] = Def.taskDyn {
       val dummy = "-Jdummy=" + jar.lastModified
       Seq(addPlugin, dummy)
     }
+  }
+}
+
+lazy val dotcEngineClasspath = Def.taskDyn[Classpath] {
+  if (isDotty.value) {
+    Def.task {
+      val _ = compile.in(enginesDotc, Compile).value
+      val cp =
+        classDirectory.in(enginesDotc, Compile).value
+      streams.value.log.info(cp.getAbsolutePath)
+      Attributed(cp)(AttributeMap.empty) :: Nil
+    }
+  } else {
+    Def.task(Nil)
+  }
 }
