@@ -186,6 +186,10 @@ trait Abstracts extends scala.macros.semantic.Mirrors { self: Universe =>
       tpe.toGType.narrow.toType
     }
 
+    def caseFields(tpe: Type)(implicit m: Mirror): List[Denotation] =
+      // NOTE(olafur) backend should not use api extension methods.
+      tpe.vals.filter(_.isCase)
+
     def typeMembers(tpe: Type, f0: SymFilter)(implicit m: Mirror): List[Denotation] = {
       val f1: SymFilter = sym => f0(sym) && !sym.name.endsWith(g.nme.LOCAL_SUFFIX_STRING)
       tpe.toGType.members.sorted.filter(f1).map(sym => Denotation(tpe.toGType, sym)).toList

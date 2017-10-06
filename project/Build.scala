@@ -12,10 +12,11 @@ import sbtbuildinfo.BuildInfoPlugin.autoImport._
 object Version {
   val scala212 = "2.12.3"
   val scala213 = "2.13.0-M1"
-  val dotty = "0.3.0-RC2"
+  // Using nonbootstrapped dotty for simpler experimentation.
+  val dotty = "0.4.0-bin-20171004-7a5f578-NIGHTLY"
 }
 
-object MacrosBuild extends AutoPlugin {
+object Build extends AutoPlugin {
   import Version._
   override def requires: Plugins = JvmPlugin
   override def trigger: PluginTrigger = allRequirements
@@ -75,9 +76,10 @@ object MacrosBuild extends AutoPlugin {
     scalaVersion := defaultCompilerVersion,
     crossScalaVersions := List(scala212, scala213, dotty),
     crossVersion := CrossVersion.binary,
-    commands += Command.command("ci-test") { s =>
-      s"plz $defaultCompilerVersion test" :: s
-    },
+    commands += Command.command("enableDotty")(s => s"wow $dotty" :: s),
+    commands += Command.command("disableDotty")(s => s"wow $scala212" :: s),
+    resolvers += Resolver.bintrayRepo("scalamacros", "maven"), // For custom dotc fork.
+    commands += Command.command("ci-test")(s => s"plz $defaultCompilerVersion test" :: s),
     scalacOptions ++= Seq("-deprecation", "-feature", "-unchecked", "-Xfatal-warnings"),
     logBuffered := false,
     incOptions := incOptions.value.withLogRecompileOnMacro(false),

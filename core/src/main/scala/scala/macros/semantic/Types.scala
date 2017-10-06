@@ -11,6 +11,7 @@ private[macros] trait Types { self: Universe =>
     def <:<(other: Type): Boolean = abstracts.typeSubtype(tpe, other)
     def widen: Type = abstracts.typeWiden(tpe)
     def narrow: Type = abstracts.typeNarrow(tpe)
+    def caseFields: List[Denotation] = abstracts.caseFields(tpe)
     protected def members(f: SymFilter) = abstracts.typeMembers(tpe, f)
     protected def members(name: String, f: SymFilter) = abstracts.typeMembers(tpe, name, f)
   }

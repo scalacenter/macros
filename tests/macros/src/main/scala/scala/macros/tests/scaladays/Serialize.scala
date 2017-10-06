@@ -20,29 +20,77 @@ object Serialize {
     val instance = Term.fresh("instance")
     val param = Term.fresh("x")
     val buf = Term.fresh("buf")
-    val fieldSerialization = {
-      val serializerss = T.vals.filter(_.isCase).map { f =>
+
+    val fieldSerialization: List[Stat] = {
+      val serializerss = T.caseFields.map { f =>
         val namePart = Lit.String("\"" + f.name.value + "\": ")
-        val appendName = q"$buf ++= $namePart"
-        val valueRef = q"$param.${Term.Name(f.sym)}"
-        val valuePart = q"_root_.scala.Predef.implicitly[Serialize[${f.info}]].apply($valueRef)"
-        val appendValue = q"$buf ++= $valuePart"
+        val appendName = Term.Apply(Term.Select(buf, Term.Name("++=")), namePart :: Nil)
+        val valueRef = Term.Select(param, Term.Name(f.sym))
+        val valuePart =
+          Term
+            .Name("_root_")
+            .select("scala")
+            .select("Predef")
+            .select("implicitly")
+            .applyType(Type.Apply(Type.Name("Serialize"), List(f.info)) :: Nil)
+            .select("apply")
+            .apply(valueRef :: Nil)
+        val appendValue = buf.select("++=").apply(valuePart :: Nil)
         List(appendName, appendValue)
       }
-      val separators = serializerss.map(_ => q"""$buf ++= ", """")
+      val separators = serializerss.map(
+        _ => Term.Apply(Term.Select(buf, Term.Name("++=")), Lit.String(", ") :: Nil)
+      )
       serializerss.zip(separators).map({ case (ss, s) => ss :+ s }).flatten.dropRight(1)
     }
-    q"""
-      implicit object $instance extends Serialize[$T] {
-        def apply($param: $T): _root_.java.lang.String = {
-          val $buf = new _root_.scala.StringBuilder
-          $buf ++= "{ "
-          ..$fieldSerialization
-          $buf ++= " }"
-          $buf.toString
-        }
-      }
-      $instance
-    """
+    var stats = List.newBuilder[Stat]
+    stats += Defn.Val(
+      Nil,
+      List(Pat.Var(buf)),
+      None,
+      Term.New(
+        Init(
+          Type.Select(
+            Term.Name("_root_").select("scala"),
+            Type.Name("StringBuilder")
+          ),
+          Name(""),
+          Nil
+        )
+      )
+    )
+    stats += Term.ApplyInfix(buf, Term.Name("++="), Nil, List(Lit.String("{ ")))
+    stats ++= fieldSerialization
+    stats += Term.ApplyInfix(buf, Term.Name("++="), Nil, List(Lit.String(" }")))
+    stats += Term.Select(buf, Term.Name("toString"))
+    val defnObject: Stat = Defn.Object(
+      List(),
+      instance,
+      Template(
+        Nil,
+        List(Init(Type.Apply(Type.Name("Serialize"), List(T)), Name(""), Nil)),
+        Self(Name(""), None),
+        List(
+          Defn.Def(
+            Nil,
+            Term.Name("apply"),
+            Nil,
+            List(List(Term.Param.apply(Nil, param, Some(T), None))),
+            Some(
+              Type.Select(
+                Term.Name("_root_").select("java").select("lang"),
+                Type.Name("String")
+              )
+            ),
+            Term.Block(stats.result())
+          )
+        )
+      )
+    )
+    Term.Block(
+      defnObject ::
+        instance ::
+        Nil
+    )
   }
 }
