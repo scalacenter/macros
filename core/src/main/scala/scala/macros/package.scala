@@ -30,8 +30,8 @@ package object macros
   type Expansion
   type Tree
   implicit class XtensionTree(val tree: Tree) extends AnyVal {
-    def syntax: String = ???
-    def structure: String = ???
+    def syntax: String = universe.treeSyntax(!tree)
+    def structure: String = universe.treeStructure(!tree)
   }
   type Stat <: Tree
   type Name
@@ -179,7 +179,8 @@ package object macros
           paramss: List[List[Term.Param]],
           decltpe: Option[Type],
           body: Term
-      ): Defn.Def = ???
+      ): Defn.Def =
+        !universe.defnDefApply(!mods, !name, !tparams, !paramss, !decltpe, !body)
     }
     type Object <: Defn
     object Object {

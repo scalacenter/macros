@@ -13,6 +13,9 @@ trait Universe extends Gensym {
   // =========
   // Trees
   // =========
+  type Tree
+  def treeSyntax(tree: Tree): String = unsupported
+  def treeStructure(tree: Tree): String = unsupported
   type Stat
   type Type
   type Term
@@ -30,12 +33,10 @@ trait Universe extends Gensym {
   type TermApply
   def termApplyApply(fun: Term, args: List[Term]): TermApply = unsupported
   def termApplyUnapply(arg: Any): Option[(Term, List[Term])] = unsupported
-  type TermApplyType
-  def termApplyTypeApply(fun: Term, args: List[Type]): TermApplyType = unsupported
-  type TermBlock
-  def termBlockApply(stats: List[Stat]): TermApplyType = unsupported
-  type LitString
-  def litStringApply(value: String): LitString = unsupported
+  def termApplyTypeApply(fun: Term, args: List[Type]): Term = unsupported
+  def termBlockApply(stats: List[Stat]): Term = unsupported
+  type Lit
+  def litStringApply(value: String): Lit = unsupported
   type Mod
   type Self
   def selfApply(name: Name, decltpe: Option[Type]): Self = unsupported
@@ -48,8 +49,7 @@ trait Universe extends Gensym {
       self: Self,
       stats: List[Stat]
   ): Template = unsupported
-  type TermNew
-  def termNewApply(init: Init): TermNew = unsupported
+  def termNewApply(init: Init): Term = unsupported
   type TermParam
   def termParamApply(
       mods: List[Mod],
@@ -59,10 +59,10 @@ trait Universe extends Gensym {
   ): TermParam = unsupported
   type TypeName
   def typeNameApply(value: String): TypeName = unsupported
+  def typeNameApplySymbol(sym: Symbol): TypeName = unsupported
   type TypeSelect
-  def typeSelectApply(qual: Term, name: TypeName): TypeSelect = unsupported
-  type TypeApply
-  def typeApplyApply(qual: Term, args: List[Type]): TypeApply = unsupported
+  def typeSelectApply(qual: TermRef, name: TypeName): TypeSelect = unsupported
+  def typeApplyApply(qual: Term, args: List[Type]): Type = unsupported
   type TypeBounds
   type TypeParam
   def typeParamApply(
@@ -105,6 +105,7 @@ trait Universe extends Gensym {
   // =========
   type Mirror
   type Symbol
+  def symName(sym: Symbol): Name = unsupported
 
   type Denotation
   def denotInfo(denot: Denotation): Type = unsupported

@@ -789,13 +789,12 @@ trait Abstracts extends scala.macros.trees.Abstracts with Positions { self: Univ
 
     implicit class XtensionSelf(self: Self) {
       def toGSelf: g.ValDef = {
-        val Self(name, tpe) = self
-        val gname = name match {
+        val gname = self.mname match {
           case name: c.TermName => name.toGTermName
           case _ => g.nme.WILDCARD
         }
         val gmods = g.Modifiers(gf.PRIVATE)
-        val gtpt = tpe.getOrElse(g.TypeTree())
+        val gtpt = self.decltpe.getOrElse(g.TypeTree())
         g.ValDef(gmods, gname, gtpt, g.EmptyTree).setPos(self.pos)
       }
     }
