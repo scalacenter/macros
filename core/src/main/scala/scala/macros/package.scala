@@ -1,9 +1,7 @@
 package scala
 
 package object macros
-    extends scala.macros.config.Api
-    with scala.macros.config.Aliases
-    with scala.macros.inputs.Api
+    extends scala.macros.inputs.Api
     with scala.macros.inputs.Aliases
     with scala.macros.prettyprinters.Api
     with scala.macros.prettyprinters.Aliases {

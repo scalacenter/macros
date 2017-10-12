@@ -9,8 +9,8 @@ import scala.tools.reflect.FastTrack
 import scala.macros.internal.config.engineVersion
 import scala.macros.internal.newMacroMetadata
 import scala.macros.internal.plugins.scalac.quasiquotes.Macros
-import scala.macros.{scalaVersion, coreVersion}
-import scala.macros.Version
+import scala.macros.config.{scalaVersion, coreVersion}
+import scala.macros.config.Version
 
 trait Definitions { self: ReflectToolkit =>
   import global._
