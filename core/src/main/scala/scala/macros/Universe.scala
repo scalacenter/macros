@@ -1,5 +1,6 @@
 package scala.macros
 
+import scala.macros.inputs.Position
 import scala.macros.semantic._
 import scala.macros.trees._
 

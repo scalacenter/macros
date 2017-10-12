@@ -1,6 +1,8 @@
 package scala.macros
 package trees
 
+import scala.macros.inputs.Position
+
 private[macros] trait Abstracts { self: Universe =>
   import treeCompanions._
 

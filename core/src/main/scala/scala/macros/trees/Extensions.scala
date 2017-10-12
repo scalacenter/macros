@@ -1,6 +1,7 @@
 package scala.macros
 package trees
 
+import scala.macros.inputs.Position
 import scala.reflect._
 import scala.macros.internal.prettyprinters._
 import scala.macros.internal.trees._

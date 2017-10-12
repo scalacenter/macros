@@ -487,8 +487,8 @@ case class Universe(prefix: untpd.Tree) extends macros.Universe {
     override def typeLub(tpes: List[Type])(implicit m: Mirror): Type = ???
     override def typeGlb(tpes: List[Type])(implicit m: Mirror): Type = ???
     override def expandee(implicit e: Expansion): Term = ???
-    override def abort(pos: _root_.scala.macros.Position, msg: String)(implicit e: Expansion): Nothing = ???
-    override def error(pos: _root_.scala.macros.Position, msg: String)(implicit e: Expansion): Unit = ???
-    override def warning(pos: _root_.scala.macros.Position, msg: String)(implicit e: Expansion): Unit = ???
+    override def abort(pos: Position, msg: String)(implicit e: Expansion): Nothing = ???
+    override def error(pos: Position, msg: String)(implicit e: Expansion): Unit = ???
+    override def warning(pos: Position, msg: String)(implicit e: Expansion): Unit = ???
   }
 }

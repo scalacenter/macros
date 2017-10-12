@@ -1,5 +1,7 @@
 package scala.macros
 
+import scala.macros.inputs.Position
+
 private[macros] trait Expansions { self: Universe =>
   type Expansion >: Null <: AnyRef
 

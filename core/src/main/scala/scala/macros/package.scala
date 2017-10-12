@@ -1,10 +1,6 @@
 package scala
 
-package object macros
-    extends scala.macros.inputs.Api
-    with scala.macros.inputs.Aliases
-    with scala.macros.prettyprinters.Api
-    with scala.macros.prettyprinters.Aliases {
+package object macros {
 
   private[macros] val universeStore = new ThreadLocal[core.Universe]
   private[macros] def universe: core.Universe = {
