@@ -8,11 +8,11 @@ package object macros
     with scala.macros.prettyprinters.Api
     with scala.macros.prettyprinters.Aliases {
 
-  private[macros] val universeStore = new ThreadLocal[scala.macros.Universe]
-  private[macros] def universe: Universe = universeStore.get
-  private[macros] def abstracts: Universe#Abstracts = {
-    if (universeStore.get == null) sys.error("this API can only be called in a macro expansion")
-    universeStore.get.abstracts
+  private[macros] val universeStore = new ThreadLocal[core.Universe]
+  private[macros] def universe: core.Universe = {
+    val result = universeStore.get
+    if (result == null) sys.error("this API can only be called in a macro expansion")
+    else result
   }
 
   private implicit class XtensionBang[A](val a: A) extends AnyVal {
@@ -22,24 +22,24 @@ package object macros
   type Symbol
   type Denotation
   implicit class XtensionDenotation(val denot: Denotation) extends AnyVal {
-    def info: Type = ???
-    def name: Name = ???
-    def sym: Symbol = ???
+    def info: Type = !universe.denotInfo(!denot)
+    def name: Name = !universe.denotName(!denot)
+    def sym: Symbol = !universe.denotSym(!denot)
   }
   type Mirror
   type Expansion
   type Tree
-  type Stat <: Tree
   implicit class XtensionTree(val tree: Tree) extends AnyVal {
     def syntax: String = ???
     def structure: String = ???
   }
+  type Stat <: Tree
   type Name
   implicit class XtensionName(val name: Name) extends AnyVal {
-    def value: String = ???
+    def value: String = universe.nameValue(!name)
   }
   object Name {
-    def apply(value: String): Name = ???
+    def apply(value: String): Name = !universe.nameApply(value)
   }
   type Term <: Stat
   implicit class XtensionTerm(val term: Term) extends AnyVal {
@@ -52,38 +52,36 @@ package object macros
     type Ref <: Term
     type Name <: Term.Ref
     object Name {
-      def apply(value: String): Term.Name = ???
-      def apply(symbol: Symbol): Term.Name = ???
-      def unapply(tree: Any): Option[String] = ???
+      def apply(value: String): Term.Name = !universe.termNameApply(value)
+      def apply(symbol: Symbol): Term.Name = !universe.termNameApplySymbol(!symbol)
+      def unapply(arg: Any): Option[String] = !universe.termNameUnapply(arg)
     }
     type Select <: Term.Ref
     object Select {
       def apply(qual: Term, name: Term.Name): Term.Select =
-        !abstracts.TermSelect.apply(!qual, !name)
+        !universe.termSelectApply(!qual, !name)
       def unapply(arg: Any): Option[(Term.Ref, Term.Name)] =
-        !abstracts.TermSelect.unapply(arg)
+        !universe.termSelectUnapply(arg)
     }
     type Apply <: Term
     object Apply {
       def apply(fun: Term, args: List[Term]): Term.Apply =
-        !abstracts.TermApply.apply(!fun, !args)
+        !universe.termApplyApply(!fun, !args)
       def unapply(arg: Any): Option[(Term.Ref, List[Term])] =
-        !abstracts.TermApply.unapply(arg)
+        !universe.termApplyUnapply(arg)
     }
     type ApplyType <: Term
     object ApplyType {
       def apply(fun: Term, args: List[Type]): Term.ApplyType =
-        !abstracts.TermApplyType.apply(!fun, !args)
-      def unapply(arg: Any): Option[(Term.Ref, List[Term])] =
-        !abstracts.TermApplyType.unapply(arg)
+        !universe.termApplyTypeApply(!fun, !args)
     }
     type Block <: Term
     object Block {
       def apply(stats: List[Stat]): Term =
-        !abstracts.TermBlock.apply(!stats)
+        !universe.termBlockApply(!stats)
     }
     object New {
-      def apply(init: Init): Term = ???
+      def apply(init: Init): Term = !universe.termNewApply(!init)
     }
     type Param
     object Param {
@@ -92,44 +90,41 @@ package object macros
           name: Name,
           decltpe: Option[Type],
           default: Option[Term]
-      ): Term.Param = ???
+      ): Term.Param =
+        !universe.termParamApply(!mods, !name, !decltpe, !default)
     }
   }
   type Template
   object Template {
-    def apply(early: List[Stat], inits: List[Init], self: Self, stats: List[Stat]): Template = ???
+    def apply(early: List[Stat], inits: List[Init], self: Self, stats: List[Stat]): Template =
+      !universe.templateApply(!early, !inits, !self, !stats)
   }
   type Lit <: Term
   object Lit {
     type String <: Lit
     object String {
-      def apply(value: Predef.String): Lit.String = ???
+      def apply(value: Predef.String): Lit.String = !universe.litStringApply(value)
     }
   }
   type Type
   implicit class XtensionType(val tpe: Type) extends AnyVal {
-    def caseFields(implicit m: Mirror): List[Denotation] = !abstracts.caseFields(!tpe)(!m)
+    def caseFields(implicit m: Mirror): List[Denotation] = !universe.caseFields(!tpe)(!m)
   }
   object Type {
     type Ref <: Type
     type Name <: Type.Ref
     object Name {
-      def apply(value: String) = ???
-      def unapply(tree: Any) = ???
+      def apply(value: String): Type.Name = !universe.typeNameApply(value)
     }
     type Select <: Type.Ref
     object Select {
       def apply(qual: Term, name: Type.Name): Type.Select =
-        !abstracts.TypeSelect.apply(!qual, !name)
-      def unapply(arg: Any): Option[(Term.Ref, Type.Name)] =
-        !abstracts.TypeSelect.unapply(arg)
+        !universe.typeSelectApply(!qual, !name)
     }
     type Apply <: Type
     object Apply {
       def apply(fun: Type, args: List[Type]): Type.Apply =
-        !abstracts.TypeApply.apply(!fun, !args)
-      def unapply(arg: Any): Option[(Type, List[Type])] =
-        !abstracts.TypeApply.unapply(arg)
+        !universe.typeApplyApply(!fun, !args)
     }
     type Bounds
     type Param
@@ -141,25 +136,25 @@ package object macros
           tbounds: Type.Bounds,
           vbounds: List[Type],
           cbounds: List[Type]
-      ): Type.Param = ???
+      ): Type.Param =
+        !universe.typeParamApply(!mods, !name, !tparams, !tbounds, !vbounds, !cbounds)
     }
   }
   type Self
   object Self {
-    def apply(name: Name, decltpe: Option[Type]): Self = ???
+    def apply(name: Name, decltpe: Option[Type]): Self = !universe.selfApply(!name, !decltpe)
   }
   type Init
   object Init {
-    def apply(tpe: Type, name: Name, argss: List[List[Term]]): Init = ???
+    def apply(tpe: Type, name: Name, argss: List[List[Term]]): Init =
+      !universe.initApply(!tpe, !name, !argss)
   }
   type Pat
   object Pat {
     type Var <: Pat
     object Var {
       def apply(name: Term.Name): Pat.Var =
-        !abstracts.PatVar.apply(!name)
-      def unapply(arg: Any): Option[Term.Name] =
-        !abstracts.PatVar.unapply(arg)
+        !universe.patVarApply(!name)
     }
   }
   type Mod
@@ -167,7 +162,13 @@ package object macros
   object Defn {
     type Val <: Defn
     object Val {
-      def apply(mods: List[Mod], pats: List[Pat], decltpe: Option[Type], rhs: Term): Defn.Val = ???
+      def apply(
+          mods: List[Mod],
+          pats: List[Pat],
+          decltpe: Option[Type],
+          rhs: Term
+      ): Defn.Val =
+        !universe.defnValApply(!mods, !pats, !decltpe, !rhs)
     }
     type Def <: Defn
     object Def {
@@ -182,7 +183,12 @@ package object macros
     }
     type Object <: Defn
     object Object {
-      def apply(mods: List[Mod], name: Term.Name, templ: Template): Defn.Object = ???
+      def apply(
+          mods: List[Mod],
+          name: Term.Name,
+          templ: Template
+      ): Defn.Object =
+        !universe.defnObjectApply(!mods, !name, !templ)
     }
   }
 }
