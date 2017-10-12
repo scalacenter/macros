@@ -59,9 +59,9 @@ object Serialize {
         )
       )
     )
-    stats += Term.ApplyInfix(buf, Term.Name("++="), Nil, List(Lit.String("{ ")))
+    stats += Term.Apply(Term.Select(buf, Term.Name("++=")), List(Lit.String("{ ")))
     stats ++= fieldSerialization
-    stats += Term.ApplyInfix(buf, Term.Name("++="), Nil, List(Lit.String(" }")))
+    stats += Term.Apply(Term.Select(buf, Term.Name("++=")), List(Lit.String(" }")))
     stats += Term.Select(buf, Term.Name("toString"))
     val defnObject: Stat = Defn.Object(
       List(),

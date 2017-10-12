@@ -9,7 +9,7 @@ import scala.macros.Mirror
 // because that's what new-style macro shims are doing to call us.
 object Mirror {
   def apply(c: Context): Mirror = {
-    val universe = scala.macros.universe.get.asInstanceOf[Universe]
+    val universe = scala.macros.universeStore.get.asInstanceOf[Universe]
     universe.Mirror(c).asInstanceOf[Mirror]
   }
 }
