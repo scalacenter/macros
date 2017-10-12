@@ -13,7 +13,7 @@ case class ScalacUniverse(g: Global) extends macros.core.Universe with Flags {
   // Semantic
   // ========================
   override type Symbol = g.Symbol
-  override def symName(sym: Symbol): Name =
+  override def symName(sym: Symbol)(implicit m: Mirror): Name =
     if (sym.isTerm) termNameApplySymbol(sym)
     else typeNameApplySymbol(sym)
   private def symFlags(sym0: Symbol): Long = {
@@ -197,14 +197,14 @@ case class ScalacUniverse(g: Global) extends macros.core.Universe with Flags {
   override type TypeName = c.TypeName
   override def typeNameApply(value: String): TypeName =
     new c.TypeName(value)
-  override def typeNameApplySymbol(sym: Symbol): TypeName =
+  override def typeNameApplySymbol(sym: Symbol)(implicit m: Mirror): TypeName =
     typeNameApply(sym.name.decoded).setSymbol(sym)
 
   override type TypeSelect = g.Select
   override def typeSelectApply(qual: TermRef, name: TypeName): TypeSelect =
     g.Select(qual, name.toGTypeName)
-  override def typeApplyApply(fun: Type, targs: List[Type]): Type =
-    g.AppliedTypeTree(fun, targs)
+  override def typeApplyApply(tpe: Type, targs: List[Type]): Type =
+    g.AppliedTypeTree(tpe, targs)
 
   type Pat = g.Tree
   type PatVar = g.Bind
@@ -320,9 +320,9 @@ case class ScalacUniverse(g: Global) extends macros.core.Universe with Flags {
   override def caseFields(tpe: Type)(implicit m: Mirror): List[Denotation] =
     typeMembers(tpe, sym => hasFlags(sym, CASE | VAL))
 
-  override def denotName(denot: Denotation): Name = symName(denot.sym)
-  override def denotSym(denot: Denotation): Symbol = denot.sym
-  override def denotInfo(denot: Denotation): Type =
+  override def denotName(denot: Denotation)(implicit m: Mirror): Name = symName(denot.sym)
+  override def denotSym(denot: Denotation)(implicit m: Mirror): Symbol = denot.sym
+  override def denotInfo(denot: Denotation)(implicit m: Mirror): Type =
     denot.pre.memberInfo(denot.sym).toType
 
   def typeMembers(tpe: Type, f0: Symbol => Boolean)(implicit m: Mirror): List[Denotation] = {

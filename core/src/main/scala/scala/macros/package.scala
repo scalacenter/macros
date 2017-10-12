@@ -16,9 +16,9 @@ package object macros {
   type Symbol
   type Denotation
   implicit class XtensionDenotation(val denot: Denotation) extends AnyVal {
-    def info: Type = !universe.denotInfo(!denot)
-    def name: Name = !universe.denotName(!denot)
-    def sym: Symbol = !universe.denotSym(!denot)
+    def info(implicit m: Mirror): Type = !universe.denotInfo(!denot)(!m)
+    def name(implicit m: Mirror): Name = !universe.denotName(!denot)(!m)
+    def sym(implicit m: Mirror): Symbol = !universe.denotSym(!denot)(!m)
   }
   type Mirror
   type Expansion
@@ -47,7 +47,7 @@ package object macros {
     type Name <: Term.Ref
     object Name {
       def apply(value: String): Term.Name = !universe.termNameApply(value)
-      def apply(symbol: Symbol): Term.Name = !universe.termNameApplySymbol(!symbol)
+      def apply(symbol: Symbol)(implicit m: Mirror): Term.Name = !universe.termNameApplySymbol(!symbol)(!m)
       def unapply(arg: Any): Option[String] = !universe.termNameUnapply(arg)
     }
     type Select <: Term.Ref
