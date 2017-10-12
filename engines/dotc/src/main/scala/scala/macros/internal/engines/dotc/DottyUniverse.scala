@@ -234,7 +234,7 @@ case class DottyUniverse(prefix: untpd.Tree) extends macros.core.Universe {
 
   type Denotation = Denotations.Denotation
   def denotInfo(denot: Denotation)(implicit m: Mirror): Type = untpd.TypeTree(denot.info)
-  def denotName(denot: Denotation)(implicit m: Mirror): Name = ???
+  def denotName(denot: Denotation)(implicit m: Mirror): Name = untpd.Ident(denot.symbol.name)
   def denotSym(denot: Denotation)(implicit m: Mirror): Symbol = denot.symbol
 
   def caseFields(tpe: Type)(implicit m: Mirror): List[Denotation] = {
