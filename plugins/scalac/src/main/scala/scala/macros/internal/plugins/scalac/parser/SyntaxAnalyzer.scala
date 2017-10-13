@@ -4,11 +4,10 @@ package parser
 
 import scala.reflect.internal.Flags // no wildcard import because of ambiguity with Tokens._
 import scala.tools.nsc.ast.parser.{SyntaxAnalyzer => NscSyntaxAnalyzer, BracePatch}
-import scala.tools.nsc.ast.parser.Tokens._
 import scala.tools.nsc.Phase
 import scala.macros.internal.config.engineVersion
 import scala.macros.internal.plugins.scalac.reflect.ReflectToolkit
-import scala.macros.coreVersion
+import scala.macros.config.Version
 
 abstract class SyntaxAnalyzer extends NscSyntaxAnalyzer with ReflectToolkit {
   import global._

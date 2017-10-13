@@ -135,7 +135,7 @@ case class ScalacUniverse(g: Global) extends macros.core.Universe with Flags {
   override type TermName = c.TermName
   override def termNameApply(value: String): TermName =
     new c.TermName(value)
-  override def termNameApplySymbol(sym: Symbol): TermName =
+  override def termNameApplySymbol(sym: Symbol)(implicit m: Mirror): TermName =
     termNameApply(sym.name.decoded).setSymbol(sym)
   override def termNameUnapply(arg: Any): Option[String] = arg match {
     case t: c.TermName => Some(t.value)
@@ -301,6 +301,14 @@ case class ScalacUniverse(g: Global) extends macros.core.Universe with Flags {
   // Types
   // =====
   override type TypeParam = g.TypeDef
+  def typeParamApply(
+      mods: List[Mod],
+      name: Name,
+      tparams: List[TypeParam],
+      tbounds: TypeBounds,
+      vbounds: List[Type],
+      cbounds: List[Type]
+  ): TypeParam = ???
   override type Type = g.Tree
   implicit class XtensionToType(gtpe: g.Type) {
     def toType: Type = {
