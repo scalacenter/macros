@@ -17,32 +17,32 @@ import dotty.tools.dotc.core.StdNames._
 
 case class DottyUniverse(prefix: untpd.Tree) extends macros.core.Universe {
 
-  type Tree        =   untpd.Tree
-  type Stat        =   untpd.Tree
-  type Type        =   untpd.Tree
-  type Term        =   untpd.Tree
-  type Name        =   untpd.Tree
-  type TermRef     =   untpd.Tree
-  type TermName    =   untpd.Tree
-  type TermSelect  =   untpd.Tree
-  type TermApply   =   untpd.Tree
-  type Lit         =   untpd.Tree
+  type Tree = untpd.Tree
+  type Stat = untpd.Tree
+  type Type = untpd.Tree
+  type Term = untpd.Tree
+  type Name = untpd.Tree
+  type TermRef = untpd.Tree
+  type TermName = untpd.Tree
+  type TermSelect = untpd.Tree
+  type TermApply = untpd.Tree
+  type Lit = untpd.Tree
   type Mod
-  type Self        =   untpd.ValDef
-  type Init        =   untpd.Tree
-  type Template    =   untpd.Template
-  type DefnDef     =   untpd.Tree
-  type DefnVal     =   untpd.Tree
-  type DefnObject  =   untpd.Tree
-  type TermParam   =   untpd.ValDef
+  type Self = untpd.ValDef
+  type Init = untpd.Tree
+  type Template = untpd.Template
+  type DefnDef = untpd.Tree
+  type DefnVal = untpd.Tree
+  type DefnObject = untpd.Tree
+  type TermParam = untpd.ValDef
 
-  type TypeName    =   untpd.Tree
-  type TypeSelect  =   untpd.Tree
-  type TypeBounds  =   untpd.Tree
-  type TypeParam   =   untpd.TypeDef
+  type TypeName = untpd.Tree
+  type TypeSelect = untpd.Tree
+  type TypeBounds = untpd.Tree
+  type TypeParam = untpd.TypeDef
 
   type Pat
-  type PatVar      =   untpd.Tree
+  type PatVar = untpd.Tree
 
   // =========
   // Trees
@@ -55,9 +55,9 @@ case class DottyUniverse(prefix: untpd.Tree) extends macros.core.Universe {
   object ApplySeq {
     def unapply(call: Tree): Option[(Tree, List[List[Tree]])] = {
       def recur(
-                 acc: List[List[Tree]],
-                 term: untpd.Tree
-               ): (untpd.Tree, List[List[Tree]]) =
+          acc: List[List[Tree]],
+          term: untpd.Tree
+      ): (untpd.Tree, List[List[Tree]]) =
         term match {
           case untpd.Apply(fun, args) =>
             recur(args +: acc, fun) // inner-most is in the front
@@ -129,7 +129,6 @@ case class DottyUniverse(prefix: untpd.Tree) extends macros.core.Universe {
     untpd.Template(constr, inits, untpd.EmptyValDef, stats)
   }
 
-
   def termNewApply(init: Init): Term = init match {
     case ApplySeq(fun, argss) =>
       argss.foldLeft(untpd.Select(untpd.New(fun), nme.CONSTRUCTOR): untpd.Tree)(untpd.Apply)
@@ -171,7 +170,7 @@ case class DottyUniverse(prefix: untpd.Tree) extends macros.core.Universe {
       tbounds: TypeBounds,
       vbounds: List[Type],
       cbounds: List[Type]
-      ): TypeParam = ???
+  ): TypeParam = ???
 
   def defnValApply(
       mods: List[Mod],
@@ -240,11 +239,11 @@ case class DottyUniverse(prefix: untpd.Tree) extends macros.core.Universe {
   def caseFields(tpe: Type)(implicit m: Mirror): List[Denotation] = {
     val tp = tpe.asInstanceOf[tpd.Tree].tpe
     tp.memberDenots(
-      Types.fieldFilter,
-      (name, buf) => {
-        buf ++= tp.member(name).altsWith(_ is Flags.ParamAccessor)
-      }
-    )
+        Types.fieldFilter,
+        (name, buf) => {
+          buf ++= tp.member(name).altsWith(_ is Flags.ParamAccessor)
+        }
+      )
       .toList
   }
 }

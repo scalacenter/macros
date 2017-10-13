@@ -51,7 +51,8 @@ package object macros {
     type Name <: Term.Ref
     object Name {
       def apply(value: String): Term.Name = !universe.termNameApply(value)
-      def apply(symbol: Symbol)(implicit m: Mirror): Term.Name = !universe.termNameApplySymbol(!symbol)(!m)
+      def apply(symbol: Symbol)(implicit m: Mirror): Term.Name =
+        !universe.termNameApplySymbol(!symbol)(!m)
       def unapply(arg: Any): Option[String] = !universe.termNameUnapply(arg)
     }
     type Select <: Term.Ref
