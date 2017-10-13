@@ -1,18 +1,37 @@
 package scala.macros.internal.engines.scalac
 
+import java.nio.file.Path
 import scala.macros.semantic.Flags
+import scala.reflect.internal.util.SourceFile
 import scala.reflect.internal.{Flags => gf}
 import scala.tools.nsc.Global
 import scala.reflect.macros.contexts.Context
 
-case class ScalacUniverse(g: Global) extends macros.core.Universe with Flags {
+case class ScalacUniverse(ctx: Context) extends macros.core.Universe with Flags {
+  val g = ctx.universe
+  import ctx.universe._
+  // =========
+  // Expansion
+  // =========
   case class Expansion(c: Context)
+  override type Input = SourceFile
+  override def inputPath(input: Input): Path = input.file.file.toPath
+  override type Position = g.Position
+  override def posInput(pos: Position): Input = pos.source
+  override def posLine(pos: Position): Int = pos.line
+  override def enclosingPosition: Position = ctx.enclosingPosition
+  override def enclosingOwner: g.Symbol = ctx.internal.enclosingOwner.asInstanceOf[g.Symbol]
   case class Mirror(c: Context)
 
   // ========================
   // Semantic
   // ========================
   override type Symbol = g.Symbol
+  override def symOwner(sym: Symbol): Option[Symbol] = {
+    val owner = sym.owner
+    if (owner == NoSymbol) None
+    else Some(owner)
+  }
   override def symName(sym: Symbol): Name =
     if (sym.isTerm) TermNameSymbol(sym)
     else TypeNameSymbol(sym)
@@ -215,6 +234,7 @@ case class ScalacUniverse(g: Global) extends macros.core.Universe with Flags {
   // =====
   override type Lit = g.Literal
   override def LitString(value: String): Lit = g.Literal(g.Constant(value))
+  override def LitInt(value: Int): Lit = g.Literal(g.Constant(value))
 
   // =====
   // Defn

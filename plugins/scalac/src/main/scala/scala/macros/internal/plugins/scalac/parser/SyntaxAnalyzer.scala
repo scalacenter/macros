@@ -368,7 +368,7 @@ abstract class SyntaxAnalyzer extends NscSyntaxAnalyzer with ReflectToolkit {
         catch { case ex: _root_.java.lang.ClassCastException => failMacroEngine(ex) }
 
         val ScalacUniverse = "scala.macros.internal.engines.scalac.ScalacUniverse"
-        val scalacUniverse = invokeEngineMethod(ScalacUniverse, "apply", $cName.universe)
+        val scalacUniverse = invokeEngineMethod(ScalacUniverse, "apply", $cName)
         _root_.scala.macros.internal.withUniverse(scalacUniverse) {
           val $thisArgName = {
             try $cName.macroApplication.asInstanceOf[_root_.scala.macros.Term]

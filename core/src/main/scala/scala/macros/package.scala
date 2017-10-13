@@ -13,7 +13,23 @@ package object macros {
     def unary_![B]: B = a.asInstanceOf[B]
   }
 
+  def enclosingOwner: Symbol = !universe.enclosingOwner
+  def enclosingPosition: Position = !universe.enclosingPosition
+  type Input
+  implicit class XtensionInput(val input: Input) extends AnyVal {
+    def path: java.nio.file.Path = universe.inputPath(!input)
+  }
+  type Position
+  implicit class XtensionPosition(val pos: Position) extends AnyVal {
+    def line: Int = universe.posLine(!pos)
+    def input: Input = !universe.posInput(!pos)
+  }
   type Symbol
+  implicit class XtensionSymbol(val sym: Symbol) extends AnyVal {
+    def name: Name = !universe.symName(!sym)
+    def owner: Option[Symbol] = !universe.symOwner(!sym)
+  }
+
   type Denotation
   implicit class XtensionDenotation(val denot: Denotation) extends AnyVal {
     def info: Type = !universe.denotInfo(!denot)
@@ -38,6 +54,9 @@ package object macros {
   type Term <: Stat
   implicit class XtensionTerm(val term: Term) extends AnyVal {
     def select(name: String): Term.Select = Term.Select(term, Term.Name(name))
+    def select(name: List[String]): Term = name.foldLeft(term) {
+      case (qual, name) => Term.Select(qual, Term.Name(name))
+    }
     def apply(args: List[Term]): Term.Apply = Term.Apply(term, args)
     def applyType(args: List[Type]): Term.ApplyType = Term.ApplyType(term, args)
   }
@@ -99,6 +118,10 @@ package object macros {
     type String <: Lit
     object String {
       def apply(value: Predef.String): Lit.String = !universe.LitString(value)
+    }
+    type Int <: Lit
+    object Int {
+      def apply(value: scala.Int): Lit.Int = !universe.LitInt(value)
     }
   }
   type Type
