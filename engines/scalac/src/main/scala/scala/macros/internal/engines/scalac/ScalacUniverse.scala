@@ -4,7 +4,6 @@ import java.nio.file.Path
 import scala.macros.semantic.Flags
 import scala.reflect.internal.util.SourceFile
 import scala.reflect.internal.{Flags => gf}
-import scala.tools.nsc.Global
 import scala.reflect.macros.contexts.Context
 
 case class ScalacUniverse(ctx: Context) extends macros.core.Universe with Flags {
@@ -15,10 +14,10 @@ case class ScalacUniverse(ctx: Context) extends macros.core.Universe with Flags 
   // =========
   case class Expansion(c: Context)
   override type Input = SourceFile
-  override def inputPath(input: Input): Path = input.file.file.toPath
+  override def inputPath(input: Input)(implicit m: Mirror): Path = input.file.file.toPath
   override type Position = g.Position
-  override def posInput(pos: Position): Input = pos.source
-  override def posLine(pos: Position): Int = pos.line
+  override def posInput(pos: Position)(implicit m: Mirror): Input = pos.source
+  override def posLine(pos: Position)(implicit m: Mirror): Int = pos.line
   override def enclosingPosition: Position = ctx.enclosingPosition
   override def enclosingOwner: g.Symbol = ctx.internal.enclosingOwner.asInstanceOf[g.Symbol]
   case class Mirror(c: Context)

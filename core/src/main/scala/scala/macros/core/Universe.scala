@@ -97,10 +97,10 @@ trait Universe {
   // =========
   type Expansion
   type Input
-  def inputPath(input: Input): Path
+  def inputPath(input: Input)(implicit m: Mirror): Path
   type Position
-  def posInput(pos: Position): Input
-  def posLine(pos: Position): Int
+  def posInput(pos: Position)(implicit m: Mirror): Input
+  def posLine(pos: Position)(implicit m: Mirror): Int
   def enclosingPosition: Position
   def enclosingOwner: Symbol
 

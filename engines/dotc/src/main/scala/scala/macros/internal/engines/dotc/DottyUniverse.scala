@@ -3,14 +3,17 @@ package scala.macros.internal.engines.dotc
 
 import scala.language.implicitConversions
 
+import java.nio.file.Path
 import scala.macros.internal.unsupported
 import dotty.tools.dotc.{macros => _, _}
 import core._
-import ast.{untpd, tpd}
+import util._
+import ast.{tpd, untpd}
 import Decorators.PreNamedString
 import Constants.Constant
 import Contexts.Context
 import StdNames._
+import Symbols.NoSymbol
 
 case class DottyUniverse(prefix: untpd.Tree)(implicit ctx: Context) extends macros.core.Universe {
 
@@ -108,6 +111,7 @@ case class DottyUniverse(prefix: untpd.Tree)(implicit ctx: Context) extends macr
   }
 
   def LitString(value: String): Lit = untpd.Literal(Constant(value)).autoPos
+  def LitInt(value: Int): Lit = untpd.Literal(Constant(value)).autoPos
 
   def Self(name: Name, decltpe: Option[Type]): Self =
     untpd
@@ -227,6 +231,11 @@ case class DottyUniverse(prefix: untpd.Tree)(implicit ctx: Context) extends macr
   type Mirror = Context
   type Symbol = Symbols.Symbol
   def symName(sym: Symbol): Name = untpd.Ident(sym.name)
+  def symOwner(sym: Symbol): Option[Symbol] = {
+    val owner = sym.maybeOwner
+    if (owner == NoSymbol) None
+    else Some(owner)
+  }
 
   type Denotation = Denotations.Denotation
   def denotInfo(denot: Denotation): Type = untpd.TypeTree(denot.info)
@@ -243,4 +252,16 @@ case class DottyUniverse(prefix: untpd.Tree)(implicit ctx: Context) extends macr
       )
       .toList
   }
+
+  // =========
+  // Expansion
+  // =========
+  case class Expansion(c: Context)
+  override type Input = SourceFile
+  override def inputPath(input: Input)(implicit m: Mirror): Path = input.file.file.toPath
+  override type Position = Positions.Position
+  override def posInput(pos: Position)(implicit m: Mirror): Input = m.c.source
+  override def posLine(pos: Position)(implicit m: Mirror): Int = m.c.source.offsetToLine(pos.start)
+  override def enclosingPosition: Position = prefix.pos
+  override def enclosingOwner: Symbol = ctx.owner
 }

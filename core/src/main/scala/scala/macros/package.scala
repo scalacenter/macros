@@ -17,12 +17,12 @@ package object macros {
   def enclosingPosition: Position = !universe.enclosingPosition
   type Input
   implicit class XtensionInput(val input: Input) extends AnyVal {
-    def path: java.nio.file.Path = universe.inputPath(!input)
+    def path(implicit m: Mirror): java.nio.file.Path = universe.inputPath(!input)(!m)
   }
   type Position
   implicit class XtensionPosition(val pos: Position) extends AnyVal {
-    def line: Int = universe.posLine(!pos)
-    def input: Input = !universe.posInput(!pos)
+    def line(implicit m: Mirror): Int = universe.posLine(!pos)(!m)
+    def input(implicit m: Mirror): Input = !universe.posInput(!pos)(!m)
   }
   type Symbol
   implicit class XtensionSymbol(val sym: Symbol) extends AnyVal {
