@@ -97,7 +97,6 @@ case class ScalacUniverse(g: Global) extends macros.core.Universe with Flags {
   override def treeStructure(tree: Tree): String = g.showRaw(tree)
   override def treeSyntax(tree: Tree): String = g.showCode(tree)
 
-
   def fresh(prefix: String): String = g.freshTermName(prefix)(g.globalFreshNameCreator).toString
 
   override type Stat = g.Tree
