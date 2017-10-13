@@ -3,18 +3,14 @@ package scala
 package object macros {
 
   private[macros] val universeStore = new ThreadLocal[core.Universe]
-  private[macros] def universe: ghost.type = {
+  private[macros] def universe: core.Universe = {
     val result = universeStore.get
     if (result == null) sys.error("this API can only be called in a macro expansion")
-    else result.asInstanceOf[ghost.type]
+    else result
   }
 
-  // Note(fengyun): required for Dotty, otherwise `!t` will infer Nothing for `B`,
-  // causing run-time cast exceptions
-  private[macros] val ghost: core.Universe = null
-
   private implicit class XtensionBang[A](val a: A) extends AnyVal {
-    @inline def unary_![B]: B = a.asInstanceOf[B]
+    def unary_![B]: B = a.asInstanceOf[B]
   }
 
   type Symbol
