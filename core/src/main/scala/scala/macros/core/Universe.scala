@@ -1,8 +1,6 @@
 package scala.macros.core
 
-import scala.macros.internal.trees.Gensym
-
-trait Universe extends Gensym {
+trait Universe {
   // =========
   // Trees
   // =========
@@ -26,12 +24,15 @@ trait Universe extends Gensym {
   type PatVar // NOTE(olafur) subject for removal
   type Defn
 
+  def fresh(prefix: String): String
+
   def treeSyntax(tree: Tree): String
   def treeStructure(tree: Tree): String
+
   def Name(value: String): Name
   def nameValue(name: Name): String
   def TermName(value: String): TermName
-  def TermNameSymbol(symbol: Symbol)(implicit m: Mirror): TermName
+  def TermNameSymbol(symbol: Symbol): TermName
   def TermNameUnapply(arg: Any): Option[String]
   def TermSelect(qual: Term, name: TermName): Term
   def TermSelectUnapply(arg: Any): Option[(TermRef, TermName)]
@@ -51,7 +52,7 @@ trait Universe extends Gensym {
       default: Option[Term]
   ): TermParam
   def TypeName(value: String): TypeName
-  def TypeNameSymbol(sym: Symbol)(implicit m: Mirror): TypeName
+  def TypeNameSymbol(sym: Symbol): TypeName
   def TypeSelect(qual: TermRef, name: TypeName): Type
   def TypeApply(tpe: Term, args: List[Type]): Type
   def TypeParam(
@@ -81,11 +82,11 @@ trait Universe extends Gensym {
   type Symbol
   type Denotation
 
-  def symName(sym: Symbol)(implicit m: Mirror): Name
-  def denotInfo(denot: Denotation)(implicit m: Mirror): Type
-  def denotName(denot: Denotation)(implicit m: Mirror): Name
-  def denotSym(denot: Denotation)(implicit m: Mirror): Symbol
-  def caseFields(tpe: Type)(implicit m: Mirror): List[Denotation]
+  def symName(sym: Symbol): Name
+  def denotInfo(denot: Denotation): Type
+  def denotName(denot: Denotation): Name
+  def denotSym(denot: Denotation): Symbol
+  def caseFields(tpe: Type): List[Denotation]
 
   // =========
   // Expansion

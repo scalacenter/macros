@@ -4,18 +4,15 @@ package scala.macros.internal.engines.dotc
 import scala.language.implicitConversions
 
 import scala.macros.internal.unsupported
-import dotty.tools.dotc.core.Decorators.PreNamedString
-import dotty.tools.dotc.ast.tpd
-import dotty.tools.dotc.ast.untpd
-import dotty.tools.dotc.core.Constants.Constant
-import dotty.tools.dotc.core.Denotations
-import dotty.tools.dotc.core.Symbols
-import dotty.tools.dotc.core.Types
-import dotty.tools.dotc.core.Contexts.Context
-import dotty.tools.dotc.core.Flags
-import dotty.tools.dotc.core.StdNames._
+import dotty.tools.dotc.{macros => _, _}
+import core._
+import ast.{untpd, tpd}
+import Decorators.PreNamedString
+import Constants.Constant
+import Contexts.Context
+import StdNames._
 
-case class DottyUniverse(prefix: untpd.Tree) extends macros.core.Universe {
+case class DottyUniverse(prefix: untpd.Tree)(implicit ctx: Context) extends macros.core.Universe {
 
   type Tree = untpd.Tree
   type Stat = untpd.Tree
@@ -40,7 +37,7 @@ case class DottyUniverse(prefix: untpd.Tree) extends macros.core.Universe {
   type PatVar = untpd.Tree
 
   // =========
-  // Trees
+  // Utilities
   // =========
 
   implicit class XtensionTreeWithPosition(tree: Tree) {
@@ -63,14 +60,20 @@ case class DottyUniverse(prefix: untpd.Tree) extends macros.core.Universe {
     }
   }
 
+  def fresh(prefix: String): String = NameKinds.UniqueName.fresh(prefix.toTermName).toString
+
   def treeSyntax(tree: Tree): String = unsupported
   def treeStructure(tree: Tree): String = unsupported
+
+  // =========
+  // Trees
+  // =========
 
   def nameValue(name: Name): String = name.asInstanceOf[untpd.Ident].name.toString
   def Name(value: String): Name = untpd.Ident(value.toTermName).autoPos
 
   def TermName(value: String): TermName = untpd.Ident(value.toTermName).autoPos
-  def TermNameSymbol(symbol: Symbol)(implicit m: Mirror): TermName = tpd.ref(symbol).asInstanceOf[TermName].autoPos
+  def TermNameSymbol(symbol: Symbol): TermName = tpd.ref(symbol).asInstanceOf[TermName].autoPos
   def TermNameUnapply(arg: Any): Option[String] = arg match {
     case untpd.Ident(name) => Some(name.toString)
     case _ => None
@@ -148,7 +151,7 @@ case class DottyUniverse(prefix: untpd.Tree) extends macros.core.Universe {
   def TypeName(value: String): TypeName =
     untpd.Ident(value.toTypeName).autoPos
 
-  def TypeNameSymbol(sym: Symbol)(implicit m: Mirror): TypeName =
+  def TypeNameSymbol(sym: Symbol): TypeName =
     tpd.ref(sym).asInstanceOf[TypeName].autoPos
 
   def TypeSelect(qual: TermRef, name: TypeName): Type =
@@ -223,14 +226,14 @@ case class DottyUniverse(prefix: untpd.Tree) extends macros.core.Universe {
   // =========
   type Mirror = Context
   type Symbol = Symbols.Symbol
-  def symName(sym: Symbol)(implicit m: Mirror): Name = untpd.Ident(sym.name)
+  def symName(sym: Symbol): Name = untpd.Ident(sym.name)
 
   type Denotation = Denotations.Denotation
-  def denotInfo(denot: Denotation)(implicit m: Mirror): Type = untpd.TypeTree(denot.info)
-  def denotName(denot: Denotation)(implicit m: Mirror): Name = untpd.Ident(denot.symbol.name)
-  def denotSym(denot: Denotation)(implicit m: Mirror): Symbol = denot.symbol
+  def denotInfo(denot: Denotation): Type = untpd.TypeTree(denot.info)
+  def denotName(denot: Denotation): Name = untpd.Ident(denot.symbol.name)
+  def denotSym(denot: Denotation): Symbol = denot.symbol
 
-  def caseFields(tpe: Type)(implicit m: Mirror): List[Denotation] = {
+  def caseFields(tpe: Type): List[Denotation] = {
     val tp = tpe.asInstanceOf[tpd.Tree].tpe
     tp.memberDenots(
         Types.fieldFilter,

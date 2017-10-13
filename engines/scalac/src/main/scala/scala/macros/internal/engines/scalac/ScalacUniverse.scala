@@ -13,7 +13,7 @@ case class ScalacUniverse(g: Global) extends macros.core.Universe with Flags {
   // Semantic
   // ========================
   override type Symbol = g.Symbol
-  override def symName(sym: Symbol)(implicit m: Mirror): Name =
+  override def symName(sym: Symbol): Name =
     if (sym.isTerm) TermNameSymbol(sym)
     else TypeNameSymbol(sym)
   private def symFlags(sym0: Symbol): Long = {
@@ -97,6 +97,9 @@ case class ScalacUniverse(g: Global) extends macros.core.Universe with Flags {
   override def treeStructure(tree: Tree): String = g.showRaw(tree)
   override def treeSyntax(tree: Tree): String = g.showCode(tree)
 
+
+  def fresh(prefix: String): String = g.freshTermName(prefix)(g.globalFreshNameCreator).toString
+
   override type Stat = g.Tree
   implicit class XtensionStats(stats: List[g.Tree]) {
     // NOTE(xeno-by): The methods below are supposed to take care of statement-level desugaring/resugaring.
@@ -135,7 +138,7 @@ case class ScalacUniverse(g: Global) extends macros.core.Universe with Flags {
   override type TermName = c.TermName
   override def TermName(value: String): TermName =
     new c.TermName(value)
-  override def TermNameSymbol(sym: Symbol)(implicit m: Mirror): TermName =
+  override def TermNameSymbol(sym: Symbol): TermName =
     TermName(sym.name.decoded).setSymbol(sym)
   override def TermNameUnapply(arg: Any): Option[String] = arg match {
     case t: c.TermName => Some(t.value)
@@ -195,7 +198,7 @@ case class ScalacUniverse(g: Global) extends macros.core.Universe with Flags {
   override type TypeName = c.TypeName
   override def TypeName(value: String): TypeName =
     new c.TypeName(value)
-  override def TypeNameSymbol(sym: Symbol)(implicit m: Mirror): TypeName =
+  override def TypeNameSymbol(sym: Symbol): TypeName =
     TypeName(sym.name.decoded).setSymbol(sym)
 
   override def TypeSelect(qual: TermRef, name: TypeName): Type =
@@ -319,22 +322,20 @@ case class ScalacUniverse(g: Global) extends macros.core.Universe with Flags {
     }
   }
 
-  override def caseFields(tpe: Type)(implicit m: Mirror): List[Denotation] =
+  override def caseFields(tpe: Type): List[Denotation] =
     typeMembers(tpe, sym => hasFlags(sym, CASE | VAL))
 
-  override def denotName(denot: Denotation)(implicit m: Mirror): Name = symName(denot.sym)
-  override def denotSym(denot: Denotation)(implicit m: Mirror): Symbol = denot.sym
-  override def denotInfo(denot: Denotation)(implicit m: Mirror): Type =
+  override def denotName(denot: Denotation): Name = symName(denot.sym)
+  override def denotSym(denot: Denotation): Symbol = denot.sym
+  override def denotInfo(denot: Denotation): Type =
     denot.pre.memberInfo(denot.sym).toType
 
-  def typeMembers(tpe: Type, f0: Symbol => Boolean)(implicit m: Mirror): List[Denotation] = {
+  def typeMembers(tpe: Type, f0: Symbol => Boolean): List[Denotation] = {
     val f1: Symbol => Boolean = sym => f0(sym) && !sym.name.endsWith(g.nme.LOCAL_SUFFIX_STRING)
     tpe.toGType.members.sorted.withFilter(f1).map(sym => Denotation(tpe.toGType, sym))
   }
 
-  def typeMembers(tpe: Type, name: String, f: Symbol => Boolean)(
-      implicit m: Mirror
-  ): List[Denotation] = {
+  def typeMembers(tpe: Type, name: String, f: Symbol => Boolean): List[Denotation] = {
     // TODO. Leveraging tpe.members(Name) may be more efficient.
     typeMembers(tpe, sym => f(sym) && sym.name.decoded == name)
   }

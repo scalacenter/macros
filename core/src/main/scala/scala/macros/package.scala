@@ -16,9 +16,9 @@ package object macros {
   type Symbol
   type Denotation
   implicit class XtensionDenotation(val denot: Denotation) extends AnyVal {
-    def info(implicit m: Mirror): Type = !universe.denotInfo(!denot)(!m)
-    def name(implicit m: Mirror): Name = !universe.denotName(!denot)(!m)
-    def sym(implicit m: Mirror): Symbol = !universe.denotSym(!denot)(!m)
+    def info: Type = !universe.denotInfo(!denot)
+    def name: Name = !universe.denotName(!denot)
+    def sym: Symbol = !universe.denotSym(!denot)
   }
   type Mirror
   type Expansion
@@ -42,13 +42,13 @@ package object macros {
     def applyType(args: List[Type]): Term.ApplyType = Term.ApplyType(term, args)
   }
   object Term {
-    def fresh(prefix: String = "fresh"): Term.Name = Term.Name(universe.gensym(prefix))
+    def fresh(prefix: String = "fresh"): Term.Name = Term.Name(universe.fresh(prefix))
     type Ref <: Term
     type Name <: Term.Ref
     object Name {
       def apply(value: String): Term.Name = !universe.TermName(value)
-      def apply(symbol: Symbol)(implicit m: Mirror): Term.Name =
-        !universe.TermNameSymbol(!symbol)(!m)
+      def apply(symbol: Symbol): Term.Name =
+        !universe.TermNameSymbol(!symbol)
       def unapply(arg: Any): Option[String] = !universe.TermNameUnapply(arg)
     }
     type Select <: Term.Ref
@@ -103,7 +103,7 @@ package object macros {
   }
   type Type
   implicit class XtensionType(val tpe: Type) extends AnyVal {
-    def caseFields(implicit m: Mirror): List[Denotation] = !universe.caseFields(!tpe)(!m)
+    def caseFields: List[Denotation] = !universe.caseFields(!tpe)
   }
   object Type {
     type Ref <: Type
