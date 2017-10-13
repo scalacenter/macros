@@ -8,7 +8,7 @@ import scala.macros.Expansion
 // because that's what new-style macro shims are doing to call us.
 object Expansion {
   def apply(c: Context): Expansion = {
-    val universe = scala.macros.universe.get.asInstanceOf[Universe]
+    val universe = scala.macros.universeStore.get.asInstanceOf[ScalacUniverse]
     universe.Expansion(c).asInstanceOf[Expansion]
   }
 }

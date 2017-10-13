@@ -1,7 +1,7 @@
 package scala.macros.internal
 package config
 
-import scala.macros.Version
+import scala.macros.config.Version
 
 private[macros] trait Api {
   private def ensureVersion(key: String, value: String): Version = {

@@ -70,7 +70,7 @@ object Expander {
           .get
         impl.setAccessible(true)
 
-        val tb = Universe(tree)
+        val tb = DottyUniverse(tree)
         val prefix2 =
           if (prefix == null)
             tpd.ref(

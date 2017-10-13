@@ -6,8 +6,8 @@ import scala.reflect.internal.util.ScalaClassLoader
 import scala.macros.internal.config.{engineVersion => foundEngineVersion}
 import scala.macros.internal.newMacroMetadata
 import scala.macros.internal.plugins.scalac.reflect.ReflectToolkit
-import scala.macros.{coreVersion => foundCoreVersion}
-import scala.macros.Version
+import scala.macros.config.{coreVersion => foundCoreVersion}
+import scala.macros.config.Version
 
 trait AnalyzerPlugins extends ReflectToolkit {
   import global._
