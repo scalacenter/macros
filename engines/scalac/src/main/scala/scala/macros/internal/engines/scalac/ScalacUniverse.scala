@@ -270,12 +270,11 @@ case class ScalacUniverse(g: Global) extends macros.core.Universe with Flags {
     }
   }
   override def Template(
-      early: List[Stat],
       inits: List[Init],
       self: Self,
       stats: List[Stat]
   ): Template =
-    c.Template(early, inits, self, stats)
+    c.Template(Nil, inits, self, stats)
   override type Init = c.Init
   override def Init(tpe: g.Tree, name: c.Name, argss: List[List[g.Tree]]): c.Init =
     c.Init(tpe, name, argss)

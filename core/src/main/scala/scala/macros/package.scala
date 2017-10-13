@@ -95,8 +95,8 @@ package object macros {
   }
   type Template
   object Template {
-    def apply(early: List[Stat], inits: List[Init], self: Self, stats: List[Stat]): Template =
-      !universe.Template(!early, !inits, !self, !stats)
+    def apply(inits: List[Init], self: Self, stats: List[Stat]): Template =
+      !universe.Template(!inits, !self, !stats)
   }
   type Lit <: Term
   object Lit {

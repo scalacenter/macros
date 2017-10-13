@@ -42,7 +42,6 @@ trait Universe extends Gensym {
   def Init(tpe: Type, name: Name, argss: List[List[Term]]): Init
   type Template
   def Template(
-      early: List[Stat],
       inits: List[Init],
       self: Self,
       stats: List[Stat]

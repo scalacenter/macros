@@ -117,7 +117,6 @@ case class DottyUniverse(prefix: untpd.Tree) extends macros.core.Universe {
     argss.foldLeft(tpe)(untpd.Apply)
 
   def Template(
-      early: List[Stat],
       inits: List[Init],
       self: Self,
       stats: List[Stat]

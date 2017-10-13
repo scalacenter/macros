@@ -67,7 +67,6 @@ object Serialize {
       List(),
       instance,
       Template(
-        Nil,
         List(Init(Type.Apply(Type.Name("Serialize"), List(T)), Name(""), Nil)),
         Self(Name(""), None),
         List(
