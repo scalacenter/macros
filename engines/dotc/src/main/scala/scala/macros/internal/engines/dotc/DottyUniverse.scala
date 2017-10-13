@@ -29,9 +29,7 @@ case class DottyUniverse(prefix: untpd.Tree) extends macros.core.Universe {
   type Self = untpd.ValDef
   type Init = untpd.Tree
   type Template = untpd.Template
-  type DefnDef = untpd.Tree
-  type DefnVal = untpd.Tree
-  type DefnObject = untpd.Tree
+  type Defn = untpd.Tree
   type TermParam = untpd.ValDef
 
   type TypeName = untpd.Tree
@@ -173,7 +171,7 @@ case class DottyUniverse(prefix: untpd.Tree) extends macros.core.Universe {
       pats: List[Pat],
       decltpe: Option[Type],
       rhs: Term
-  ): DefnVal = {
+  ): Defn = {
     val name = pats match {
       case untpd.Ident(name) :: Nil =>
         name.asTermName
@@ -196,7 +194,7 @@ case class DottyUniverse(prefix: untpd.Tree) extends macros.core.Universe {
       paramss: List[List[TermParam]],
       decltpe: Option[Type],
       body: Term
-  ): DefnDef = {
+  ): Defn = {
     untpd.DefDef(
       name.asInstanceOf[untpd.Ident].name.asTermName,
       tparams,
@@ -210,7 +208,7 @@ case class DottyUniverse(prefix: untpd.Tree) extends macros.core.Universe {
       mods: List[Mod],
       name: TermName,
       templ: Template
-  ): DefnObject =
+  ): Defn =
     untpd
       .ModuleDef(
         name.asInstanceOf[untpd.Ident].name.asTermName,

@@ -217,13 +217,13 @@ case class ScalacUniverse(g: Global) extends macros.core.Universe with Flags {
   // =====
   // Defn
   // =====
-  override type DefnVal = g.Tree
+  override type Defn = g.Tree
   override def DefnVal(
       mods: List[Mod],
       pats: List[Pat],
       decltpe: Option[Type],
       rhs: Term
-  ): DefnVal = {
+  ): Defn = {
     pats match {
       case List(name @ g.Ident(_: g.TermName)) =>
         val cname: TermName = name.toTermName
@@ -235,7 +235,6 @@ case class ScalacUniverse(g: Global) extends macros.core.Universe with Flags {
         ???
     }
   }
-  type DefnDef = g.DefDef
   override def DefnDef(
       mods: List[Mod],
       name: TermName,
@@ -243,17 +242,16 @@ case class ScalacUniverse(g: Global) extends macros.core.Universe with Flags {
       paramss: List[List[TermParam]],
       decltpe: Option[Type],
       body: Term
-  ): DefnDef = {
+  ): Defn = {
     val gparamss = paramss // TODO: view bounds, context bounds
     val gtpt = decltpe.getOrElse(g.TypeTree())
     g.DefDef(mods.toGModifiers, name.toGTermName, tparams, gparamss, gtpt, body)
   }
-  type DefnObject = g.ModuleDef
   override def DefnObject(
       mods: List[Mod],
       name: TermName,
       templ: Template
-  ): DefnObject =
+  ): Defn =
     g.ModuleDef(mods.toGModifiers, name.toGTermName, templ.toGTemplate(g.Modifiers(), Nil))
 
   // ========
