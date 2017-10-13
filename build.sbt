@@ -29,9 +29,12 @@ lazy val enginesDotc = project
   .settings(
     moduleName := "dotc-engine",
     description := "Dotc implementation of interfaces for new-style Scala macros",
-    scalaVersion := dotty,
-    crossScalaVersions := List(dotty),
-    libraryDependencies += "ch.epfl.lamp" %% "dotty-compiler" % dotty
+    scalaVersion := scala212,
+    crossScalaVersions := List(scala212, dotty),
+    libraryDependencies += "ch.epfl.lamp" %% "dotty-compiler" % {
+      if (scalaVersion.value == scala212) s"$dotty-nonbootstrapped"
+      else dotty
+    }
   )
   .dependsOn(scalamacros)
 
