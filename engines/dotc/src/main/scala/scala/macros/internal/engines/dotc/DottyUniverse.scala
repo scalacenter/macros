@@ -24,8 +24,6 @@ case class DottyUniverse(prefix: untpd.Tree) extends macros.core.Universe {
   type Name = untpd.Tree
   type TermRef = untpd.Tree
   type TermName = untpd.Tree
-  type TermSelect = untpd.Tree
-  type TermApply = untpd.Tree
   type Lit = untpd.Tree
   type Mod
   type Self = untpd.ValDef
@@ -37,7 +35,6 @@ case class DottyUniverse(prefix: untpd.Tree) extends macros.core.Universe {
   type TermParam = untpd.ValDef
 
   type TypeName = untpd.Tree
-  type TypeSelect = untpd.Tree
   type TypeBounds = untpd.Tree
   type TypeParam = untpd.TypeDef
 
@@ -72,16 +69,16 @@ case class DottyUniverse(prefix: untpd.Tree) extends macros.core.Universe {
   def treeStructure(tree: Tree): String = unsupported
 
   def nameValue(name: Name): String = name.asInstanceOf[untpd.Ident].name.toString
-  def nameApply(value: String): Name = untpd.Ident(value.toTermName).autoPos
+  def Name(value: String): Name = untpd.Ident(value.toTermName).autoPos
 
-  def termNameApply(value: String): TermName = untpd.Ident(value.toTermName).autoPos
-  def termNameApplySymbol(symbol: Symbol)(implicit m: Mirror): TermName = tpd.ref(symbol).asInstanceOf[TermName].autoPos
-  def termNameUnapply(arg: Any): Option[String] = arg match {
+  def TermName(value: String): TermName = untpd.Ident(value.toTermName).autoPos
+  def TermNameSymbol(symbol: Symbol)(implicit m: Mirror): TermName = tpd.ref(symbol).asInstanceOf[TermName].autoPos
+  def TermNameUnapply(arg: Any): Option[String] = arg match {
     case untpd.Ident(name) => Some(name.toString)
     case _ => None
   }
 
-  def termSelectApply(qual: Term, name: TermName): TermSelect = name match {
+  def TermSelect(qual: Term, name: TermName): Term = name match {
     case untpd.Select(_, name) =>
       // NOTE(olafur) TermName can sometimes be a Term.Select when
       // tpd.ref(Symbol) is used to construct a TermName
@@ -89,37 +86,37 @@ case class DottyUniverse(prefix: untpd.Tree) extends macros.core.Universe {
     case ident: untpd.Ident =>
       untpd.Select(qual, ident.name).autoPos
   }
-  def termSelectUnapply(arg: Any): Option[(TermRef, TermName)] = arg match {
+  def TermSelectUnapply(arg: Any): Option[(TermRef, TermName)] = arg match {
     case untpd.Select(t, name) if name.isTermName =>
       Some((t, untpd.Ident(name)))
     case _ => None
   }
 
-  def termApplyApply(fun: Term, args: List[Term]): TermApply = untpd.Apply(fun, args).autoPos
-  def termApplyUnapply(arg: Any): Option[(Term, List[Term])] = arg match {
+  def TermApply(fun: Term, args: List[Term]): Term = untpd.Apply(fun, args).autoPos
+  def TermApplyUnapply(arg: Any): Option[(Term, List[Term])] = arg match {
     case untpd.Apply(fun, args) => Some((fun, args))
     case _ => None
   }
 
-  def termApplyTypeApply(fun: Term, targs: List[Type]): Term =
+  def TermApplyType(fun: Term, targs: List[Type]): Term =
     untpd.TypeApply(fun, targs).autoPos
 
-  def termBlockApply(stats: List[Stat]): Term = stats match {
+  def TermBlock(stats: List[Stat]): Term = stats match {
     case Nil => untpd.Block(stats, untpd.EmptyTree)
     case _ => untpd.Block(stats.init, stats.last)
   }
 
-  def litStringApply(value: String): Lit = untpd.Literal(Constant(value)).autoPos
+  def LitString(value: String): Lit = untpd.Literal(Constant(value)).autoPos
 
-  def selfApply(name: Name, decltpe: Option[Type]): Self =
+  def Self(name: Name, decltpe: Option[Type]): Self =
     untpd
       .ValDef(name.asInstanceOf[untpd.Ident].name.asTermName, decltpe.getOrElse(untpd.TypeTree()), untpd.EmptyTree)
       .autoPos
 
-  def initApply(tpe: Type, name: Name, argss: List[List[Term]]): Init =
+  def Init(tpe: Type, name: Name, argss: List[List[Term]]): Init =
     argss.foldLeft(tpe)(untpd.Apply)
 
-  def templateApply(
+  def Template(
       early: List[Stat],
       inits: List[Init],
       self: Self,
@@ -129,12 +126,12 @@ case class DottyUniverse(prefix: untpd.Tree) extends macros.core.Universe {
     untpd.Template(constr, inits, untpd.EmptyValDef, stats)
   }
 
-  def termNewApply(init: Init): Term = init match {
+  def TermNew(init: Init): Term = init match {
     case ApplySeq(fun, argss) =>
       argss.foldLeft(untpd.Select(untpd.New(fun), nme.CONSTRUCTOR): untpd.Tree)(untpd.Apply)
   }
 
-  def termParamApply(
+  def TermParam(
       mods: List[Mod],
       name: Name,
       decltpe: Option[Type],
@@ -151,19 +148,19 @@ case class DottyUniverse(prefix: untpd.Tree) extends macros.core.Universe {
       )
       .autoPos
 
-  def typeNameApply(value: String): TypeName =
+  def TypeName(value: String): TypeName =
     untpd.Ident(value.toTypeName).autoPos
 
-  def typeNameApplySymbol(sym: Symbol)(implicit m: Mirror): TypeName =
+  def TypeNameSymbol(sym: Symbol)(implicit m: Mirror): TypeName =
     tpd.ref(sym).asInstanceOf[TypeName].autoPos
 
-  def typeSelectApply(qual: TermRef, name: TypeName): TypeSelect =
+  def TypeSelect(qual: TermRef, name: TypeName): Type =
     untpd.Select(qual, name.asInstanceOf[untpd.Ident].name.asTypeName)
 
-  def typeApplyApply(tpe: Term, args: List[Type]): Type =
+  def TypeApply(tpe: Term, args: List[Type]): Type =
     untpd.AppliedTypeTree(tpe, args).autoPos
 
-  def typeParamApply(
+  def TypeParam(
       mods: List[Mod],
       name: Name,
       tparams: List[TypeParam],
@@ -172,7 +169,7 @@ case class DottyUniverse(prefix: untpd.Tree) extends macros.core.Universe {
       cbounds: List[Type]
   ): TypeParam = ???
 
-  def defnValApply(
+  def DefnVal(
       mods: List[Mod],
       pats: List[Pat],
       decltpe: Option[Type],
@@ -193,7 +190,7 @@ case class DottyUniverse(prefix: untpd.Tree) extends macros.core.Universe {
       .autoPos
   }
 
-  def defnDefApply(
+  def DefnDef(
       mods: List[Mod],
       name: TermName,
       tparams: List[TypeParam],
@@ -210,7 +207,7 @@ case class DottyUniverse(prefix: untpd.Tree) extends macros.core.Universe {
     )
   }
 
-  def defnObjectApply(
+  def DefnObject(
       mods: List[Mod],
       name: TermName,
       templ: Template
@@ -222,7 +219,7 @@ case class DottyUniverse(prefix: untpd.Tree) extends macros.core.Universe {
       )
       .autoPos
 
-  def patVarApply(name: TermName): PatVar = name
+  def PatVar(name: TermName): PatVar = name
 
   // =========
   // Semantic

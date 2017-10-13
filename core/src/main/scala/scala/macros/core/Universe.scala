@@ -18,52 +18,51 @@ trait Universe extends Gensym {
   type Type
   type Term
   type Name
+  def Name(value: String): Name
   def nameValue(name: Name): String
-  def nameApply(value: String): Name
+  // NOTE(olafur) if TermSelect.name is String instead of TermName, then we can
+  // probably replace TermRef and TermName with Term.
   type TermRef
   type TermName
-  def termNameApply(value: String): TermName
-  def termNameApplySymbol(symbol: Symbol)(implicit m: Mirror): TermName
-  def termNameUnapply(arg: Any): Option[String]
-  type TermSelect
-  def termSelectApply(qual: Term, name: TermName): TermSelect
-  def termSelectUnapply(arg: Any): Option[(TermRef, TermName)]
-  type TermApply
-  def termApplyApply(fun: Term, args: List[Term]): TermApply
-  def termApplyUnapply(arg: Any): Option[(Term, List[Term])]
-  def termApplyTypeApply(fun: Term, args: List[Type]): Term
-  def termBlockApply(stats: List[Stat]): Term
+  def TermName(value: String): TermName
+  def TermNameSymbol(symbol: Symbol)(implicit m: Mirror): TermName
+  def TermNameUnapply(arg: Any): Option[String]
+  def TermSelect(qual: Term, name: TermName): Term
+  def TermSelectUnapply(arg: Any): Option[(TermRef, TermName)]
+  def TermApply(fun: Term, args: List[Term]): Term
+  def TermApplyUnapply(arg: Any): Option[(Term, List[Term])]
+  def TermApplyType(fun: Term, args: List[Type]): Term
+  def TermBlock(stats: List[Stat]): Term
   type Lit
-  def litStringApply(value: String): Lit
+  def LitString(value: String): Lit
   type Mod
   type Self
-  def selfApply(name: Name, decltpe: Option[Type]): Self
+  def Self(name: Name, decltpe: Option[Type]): Self
   type Init
-  def initApply(tpe: Type, name: Name, argss: List[List[Term]]): Init
+  def Init(tpe: Type, name: Name, argss: List[List[Term]]): Init
   type Template
-  def templateApply(
+  def Template(
       early: List[Stat],
       inits: List[Init],
       self: Self,
       stats: List[Stat]
   ): Template
-  def termNewApply(init: Init): Term
+  def TermNew(init: Init): Term
   type TermParam
-  def termParamApply(
+  def TermParam(
       mods: List[Mod],
       name: Name,
       decltpe: Option[Type],
       default: Option[Term]
   ): TermParam
   type TypeName
-  def typeNameApply(value: String): TypeName
-  def typeNameApplySymbol(sym: Symbol)(implicit m: Mirror): TypeName
-  type TypeSelect
-  def typeSelectApply(qual: TermRef, name: TypeName): TypeSelect
-  def typeApplyApply(tpe: Term, args: List[Type]): Type
+  def TypeName(value: String): TypeName
+  def TypeNameSymbol(sym: Symbol)(implicit m: Mirror): TypeName
+  def TypeSelect(qual: TermRef, name: TypeName): Type
+  def TypeApply(tpe: Term, args: List[Type]): Type
   type TypeBounds
   type TypeParam
-  def typeParamApply(
+  def TypeParam(
       mods: List[Mod],
       name: Name,
       tparams: List[TypeParam],
@@ -72,14 +71,14 @@ trait Universe extends Gensym {
       cbounds: List[Type]
   ): TypeParam
   type DefnVal
-  def defnValApply(
+  def DefnVal(
       mods: List[Mod],
       pats: List[Pat],
       decltpe: Option[Type],
       rhs: Term
   ): DefnVal
   type DefnDef
-  def defnDefApply(
+  def DefnDef(
       mods: List[Mod],
       name: TermName,
       tparams: List[TypeParam],
@@ -88,7 +87,7 @@ trait Universe extends Gensym {
       body: Term
   ): DefnDef
   type DefnObject
-  def defnObjectApply(
+  def DefnObject(
       mods: List[Mod],
       name: TermName,
       templ: Template
@@ -96,7 +95,7 @@ trait Universe extends Gensym {
 
   type Pat
   type PatVar
-  def patVarApply(name: TermName): PatVar
+  def PatVar(name: TermName): PatVar
 
   // =========
   // Semantic

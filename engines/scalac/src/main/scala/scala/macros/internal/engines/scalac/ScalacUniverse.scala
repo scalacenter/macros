@@ -14,8 +14,8 @@ case class ScalacUniverse(g: Global) extends macros.core.Universe with Flags {
   // ========================
   override type Symbol = g.Symbol
   override def symName(sym: Symbol)(implicit m: Mirror): Name =
-    if (sym.isTerm) termNameApplySymbol(sym)
-    else typeNameApplySymbol(sym)
+    if (sym.isTerm) TermNameSymbol(sym)
+    else TypeNameSymbol(sym)
   private def symFlags(sym0: Symbol): Long = {
     val sym = {
       if (sym0.isModuleClass) sym0.asClass.module
@@ -117,7 +117,7 @@ case class ScalacUniverse(g: Global) extends macros.core.Universe with Flags {
   type Ref = g.RefTree
   override type Name = c.Name
   implicit class XtensionGTermName(gtree: g.SymTree with g.NameTree) {
-    def toTermName: TermName = termNameApply(gtree.name.decoded).copyAttrs(gtree)
+    def toTermName: TermName = TermName(gtree.name.decoded).copyAttrs(gtree)
   }
   implicit class XtensionTermName(tree: TermName) {
     // TODO(olafur) attribute name with same type as parent select.
@@ -127,41 +127,39 @@ case class ScalacUniverse(g: Global) extends macros.core.Universe with Flags {
     def toGTypeName: g.TypeName = tree.name.toTypeName
   }
   override def nameValue(name: Name): String = name.value
-  override def nameApply(value: String): Name =
+  override def Name(value: String): Name =
     if (value.isEmpty) c.NameAnonymous()
     else c.NameIndeterminate(value)
   type TermRef = g.Tree
 
   override type TermName = c.TermName
-  override def termNameApply(value: String): TermName =
+  override def TermName(value: String): TermName =
     new c.TermName(value)
-  override def termNameApplySymbol(sym: Symbol)(implicit m: Mirror): TermName =
-    termNameApply(sym.name.decoded).setSymbol(sym)
-  override def termNameUnapply(arg: Any): Option[String] = arg match {
+  override def TermNameSymbol(sym: Symbol)(implicit m: Mirror): TermName =
+    TermName(sym.name.decoded).setSymbol(sym)
+  override def TermNameUnapply(arg: Any): Option[String] = arg match {
     case t: c.TermName => Some(t.value)
     case _ => None
   }
 
-  override type TermSelect = g.Select
-  override def termSelectApply(qual: Term, name: TermName): TermSelect =
+  override def TermSelect(qual: Term, name: TermName): Term =
     g.Select(qual, name.toGTermName)
-  override def termSelectUnapply(arg: Any): Option[(TermRef, TermName)] = arg match {
+  override def TermSelectUnapply(arg: Any): Option[(TermRef, TermName)] = arg match {
     case g.Select(qual, name) => Some(qual -> new c.TermName(name.decoded))
     case _ => None
   }
 
-  override type TermApply = g.Apply
-  override def termApplyApply(fun: Term, args: List[Term]): TermApply =
+  override def TermApply(fun: Term, args: List[Term]): Term =
     g.Apply(fun, args)
-  override def termApplyUnapply(arg: Any): Option[(Term, List[Term])] = arg match {
+  override def TermApplyUnapply(arg: Any): Option[(Term, List[Term])] = arg match {
     case g.Apply(fun, args) => Some(fun -> args)
     case _ => None
   }
 
-  override def termApplyTypeApply(fun: Term, targs: List[Type]): Term =
+  override def TermApplyType(fun: Term, targs: List[Type]): Term =
     g.TypeApply(fun, targs)
 
-  override def termNewApply(init: Init): Term =
+  override def TermNew(init: Init): Term =
     g.New(init.mtpe, init.argss).setPos(init.pos)
   implicit class XtensionInit(tree: Init) {
     def toGParent: g.Tree = {
@@ -172,11 +170,11 @@ case class ScalacUniverse(g: Global) extends macros.core.Universe with Flags {
     }
   }
 
-  override def termBlockApply(stats: List[Stat]): Term =
+  override def TermBlock(stats: List[Stat]): Term =
     g.gen.mkBlock(stats.toGStats)
 
   override type TermParam = g.ValDef
-  override def termParamApply(
+  override def TermParam(
       mods: List[Mod],
       name: Name,
       decltpe: Option[Type],
@@ -195,33 +193,32 @@ case class ScalacUniverse(g: Global) extends macros.core.Universe with Flags {
   // Types
   // =====
   override type TypeName = c.TypeName
-  override def typeNameApply(value: String): TypeName =
+  override def TypeName(value: String): TypeName =
     new c.TypeName(value)
-  override def typeNameApplySymbol(sym: Symbol)(implicit m: Mirror): TypeName =
-    typeNameApply(sym.name.decoded).setSymbol(sym)
+  override def TypeNameSymbol(sym: Symbol)(implicit m: Mirror): TypeName =
+    TypeName(sym.name.decoded).setSymbol(sym)
 
-  override type TypeSelect = g.Select
-  override def typeSelectApply(qual: TermRef, name: TypeName): TypeSelect =
+  override def TypeSelect(qual: TermRef, name: TypeName): Type =
     g.Select(qual, name.toGTypeName)
-  override def typeApplyApply(tpe: Type, targs: List[Type]): Type =
+  override def TypeApply(tpe: Type, targs: List[Type]): Type =
     g.AppliedTypeTree(tpe, targs)
 
   type Pat = g.Tree
   type PatVar = g.Bind
-  override def patVarApply(name: c.TermName): PatVar =
+  override def PatVar(name: c.TermName): PatVar =
     g.Bind(name.toGTermName, g.Ident(g.nme.WILDCARD))
 
   // =====
   // Lit
   // =====
   override type Lit = g.Literal
-  override def litStringApply(value: String): Lit = g.Literal(g.Constant(value))
+  override def LitString(value: String): Lit = g.Literal(g.Constant(value))
 
   // =====
   // Defn
   // =====
   override type DefnVal = g.Tree
-  override def defnValApply(
+  override def DefnVal(
       mods: List[Mod],
       pats: List[Pat],
       decltpe: Option[Type],
@@ -230,7 +227,7 @@ case class ScalacUniverse(g: Global) extends macros.core.Universe with Flags {
     pats match {
       case List(name @ g.Ident(_: g.TermName)) =>
         val cname: TermName = name.toTermName
-        defnValApply(mods, List(patVarApply(cname).setPos(name.pos)), decltpe, rhs)
+        DefnVal(mods, List(PatVar(cname).setPos(name.pos)), decltpe, rhs)
       case List(bind: g.Bind) =>
         val name = bind.toTermName
         g.ValDef(mods.toGModifiers, name.toGTermName, decltpe.getOrElse(g.TypeTree()), rhs)
@@ -239,7 +236,7 @@ case class ScalacUniverse(g: Global) extends macros.core.Universe with Flags {
     }
   }
   type DefnDef = g.DefDef
-  override def defnDefApply(
+  override def DefnDef(
       mods: List[Mod],
       name: TermName,
       tparams: List[TypeParam],
@@ -252,7 +249,7 @@ case class ScalacUniverse(g: Global) extends macros.core.Universe with Flags {
     g.DefDef(mods.toGModifiers, name.toGTermName, tparams, gparamss, gtpt, body)
   }
   type DefnObject = g.ModuleDef
-  override def defnObjectApply(
+  override def DefnObject(
       mods: List[Mod],
       name: TermName,
       templ: Template
@@ -272,7 +269,7 @@ case class ScalacUniverse(g: Global) extends macros.core.Universe with Flags {
       g.gen.mkTemplate(gparents, gself, gctorMods, gctorParamss, gstats).setPos(tree.pos)
     }
   }
-  override def templateApply(
+  override def Template(
       early: List[Stat],
       inits: List[Init],
       self: Self,
@@ -280,10 +277,10 @@ case class ScalacUniverse(g: Global) extends macros.core.Universe with Flags {
   ): Template =
     c.Template(early, inits, self, stats)
   override type Init = c.Init
-  override def initApply(tpe: g.Tree, name: c.Name, argss: List[List[g.Tree]]): c.Init =
+  override def Init(tpe: g.Tree, name: c.Name, argss: List[List[g.Tree]]): c.Init =
     c.Init(tpe, name, argss)
   override type Self = c.Self
-  override def selfApply(name: Name, decltpe: Option[Type]): Self =
+  override def Self(name: Name, decltpe: Option[Type]): Self =
     c.Self(name, decltpe)
   implicit class XtensionSelf(self: Self) {
     def toGSelf: g.ValDef = {
@@ -301,7 +298,7 @@ case class ScalacUniverse(g: Global) extends macros.core.Universe with Flags {
   // Types
   // =====
   override type TypeParam = g.TypeDef
-  def typeParamApply(
+  def TypeParam(
       mods: List[Mod],
       name: Name,
       tparams: List[TypeParam],
