@@ -107,9 +107,6 @@ trait Input extends Any {
 }
 
 trait Position extends Any {
-  def start: Int
-  def end: Int
   def line: Int
-  def column: Int
   def input: Input
 }

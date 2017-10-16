@@ -237,7 +237,6 @@ case class DottyUniverse(prefix: untpd.Tree)(implicit ctx: Context) extends macr
     if (owner == NoSymbol) None
     else Some(owner)
   }
-  def symIsObject(sym: Symbol): Boolean = sym.is(Flags.Module)
 
   type Denotation = Denotations.Denotation
   def denotInfo(denot: Denotation): Type = untpd.TypeTree(denot.info)
@@ -263,13 +262,10 @@ case class DottyUniverse(prefix: untpd.Tree)(implicit ctx: Context) extends macr
     override def path: Path = underlying.file.file.toPath
   }
   case class Position(underlying: Positions.Position) extends macros.core.Position {
-    override def start: Int = underlying.start
-    override def end: Int = underlying.end
     override def line: Int = {
       // first line is 0 in dotty but 1 in scalac.
       ctx.source.offsetToLine(underlying.start) + 1
     }
-    override def column: Int = ctx.source.column(underlying.start)
     override def input: Input = Input(ctx.source)
   }
   override def enclosingPosition: Position = Position(prefix.pos)
