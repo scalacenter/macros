@@ -13,20 +13,21 @@ case class ScalacUniverse(ctx: Context) extends macros.core.Universe with Flags 
   // Expansion
   // =========
   case class Expansion(c: Context)
-  override type Input = SourceFile
-  override def inputPath(input: Input): Path =
-    input.file.file.toPath
-  override type Position = g.Position
-  override def posStart(pos: Position): Int =
-    if (pos.isDefined) pos.start
-    else -1
-  override def posEnd(pos: Position): Int =
-    if (pos.isDefined) pos.end
-    else -1
-  override def posInput(pos: Position): Input = pos.source
-  override def posLine(pos: Position): Int = pos.line
-  override def posColumn(pos: Position): Int = pos.column
-  override def enclosingPosition: Position = ctx.enclosingPosition
+  case class Input(underlying: SourceFile) extends macros.core.Input {
+    def path: Path = underlying.file.file.toPath
+  }
+  case class Position(underlying: g.Position) extends macros.core.Position {
+    override def start: Int =
+      if (underlying.isDefined) underlying.start
+      else -1
+    override def end: Int =
+      if (underlying.isDefined) underlying.end
+      else -1
+    override def input: Input = Input(underlying.source)
+    override def line: Int = underlying.line
+    override def column: Int = underlying.column
+  }
+  override def enclosingPosition: Position = Position(ctx.enclosingPosition)
   override def enclosingOwner: g.Symbol = ctx.internal.enclosingOwner.asInstanceOf[g.Symbol]
   case class Mirror(c: Context)
 
@@ -122,7 +123,7 @@ case class ScalacUniverse(ctx: Context) extends macros.core.Universe with Flags 
   override type Tree = g.Tree
   override def treeStructure(tree: Tree): String = g.showRaw(tree)
   override def treeSyntax(tree: Tree): String = g.showCode(tree)
-  override def treePosition(tree: Tree): Position = tree.pos
+  override def treePosition(tree: Tree): Position = Position(tree.pos)
   implicit class XtensionTreeAutoPos[T <: Tree](tree: T) {
     def autoPos: T = tree.setPos(ctx.enclosingPosition)
   }

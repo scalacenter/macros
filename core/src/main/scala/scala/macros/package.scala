@@ -15,18 +15,8 @@ package object macros {
 
   def enclosingOwner: Symbol = !universe.enclosingOwner
   def enclosingPosition: Position = !universe.enclosingPosition
-  type Input
-  implicit class XtensionInput(val input: Input) extends AnyVal {
-    def path(implicit m: Mirror): java.nio.file.Path = universe.inputPath(!input)
-  }
-  type Position
-  implicit class XtensionPosition(val pos: Position) extends AnyVal {
-    def start: Int = universe.posStart(!pos)
-    def end: Int = universe.posEnd(!pos)
-    def line: Int = universe.posLine(!pos)
-    def column: Int = universe.posColumn(!pos)
-    def input: Input = !universe.posInput(!pos)
-  }
+  type Input = core.Input
+  type Position = core.Position
   type Symbol
   implicit class XtensionSymbol(val sym: Symbol) extends AnyVal {
     def name: Name = !universe.symName(!sym)

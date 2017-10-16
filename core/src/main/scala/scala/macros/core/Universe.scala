@@ -98,16 +98,18 @@ trait Universe {
   // Expansion
   // =========
   type Expansion
-  type Input
-  def inputPath(input: Input): Path
-
-  type Position
-  def posStart(pos: Position): Int
-  def posEnd(pos: Position): Int
-  def posInput(pos: Position): Input
-  def posLine(pos: Position): Int
-  def posColumn(pos: Position): Int
   def enclosingPosition: Position
   def enclosingOwner: Symbol
+}
 
+trait Input extends Any {
+  def path: Path
+}
+
+trait Position extends Any {
+  def start: Int
+  def end: Int
+  def line: Int
+  def column: Int
+  def input: Input
 }

@@ -65,7 +65,7 @@ case class DottyUniverse(prefix: untpd.Tree)(implicit ctx: Context) extends macr
 
   def fresh(prefix: String): String = NameKinds.UniqueName.fresh(prefix.toTermName).toString
 
-  def treePosition(tree: Tree): Position = tree.pos
+  def treePosition(tree: Tree): Position = Position(tree.pos)
   def treeSyntax(tree: Tree): String = tree.show
   def treeStructure(tree: Tree): String = unsupported
 
@@ -259,17 +259,19 @@ case class DottyUniverse(prefix: untpd.Tree)(implicit ctx: Context) extends macr
   // Expansion
   // =========
   case class Expansion(c: Context)
-  type Input = SourceFile
-  def inputPath(input: Input): Path = input.file.file.toPath
-  type Position = Positions.Position
-  def posInput(pos: Position): Input = ctx.source
-  def posLine(pos: Position): Int = {
-    // first line is 0 in dotty but 1 in scalac.
-    ctx.source.offsetToLine(pos.start) + 1
+  case class Input(underlying: SourceFile) extends macros.core.Input {
+    override def path: Path = underlying.file.file.toPath
   }
-  def posColumn(pos: Position): Int = ctx.source.column(pos.start)
-  def posStart(pos: Position): Int = pos.start
-  def posEnd(pos: Position): Int = pos.end
-  override def enclosingPosition: Position = prefix.pos
+  case class Position(underlying: Positions.Position) extends macros.core.Position {
+    override def start: Int = underlying.start
+    override def end: Int = underlying.end
+    override def line: Int = {
+      // first line is 0 in dotty but 1 in scalac.
+      ctx.source.offsetToLine(underlying.start) + 1
+    }
+    override def column: Int = ctx.source.column(underlying.start)
+    override def input: Input = Input(ctx.source)
+  }
+  override def enclosingPosition: Position = Position(prefix.pos)
   override def enclosingOwner: Symbol = ctx.owner
 }
