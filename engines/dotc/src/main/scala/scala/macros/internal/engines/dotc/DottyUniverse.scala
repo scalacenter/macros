@@ -231,10 +231,7 @@ case class DottyUniverse(prefix: untpd.Tree)(implicit ctx: Context) extends macr
   // =========
   type Mirror = Context
   type Symbol = Symbols.Symbol
-  def symName(sym: Symbol): Name = {
-    val name = sym.name
-    untpd.Ident(sym.name)
-  }
+  def symName(sym: Symbol): Name = untpd.Ident(sym.name)
   def symOwner(sym: Symbol): Option[Symbol] = {
     val owner = sym.maybeOwner
     if (owner == NoSymbol) None
@@ -245,6 +242,7 @@ case class DottyUniverse(prefix: untpd.Tree)(implicit ctx: Context) extends macr
   type Denotation = Denotations.Denotation
   def denotInfo(denot: Denotation): Type = untpd.TypeTree(denot.info)
   def denotName(denot: Denotation): Name = untpd.Ident(denot.symbol.name)
+  def denotSym(denot: Denotation): Symbol = denot.symbol
 
   def caseFields(tpe: Type): List[Denotation] = {
     val tp = tpe.asInstanceOf[tpd.Tree].tpe
