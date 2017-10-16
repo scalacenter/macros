@@ -21,8 +21,7 @@ private[sourcecode] object Macros {
   }
 
   def symbolName(s: Symbol)(implicit m: Mirror): String = {
-    if (s.isObject) s.name.value.stripSuffix("$")
-    else s.name.value
+    s.name.value.stripSuffix("$")
   }
 }
 

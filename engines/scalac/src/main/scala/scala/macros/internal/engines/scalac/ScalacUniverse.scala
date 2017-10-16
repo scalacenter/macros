@@ -42,7 +42,6 @@ case class ScalacUniverse(ctx: Context) extends macros.core.Universe with Flags 
   override def symName(sym: Symbol): Name =
     if (sym.isTerm) TermNameSymbol(sym)
     else TypeNameSymbol(sym)
-  override def symIsObject(sym: Symbol): Boolean = sym.isModule
   private def symFlags(sym0: Symbol): Long = {
     val sym = {
       if (sym0.isModuleClass) sym0.asClass.module

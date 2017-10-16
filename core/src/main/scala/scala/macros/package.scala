@@ -29,7 +29,6 @@ package object macros {
   }
   type Symbol
   implicit class XtensionSymbol(val sym: Symbol) extends AnyVal {
-    def isObject: Boolean = universe.symIsObject(!sym)
     def name: Name = !universe.symName(!sym)
     def owner: Option[Symbol] = !universe.symOwner(!sym)
   }

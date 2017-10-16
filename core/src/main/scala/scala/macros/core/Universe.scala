@@ -86,7 +86,6 @@ trait Universe {
 
   type Symbol
   def symName(sym: Symbol): Name
-  def symIsObject(sym: Symbol): Boolean
   def symOwner(sym: Symbol): Option[Symbol]
 
   type Denotation
