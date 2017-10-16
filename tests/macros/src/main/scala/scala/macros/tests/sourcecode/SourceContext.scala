@@ -19,6 +19,11 @@ private[sourcecode] object Macros {
     name == "<root>" ||
     (name.startsWith("<local ") && name.endsWith(">"))
   }
+
+  def symbolName(s: Symbol)(implicit m: Mirror): String = {
+    if (s.isObject) s.name.value.stripSuffix("$")
+    else s.name.value
+  }
 }
 
 case class File(value: String)
@@ -43,7 +48,7 @@ object Name {
       if (Macros.isSynthetic(s)) s.owner.fold(s)(loop)
       else s
     val owner = loop(enclosingOwner)
-    Macros.prefix("Name").apply(Lit.String(owner.name.value) :: Nil)
+    Macros.prefix("Name").apply(Lit.String(Macros.symbolName(owner)) :: Nil)
   }
 }
 
@@ -57,7 +62,7 @@ object FullName {
       } else owner
     }
     val names = loop(enclosingOwner)
-    val fullName = names.map(_.name.value).mkString(".")
+    val fullName = names.map(Macros.symbolName).mkString(".")
     Macros.prefix("FullName").apply(Lit.String(fullName) :: Nil)
   }
 }

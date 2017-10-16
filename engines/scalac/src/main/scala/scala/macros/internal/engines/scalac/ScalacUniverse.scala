@@ -14,22 +14,18 @@ case class ScalacUniverse(ctx: Context) extends macros.core.Universe with Flags 
   // =========
   case class Expansion(c: Context)
   override type Input = SourceFile
-  override def inputPath(input: Input)(implicit m: Mirror): Path = input.file.file.toPath
-  override def inputContent(input: Input, start: Int, end: Int)(implicit m: Mirror): String =
-    new String(input.content, start, {
-      val count = end - start
-      val max = input.content.length - 1 - start
-      Math.min(count, max)
-    })
+  override def inputPath(input: Input): Path =
+    input.file.file.toPath
   override type Position = g.Position
-  override def posStart(pos: Position)(implicit m: Mirror): Int =
+  override def posStart(pos: Position): Int =
     if (pos.isDefined) pos.start
     else -1
-  override def posEnd(pos: Position)(implicit m: Mirror): Int =
+  override def posEnd(pos: Position): Int =
     if (pos.isDefined) pos.end
     else -1
-  override def posInput(pos: Position)(implicit m: Mirror): Input = pos.source
-  override def posLine(pos: Position)(implicit m: Mirror): Int = pos.line
+  override def posInput(pos: Position): Input = pos.source
+  override def posLine(pos: Position): Int = pos.line
+  override def posColumn(pos: Position): Int = pos.column
   override def enclosingPosition: Position = ctx.enclosingPosition
   override def enclosingOwner: g.Symbol = ctx.internal.enclosingOwner.asInstanceOf[g.Symbol]
   case class Mirror(c: Context)
@@ -46,6 +42,7 @@ case class ScalacUniverse(ctx: Context) extends macros.core.Universe with Flags 
   override def symName(sym: Symbol): Name =
     if (sym.isTerm) TermNameSymbol(sym)
     else TypeNameSymbol(sym)
+  override def symIsObject(sym: Symbol): Boolean = sym.isModule
   private def symFlags(sym0: Symbol): Long = {
     val sym = {
       if (sym0.isModuleClass) sym0.asClass.module

@@ -83,11 +83,13 @@ trait Universe {
   // Semantic
   // =========
   type Mirror
-  type Symbol
-  type Denotation
 
+  type Symbol
   def symName(sym: Symbol): Name
+  def symIsObject(sym: Symbol): Boolean
   def symOwner(sym: Symbol): Option[Symbol]
+
+  type Denotation
   def denotInfo(denot: Denotation): Type
   def denotName(denot: Denotation): Name
   def denotSym(denot: Denotation): Symbol
@@ -98,13 +100,14 @@ trait Universe {
   // =========
   type Expansion
   type Input
-  def inputPath(input: Input)(implicit m: Mirror): Path
-  def inputContent(input: Input, start: Int, end: Int)(implicit m: Mirror): String
+  def inputPath(input: Input): Path
+
   type Position
-  def posStart(pos: Position)(implicit m: Mirror): Int
-  def posEnd(pos: Position)(implicit m: Mirror): Int
-  def posInput(pos: Position)(implicit m: Mirror): Input
-  def posLine(pos: Position)(implicit m: Mirror): Int
+  def posStart(pos: Position): Int
+  def posEnd(pos: Position): Int
+  def posInput(pos: Position): Input
+  def posLine(pos: Position): Int
+  def posColumn(pos: Position): Int
   def enclosingPosition: Position
   def enclosingOwner: Symbol
 

@@ -15,8 +15,8 @@ class SourcecodeSuite {
   }
 
   @Test def line(): Unit = {
-    assertEquals(Line.generate.value, 18)
-    assertEquals(implicitly[Line].value, 19)
+    assertEquals(18, Line.generate.value)
+    assertEquals(19, implicitly[Line].value)
   }
 
   @Test def name(): Unit = {
