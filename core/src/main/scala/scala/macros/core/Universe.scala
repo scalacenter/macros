@@ -28,6 +28,7 @@ trait Universe {
 
   def fresh(prefix: String): String
 
+  def treePosition(tree: Tree): Position
   def treeSyntax(tree: Tree): String
   def treeStructure(tree: Tree): String
 
@@ -98,7 +99,10 @@ trait Universe {
   type Expansion
   type Input
   def inputPath(input: Input)(implicit m: Mirror): Path
+  def inputContent(input: Input, start: Int, end: Int)(implicit m: Mirror): String
   type Position
+  def posStart(pos: Position)(implicit m: Mirror): Int
+  def posEnd(pos: Position)(implicit m: Mirror): Int
   def posInput(pos: Position)(implicit m: Mirror): Input
   def posLine(pos: Position)(implicit m: Mirror): Int
   def enclosingPosition: Position

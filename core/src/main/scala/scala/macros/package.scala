@@ -18,9 +18,13 @@ package object macros {
   type Input
   implicit class XtensionInput(val input: Input) extends AnyVal {
     def path(implicit m: Mirror): java.nio.file.Path = universe.inputPath(!input)(!m)
+    def contents(implicit m: Mirror): String = universe.inputContent(!input, 0, Int.MaxValue)(!m)
   }
   type Position
   implicit class XtensionPosition(val pos: Position) extends AnyVal {
+    def start(implicit m: Mirror): Int = universe.posStart(!pos)(!m)
+    def end(implicit m: Mirror): Int = universe.posEnd(!pos)(!m)
+    def text(implicit m: Mirror): String = universe.inputContent(!pos.input, pos.start, pos.end)(!m)
     def line(implicit m: Mirror): Int = universe.posLine(!pos)(!m)
     def input(implicit m: Mirror): Input = !universe.posInput(!pos)(!m)
   }
@@ -40,6 +44,7 @@ package object macros {
   type Expansion
   type Tree
   implicit class XtensionTree(val tree: Tree) extends AnyVal {
+    def pos: Position = !universe.treePosition(!tree)
     def syntax: String = universe.treeSyntax(!tree)
     def structure: String = universe.treeStructure(!tree)
   }

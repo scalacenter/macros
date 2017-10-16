@@ -39,8 +39,22 @@ class SourcecodeSuite {
     assertEquals(s"$prefix.b", b)
     var c = FullName.generate.value
     assertEquals(s"$prefix.c", c)
+    c = null // silence warnings about c being var but never getting
     class d(implicit val name: FullName)
     object e extends d
     assertEquals(s"$prefix.e", e.name.value)
+  }
+
+  @Test def text(): Unit = {
+    val a = 1
+    val aText = Text.generate(a)
+    assertEquals(s"a", aText.source)
+    val bText = Text.generate(a + a)
+    // lihaoyi/sourcecode will produce `a + a` here.
+    assertEquals(s"a.+(a)", bText.source)
+    def log[T](a: Text[T]) = a
+    val b = log(a - a)
+    assertEquals(0, b.value)
+    assertEquals(s"a.-(a)", b.source)
   }
 }

@@ -15,7 +15,19 @@ case class ScalacUniverse(ctx: Context) extends macros.core.Universe with Flags 
   case class Expansion(c: Context)
   override type Input = SourceFile
   override def inputPath(input: Input)(implicit m: Mirror): Path = input.file.file.toPath
+  override def inputContent(input: Input, start: Int, end: Int)(implicit m: Mirror): String =
+    new String(input.content, start, {
+      val count = end - start
+      val max = input.content.length - 1 - start
+      Math.min(count, max)
+    })
   override type Position = g.Position
+  override def posStart(pos: Position)(implicit m: Mirror): Int =
+    if (pos.isDefined) pos.start
+    else -1
+  override def posEnd(pos: Position)(implicit m: Mirror): Int =
+    if (pos.isDefined) pos.end
+    else -1
   override def posInput(pos: Position)(implicit m: Mirror): Input = pos.source
   override def posLine(pos: Position)(implicit m: Mirror): Int = pos.line
   override def enclosingPosition: Position = ctx.enclosingPosition
@@ -114,6 +126,10 @@ case class ScalacUniverse(ctx: Context) extends macros.core.Universe with Flags 
   override type Tree = g.Tree
   override def treeStructure(tree: Tree): String = g.showRaw(tree)
   override def treeSyntax(tree: Tree): String = g.showCode(tree)
+  override def treePosition(tree: Tree): Position = tree.pos
+  implicit class XtensionTreeAutoPos[T <: Tree](tree: T) {
+    def autoPos: T = tree.setPos(ctx.enclosingPosition)
+  }
 
   def fresh(prefix: String): String = g.freshTermName(prefix)(g.globalFreshNameCreator).toString
 

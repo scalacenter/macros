@@ -1,6 +1,7 @@
 package scala.macros.tests.sourcecode
 
 import scala.macros._
+import scala.language.implicitConversions
 
 // Unification of macro impl/defn forces us to put utilities in separate object
 private[sourcecode] object Macros {
@@ -58,5 +59,17 @@ object FullName {
     val names = loop(enclosingOwner)
     val fullName = names.map(_.name.value).mkString(".")
     Macros.prefix("FullName").apply(Lit.String(fullName) :: Nil)
+  }
+}
+
+case class Text[T](source: String, value: T)
+object Text {
+  implicit def generate[T](e: T): Text[T] = macro {
+    // NOTE(olafur): lihaoyi/sourcecode uses unit parser and slices
+    // start/end offsets from input.content:
+    // https://github.com/lihaoyi/sourcecode/blob/420bea7941d3219e2f1200b14b11010843aea39c/sourcecode/shared/src/main/scala/sourcecode/SourceContext.scala#L137-L140
+    // This produces more accurate/portable results.
+    val source = e.syntax
+    Macros.prefix("Text").apply(Lit.String(source) :: e :: Nil)
   }
 }
