@@ -1,5 +1,7 @@
 package scala.macros.core
 
+import java.nio.file.Path
+
 trait Universe {
   // =========
   // Trees
@@ -26,6 +28,7 @@ trait Universe {
 
   def fresh(prefix: String): String
 
+  def treePosition(tree: Tree): Position
   def treeSyntax(tree: Tree): String
   def treeStructure(tree: Tree): String
 
@@ -41,6 +44,7 @@ trait Universe {
   def TermApplyType(fun: Term, args: List[Type]): Term
   def TermBlock(stats: List[Stat]): Term
   def LitString(value: String): Lit
+  def LitInt(value: Int): Lit
   def Self(name: Name, decltpe: Option[Type]): Self
   def Init(tpe: Type, name: Name, argss: List[List[Term]]): Init
   def Template(inits: List[Init], self: Self, stats: List[Stat]): Template
@@ -79,10 +83,12 @@ trait Universe {
   // Semantic
   // =========
   type Mirror
-  type Symbol
-  type Denotation
 
+  type Symbol
   def symName(sym: Symbol): Name
+  def symOwner(sym: Symbol): Option[Symbol]
+
+  type Denotation
   def denotInfo(denot: Denotation): Type
   def denotName(denot: Denotation): Name
   def denotSym(denot: Denotation): Symbol
@@ -92,5 +98,15 @@ trait Universe {
   // Expansion
   // =========
   type Expansion
+  def enclosingPosition: Position
+  def enclosingOwner: Symbol
+}
 
+trait Input extends Any {
+  def path: Path
+}
+
+trait Position extends Any {
+  def line: Int
+  def input: Input
 }

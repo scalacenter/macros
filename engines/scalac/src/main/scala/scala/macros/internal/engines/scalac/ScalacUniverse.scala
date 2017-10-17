@@ -1,18 +1,38 @@
 package scala.macros.internal.engines.scalac
 
+import java.nio.file.Path
 import scala.macros.semantic.Flags
+import scala.reflect.internal.util.SourceFile
 import scala.reflect.internal.{Flags => gf}
-import scala.tools.nsc.Global
 import scala.reflect.macros.contexts.Context
 
-case class ScalacUniverse(g: Global) extends macros.core.Universe with Flags {
+case class ScalacUniverse(ctx: Context) extends macros.core.Universe with Flags {
+  val g = ctx.universe
+  import ctx.universe._
+  // =========
+  // Expansion
+  // =========
   case class Expansion(c: Context)
+  case class Input(underlying: SourceFile) extends macros.core.Input {
+    def path: Path = underlying.file.file.toPath
+  }
+  case class Position(underlying: g.Position) extends macros.core.Position {
+    override def input: Input = Input(underlying.source)
+    override def line: Int = underlying.line
+  }
+  override def enclosingPosition: Position = Position(ctx.enclosingPosition)
+  override def enclosingOwner: g.Symbol = ctx.internal.enclosingOwner.asInstanceOf[g.Symbol]
   case class Mirror(c: Context)
 
   // ========================
   // Semantic
   // ========================
   override type Symbol = g.Symbol
+  override def symOwner(sym: Symbol): Option[Symbol] = {
+    val owner = sym.owner
+    if (owner == NoSymbol) None
+    else Some(owner)
+  }
   override def symName(sym: Symbol): Name =
     if (sym.isTerm) TermNameSymbol(sym)
     else TypeNameSymbol(sym)
@@ -96,6 +116,7 @@ case class ScalacUniverse(g: Global) extends macros.core.Universe with Flags {
   override type Tree = g.Tree
   override def treeStructure(tree: Tree): String = g.showRaw(tree)
   override def treeSyntax(tree: Tree): String = g.showCode(tree)
+  override def treePosition(tree: Tree): Position = Position(tree.pos)
 
   def fresh(prefix: String): String = g.freshTermName(prefix)(g.globalFreshNameCreator).toString
 
@@ -215,6 +236,7 @@ case class ScalacUniverse(g: Global) extends macros.core.Universe with Flags {
   // =====
   override type Lit = g.Literal
   override def LitString(value: String): Lit = g.Literal(g.Constant(value))
+  override def LitInt(value: Int): Lit = g.Literal(g.Constant(value))
 
   // =====
   // Defn
