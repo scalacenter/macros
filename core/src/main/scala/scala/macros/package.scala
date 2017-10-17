@@ -1,6 +1,7 @@
 package scala
 
 package object macros {
+  import scala.language.implicitConversions
 
   private[macros] val universeStore = new ThreadLocal[core.Universe]
   private[macros] def universe: core.Universe = {
@@ -17,7 +18,7 @@ package object macros {
   def enclosingPosition: Position = !universe.enclosingPosition
   type Input = core.Input
   type Position = core.Position
-  type Symbol
+  type Symbol <: AnyRef
   implicit class XtensionSymbol(val sym: Symbol) extends AnyVal {
     def name: String = universe.symName(!sym)
     def owner: Option[Symbol] = !universe.symOwner(!sym)
@@ -75,6 +76,10 @@ package object macros {
     object New {
       def apply(init: Init): Term = !universe.TermNew(!init)
     }
+    object If {
+      def apply(cond: Term, truep: Term, elsep: Term): Term = !universe.TermIf(!cond, !truep, !elsep)
+    }
+
     type Param
     object Param {
       def apply(
@@ -101,6 +106,8 @@ package object macros {
     object Int {
       def apply(value: scala.Int): Lit.Int = !universe.LitInt(value)
     }
+    type Null <: Lit
+    def Null: Lit.Null = !universe.LitNull
   }
 
   type TypeTree <: Tree
@@ -184,12 +191,11 @@ package object macros {
 
   object tpd {
     type Tree
-    type Stat <: Tree
-    type Term <: Stat
+    type Term <: Tree
     type Ref <: Term
+    type Def <: Tree
 
     def root: Term = !universe.typed.ref(!universe.root)
-    def typeOf(tree: Term): Type  = !universe.typed.typeOf(!tree)
     def ref(sym: Symbol): Ref = !universe.typed.ref(!sym)
 
     object Name {
@@ -205,19 +211,39 @@ package object macros {
       def apply(qual: Term, args: List[Term]): Term = !universe.typed.Apply(!qual, !args)
       def unapply(tree: Tree): Option[(Term, List[Term])] = !universe.typed.ApplyUnapply(!tree)
     }
+
+    object Function {
+      def unapply(tree: Tree): Option[(List[Symbol], Term)] = !universe.typed.FunctionUnapply(!tree)
+    }
+
+    object If {
+      def apply(cond: Term, truep: Term, elsep: Term): Term = !universe.typed.If(!cond, !truep, !elsep)
+    }
+
+    object ValDef {
+      def apply(rhs: Term, tpOpt: Option[Type] = None, mutable: Boolean = false): Def =
+        !universe.typed.ValDef(!rhs, !tpOpt, mutable)
+    }
   }
 
   type Splice <: Stat with Term
-  implicit def tpd2splice(term: tpd.Stat): Splice = !universe.Splice(!term)
+  implicit def tpd2splice(term: tpd.Tree): Splice = !universe.Splice(!term)
 
   implicit class XtensionTypedTree(val tree: tpd.Tree) extends AnyVal {
     def pos: Position = !universe.typed.treePosition(!tree)
     def syntax: String = universe.typed.treeSyntax(!tree)
     def structure: String = universe.typed.treeStructure(!tree)
+
+    def transform(pf: PartialFunction[tpd.Tree, tpd.Tree]): tpd.Tree =
+      !universe.typed.transform(!tree)(!pf)
   }
 
-  implicit class XtensionTypedStatTree(val tree: tpd.Stat) extends AnyVal {
+  implicit class XtensionTypedStatTree(val tree: tpd.Tree) extends AnyVal {
     def splice: Splice = !universe.Splice(!tree)
+  }
+
+  implicit class XtensionTypedDefTree(val tree: tpd.Def) extends AnyVal {
+    def symbol: Symbol = !universe.typed.symOf(!tree)
   }
 
   implicit class XtensionTypedTermTree(val tree: tpd.Term) extends AnyVal {

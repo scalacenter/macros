@@ -33,11 +33,13 @@ trait UntypedTrees { this: Universe =>
 
   def TermName(value: String): Term
   def TermSelect(qual: Term, name: String): Term
+  def TermIf(cond: Term, truep: Term, elsep: Term): Term
   def TermApply(fun: Term, args: List[Term]): Term
   def TermApplyType(fun: Term, args: List[TypeTree]): Term
   def TermBlock(stats: List[Stat]): Term
   def LitString(value: String): Lit
   def LitInt(value: Int): Lit
+  def LitNull: Lit
   def Self(name: String, decltpe: Option[TypeTree]): Self
   def Init(tpe: TypeTree, argss: List[List[Term]]): Init
   def Template(inits: List[Init], self: Self, stats: List[Stat]): Template

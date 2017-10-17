@@ -79,6 +79,9 @@ case class DottyUniverse(prefix: untpd.Tree)(implicit ctx: Context) extends macr
   def TermSelect(qual: Term, name: String): Term =
     untpd.Select(qual, name.toTermName).autoPos
 
+  def TermIf(cond: Term, thenp: Term, elsep: Term): Term =
+    untpd.If(cond, thenp, elsep).autoPos
+
   def TermApply(fun: Term, args: List[Term]): Term = untpd.Apply(fun, args).autoPos
 
   def TermApplyType(fun: Term, targs: List[TypeTree]): Term =
@@ -91,6 +94,7 @@ case class DottyUniverse(prefix: untpd.Tree)(implicit ctx: Context) extends macr
 
   def LitString(value: String): Lit = untpd.Literal(Constant(value)).autoPos
   def LitInt(value: Int): Lit = untpd.Literal(Constant(value)).autoPos
+  def LitNull: Lit = untpd.Literal(Constant(null)).autoPos
 
   def Self(name: String, decltpe: Option[TypeTree]): Self =
     untpd
@@ -197,11 +201,13 @@ case class DottyUniverse(prefix: untpd.Tree)(implicit ctx: Context) extends macr
   object typed extends typedApi {
     type Tree = tpd.Tree
     type Term = tpd.Tree
+    type Def  = tpd.Tree
 
     def treePosition(tree: Tree): Position = Position(tree.pos)
     def treeSyntax(tree: Tree): String = tree.show
     def treeStructure(tree: Tree): String = unsupported
 
+    def symOf(tree: Def): Symbol = tree.symbol
     def typeOf(tree: Term): Type = tree.tpe
     def ref(sym: Symbol): Term = tpd.ref(sym)
 
@@ -221,6 +227,34 @@ case class DottyUniverse(prefix: untpd.Tree)(implicit ctx: Context) extends macr
     def ApplyUnapply(tree: Tree): Option[(Term, List[Term])] = tree match {
       case tpd.Apply(fun, args) => Some((fun, args))
       case _ => None
+    }
+
+    def FunctionUnapply(tree: Tree): Option[(List[Symbol], Term)] = tree match {
+      case tpd.Block(Nil, body) => FunctionUnapply(body)
+      case tpd.Block((meth : tpd.DefDef) :: Nil, _ : tpd.Closure) if meth.name == nme.ANON_FUN =>
+        Some((meth.vparamss.head.map(_.symbol), meth.rhs))
+      case _ => None
+    }
+
+    def If(cond: Term, thenp: Term, elsep: Term): Term = tpd.If(cond, thenp, elsep)
+    def ValDef(rhs: Term, tpOpt: Option[Type], mutable: Boolean): Tree = {
+      val flags = if (mutable) Flags.Mutable else Flags.EmptyFlags
+      val vsym = ctx.newSymbol(
+        ctx.owner,
+        NameKinds.UniqueName.fresh("temp".toTermName),
+        flags,
+        tpOpt.getOrElse(rhs.tpe)
+      )
+      tpd.ValDef(vsym, rhs)
+    }
+
+    def transform(tree: Tree)(pf: PartialFunction[Tree, Tree]): Tree = {
+      new tpd.TreeMap() {
+        override def transform(tree: tpd.Tree)(implicit ctx: Context) = {
+          def updateOwner(subtree: tpd.Tree) = ensureOwner(subtree, ctx.owner)
+          pf.lift(tree).map(updateOwner(_)).getOrElse(super.transform(tree))
+        }
+      }.transform(tree)
     }
   }
 
@@ -270,4 +304,31 @@ case class DottyUniverse(prefix: untpd.Tree)(implicit ctx: Context) extends macr
   }
   override def enclosingPosition: Position = Position(prefix.pos)
   override def enclosingOwner: Symbol = ctx.owner
+
+
+  // =========
+  // utilities
+  // =========
+  def ensureOwner(tree: tpd.Tree, owner: Symbol): tpd.Tree = {
+    val froms = getOwners(tree)
+    froms.foldRight(tree) { (from, acc) =>
+      if (from eq owner) acc
+      else new tpd.TreeOps(acc).changeOwner(from, owner)
+    }
+  }
+
+  def getOwners(tree: tpd.Tree): List[Symbol] = {
+    import scala.collection.mutable.Set
+    val owners = Set.empty[Symbol]
+    new tpd.TreeTraverser {
+      def traverse(tree: tpd.Tree)(implicit ctx: Context): Unit = tree match {
+        case tree: tpd.DefTree if tree.symbol.exists =>
+          owners += tree.symbol.owner
+        case _ =>
+          traverseChildren(tree)
+      }
+    }.traverse(tree)
+
+    owners.toList
+  }
 }
