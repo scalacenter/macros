@@ -80,7 +80,7 @@ package object macros {
       def apply(
           mods: List[Mod],
           name: String,
-          decltpe: Option[Type],
+          decltpe: Option[TypeTree],
           default: Option[Term]
       ): Term.Param =
         !universe.TermParam(!mods, !name, !decltpe, !default)
@@ -184,7 +184,7 @@ package object macros {
 
   object tpd {
     type Tree
-    type Stat
+    type Stat <: Tree
     type Term <: Stat
     type Ref <: Term
 
@@ -207,9 +207,17 @@ package object macros {
     }
   }
 
-  implicit def tpd2splice(term: tpd.Stat): Stat = !universe.Splice(!term)
+  type Splice <: Stat with Term
+  implicit def tpd2splice(term: tpd.Stat): Splice = !universe.Splice(!term)
+
+  implicit class XtensionTypedTree(val tree: tpd.Tree) extends AnyVal {
+    def pos: Position = !universe.typed.treePosition(!tree)
+    def syntax: String = universe.typed.treeSyntax(!tree)
+    def structure: String = universe.typed.treeStructure(!tree)
+  }
+
   implicit class XtensionTypedStatTree(val tree: tpd.Stat) extends AnyVal {
-    def splice: Stat = !universe.Splice(!tree)
+    def splice: Splice = !universe.Splice(!tree)
   }
 
   implicit class XtensionTypedTermTree(val tree: tpd.Term) extends AnyVal {

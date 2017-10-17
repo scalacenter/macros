@@ -71,7 +71,7 @@ object Serialize {
             Nil,
             "apply",
             Nil,
-            List(List(Term.Param.apply(Nil, param, Some(T), None))),
+            List(List(Term.Param.apply(Nil, param, Some(T.toTypeTree), None))),
             Some(TypeTree.Name("String")),
             Term.Block(stats.result())
           )

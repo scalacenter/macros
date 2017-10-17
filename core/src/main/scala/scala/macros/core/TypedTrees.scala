@@ -8,6 +8,10 @@ trait TypedTrees { this: Universe =>
     type Tree
     type Term
 
+    def treePosition(tree: Tree): Position
+    def treeSyntax(tree: Tree): String
+    def treeStructure(tree: Tree): String
+
     def typeOf(tree: Term): Type
     def ref(sym: Symbol): Term
 

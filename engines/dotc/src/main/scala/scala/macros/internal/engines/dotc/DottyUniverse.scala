@@ -94,7 +94,7 @@ case class DottyUniverse(prefix: untpd.Tree)(implicit ctx: Context) extends macr
 
   def Self(name: String, decltpe: Option[TypeTree]): Self =
     untpd
-      .ValDef(name.asInstanceOf[untpd.Ident].name.asTermName, decltpe.getOrElse(untpd.TypeTree()), untpd.EmptyTree)
+      .ValDef(name.toTermName, decltpe.getOrElse(untpd.TypeTree()), untpd.EmptyTree)
       .autoPos
 
   def Init(tpe: TypeTree, argss: List[List[Term]]): Init =
@@ -122,7 +122,7 @@ case class DottyUniverse(prefix: untpd.Tree)(implicit ctx: Context) extends macr
   ): TermParam =
     untpd
       .ValDef(
-        name.asInstanceOf[untpd.Ident].name.asTermName,
+        name.toTermName,
         decltpe.getOrElse(untpd.TypeTree()),
         default.getOrElse(untpd.EmptyTree)
       )
@@ -198,6 +198,10 @@ case class DottyUniverse(prefix: untpd.Tree)(implicit ctx: Context) extends macr
     type Tree = tpd.Tree
     type Term = tpd.Tree
 
+    def treePosition(tree: Tree): Position = Position(tree.pos)
+    def treeSyntax(tree: Tree): String = tree.show
+    def treeStructure(tree: Tree): String = unsupported
+
     def typeOf(tree: Term): Type = tree.tpe
     def ref(sym: Symbol): Term = tpd.ref(sym)
 
@@ -248,7 +252,7 @@ case class DottyUniverse(prefix: untpd.Tree)(implicit ctx: Context) extends macr
   }
   def typeRef(path: String): Type = ctx.staticRef(path.toTypeName, false).symbol.typeRef
   def appliedType(tp: Type, args: List[Type]): Type = Types.AppliedType(tp, args)
-  def typeTreeOf(tp: Type): TypeTree = tpd.TypeTree(tp)
+  def typeTreeOf(tp: Type): TypeTree = untpd.TypedSplice(tpd.TypeTree(tp))
 
   // =========
   // Expansion

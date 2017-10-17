@@ -72,6 +72,6 @@ object Text {
     // https://github.com/lihaoyi/sourcecode/blob/420bea7941d3219e2f1200b14b11010843aea39c/sourcecode/shared/src/main/scala/sourcecode/SourceContext.scala#L137-L140
     // This produces more accurate/portable results.
     val source = e.syntax
-    Util.prefix("Text").apply(Lit.String(source) :: e :: Nil)
+    Util.prefix("Text").apply(Lit.String(source) :: e.splice :: Nil)
   }
 }
