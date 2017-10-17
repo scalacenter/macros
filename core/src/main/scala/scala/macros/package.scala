@@ -188,22 +188,22 @@ package object macros {
     type Term <: Stat
     type Ref <: Term
 
-    def root: Term = !universe.tpd.ref(!universe.root)
-    def typeOf(tree: Term): Type  = !universe.tpd.typeOf(!tree)
-    def ref(sym: Symbol): Ref = !universe.tpd.ref(!sym)
+    def root: Term = !universe.typed.ref(!universe.root)
+    def typeOf(tree: Term): Type  = !universe.typed.typeOf(!tree)
+    def ref(sym: Symbol): Ref = !universe.typed.ref(!sym)
 
     object Name {
-      def unapply(tree: Tree): Option[Denotation] = !universe.tpd.NameUnapply(!tree)
+      def unapply(tree: Tree): Option[Denotation] = !universe.typed.NameUnapply(!tree)
     }
 
     object Select {
-      def apply(qual: Term, name: String): Term = !universe.tpd.Select(!qual, name)
-      def unapply(tree: Tree): Option[(Term, Symbol)] = !universe.tpd.SelectUnapply(!tree)
+      def apply(qual: Term, name: String): Term = !universe.typed.Select(!qual, name)
+      def unapply(tree: Tree): Option[(Term, Symbol)] = !universe.typed.SelectUnapply(!tree)
     }
 
     object Apply {
-      def apply(qual: Term, args: List[Term]): Term = !universe.tpd.Apply(!qual, !args)
-      def unapply(tree: Tree): Option[(Term, List[Term])] = !universe.tpd.ApplyUnapply(!tree)
+      def apply(qual: Term, args: List[Term]): Term = !universe.typed.Apply(!qual, !args)
+      def unapply(tree: Tree): Option[(Term, List[Term])] = !universe.typed.ApplyUnapply(!tree)
     }
   }
 
@@ -213,7 +213,7 @@ package object macros {
   }
 
   implicit class XtensionTypedTermTree(val tree: tpd.Term) extends AnyVal {
-    def tpe: Type = !universe.tpd.typeOf(!tree)
+    def tpe: Type = !universe.typed.typeOf(!tree)
     def select(name: String): tpd.Term = tpd.Select(tree, name)
     def select(name: List[String]): tpd.Term = name.foldLeft(tree) {
       case (qual, name) => tpd.Select(qual, name)

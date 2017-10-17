@@ -2,8 +2,8 @@ package scala.macros.core
 
 // typed trees
 trait TypedTrees { this: Universe =>
-  val tpd: tpdApi
-  trait tpdApi {
+  val typed: typedApi
+  trait typedApi {
     // No typed TypeTree, Type can be converted to type tree automatically
     type Tree
     type Term

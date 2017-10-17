@@ -24,6 +24,7 @@ trait Universe extends UntypedTrees with TypedTrees {
   def caseFields(tpe: Type): List[Denotation]
   def typeRef(path: String): Type
   def appliedType(tp: Type, args: List[Type]): Type
+  def typeTreeOf(tp: Type): TypeTree
 
   // =========
   // Expansion

@@ -5,16 +5,19 @@ trait UntypedTrees { this: Universe =>
   // Trees
   // =========
   type Tree
+
   type Stat
   type Term
-  type TermParam
   type Lit
+
+  type Pat
+
+  type Defn
+  type TermParam
   type Mod
   type Self
   type Init
   type Template
-  type Pat
-  type Defn
 
   type TypeTree
   type TypeBounds
@@ -26,7 +29,7 @@ trait UntypedTrees { this: Universe =>
   def treeSyntax(tree: Tree): String
   def treeStructure(tree: Tree): String
 
-  def Splice(term: tpd.Tree): Splice
+  def Splice(term: typed.Tree): Splice
 
   def TermName(value: String): Term
   def TermSelect(qual: Term, name: String): Term
@@ -47,6 +50,9 @@ trait UntypedTrees { this: Universe =>
   ): TermParam
 
   def TypeName(value: String): TypeTree
+  def TypeSelect(qual: Term, name: String): TypeTree
+  def TypeApply(tpe: TypeTree, args: List[TypeTree]): TypeTree
+
 
   def TypeParam(
       mods: List[Mod],
@@ -56,8 +62,11 @@ trait UntypedTrees { this: Universe =>
       vbounds: List[TypeTree],
       cbounds: List[TypeTree]
   ): TypeParam
+
   def DefnObject(mods: List[Mod], name: String, templ: Template): Defn
+
   def DefnVal(mods: List[Mod], name: String, decltpe: Option[TypeTree], rhs: Term): Defn
+
   def DefnDef(
       mods: List[Mod],
       name: String,
@@ -66,6 +75,4 @@ trait UntypedTrees { this: Universe =>
       decltpe: Option[TypeTree],
       body: Term
   ): Defn
-
-  def typeTreeOf(tp: Type): TypeTree
 }
