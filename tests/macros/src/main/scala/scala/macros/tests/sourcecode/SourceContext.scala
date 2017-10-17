@@ -14,13 +14,13 @@ private[sourcecode] object Util {
   // Should this be handled by engines? I would claim that this is application specific
   // for sourcecode.
   def isSynthetic(s: Symbol)(implicit m: Mirror): Boolean = {
-    val name = s.name.value
+    val name = s.name
     name == "<init>" ||
     name == "<root>" ||
     (name.startsWith("<local ") && name.endsWith(">"))
   }
 
-  def symbolName(s: Symbol)(implicit m: Mirror): String = s.name.value.stripSuffix("$")
+  def symbolName(s: Symbol)(implicit m: Mirror): String = s.name.stripSuffix("$")
 }
 
 case class File(value: String)

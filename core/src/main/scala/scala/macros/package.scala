@@ -19,14 +19,14 @@ package object macros {
   type Position = core.Position
   type Symbol
   implicit class XtensionSymbol(val sym: Symbol) extends AnyVal {
-    def name: Name = !universe.symName(!sym)
+    def name: String = universe.symName(!sym)
     def owner: Option[Symbol] = !universe.symOwner(!sym)
   }
 
   type Denotation
   implicit class XtensionDenotation(val denot: Denotation) extends AnyVal {
     def info: Type = !universe.denotInfo(!denot)
-    def name: Name = !universe.denotName(!denot)
+    def name: String = !universe.symName(!universe.denotSym(!denot))
     def sym: Symbol = !universe.denotSym(!denot)
   }
   type Mirror
@@ -38,52 +38,36 @@ package object macros {
     def structure: String = universe.treeStructure(!tree)
   }
   type Stat <: Tree
-  type Name
-  implicit class XtensionName(val name: Name) extends AnyVal {
-    def value: String = universe.nameValue(!name)
-  }
-  object Name {
-    def apply(value: String): Name = !universe.Name(value)
-  }
+
   type Term <: Stat
   implicit class XtensionTerm(val term: Term) extends AnyVal {
-    def select(name: String): Term.Select = Term.Select(term, Term.Name(name))
+    def select(name: String): Term = Term.Select(term, name)
     def select(name: List[String]): Term = name.foldLeft(term) {
-      case (qual, name) => Term.Select(qual, Term.Name(name))
+      case (qual, name) => Term.Select(qual, name)
     }
-    def apply(args: List[Term]): Term.Apply = Term.Apply(term, args)
-    def applyType(args: List[Type]): Term.ApplyType = Term.ApplyType(term, args)
+    def apply(args: List[Term]): Term = Term.Apply(term, args)
+    def applyType(args: List[TypeTree]): Term = Term.ApplyType(term, args)
   }
   object Term {
-    def fresh(prefix: String = "fresh"): Term.Name = Term.Name(universe.fresh(prefix))
-    type Ref <: Term
-    type Name <: Term.Ref
+    def fresh(prefix: String = "fresh"): String = universe.fresh(prefix)
     object Name {
-      def apply(value: String): Term.Name = !universe.TermName(value)
-      def apply(symbol: Symbol): Term.Name =
-        !universe.TermNameSymbol(!symbol)
-      def unapply(arg: Any): Option[String] = !universe.TermNameUnapply(arg)
+      def apply(value: String): Term = !universe.TermName(value)
     }
-    type Select <: Term.Ref
     object Select {
-      def apply(qual: Term, name: Term.Name): Term.Select =
+      def apply(qual: Term, name: String): Term =
         !universe.TermSelect(!qual, !name)
-      def unapply(arg: Any): Option[(Term.Ref, Term.Name)] =
-        !universe.TermSelectUnapply(arg)
     }
-    type Apply <: Term
+
     object Apply {
-      def apply(fun: Term, args: List[Term]): Term.Apply =
+      def apply(fun: Term, args: List[Term]): Term =
         !universe.TermApply(!fun, !args)
-      def unapply(arg: Any): Option[(Term.Ref, List[Term])] =
-        !universe.TermApplyUnapply(arg)
     }
-    type ApplyType <: Term
+
     object ApplyType {
-      def apply(fun: Term, args: List[Type]): Term.ApplyType =
+      def apply(fun: Term, args: List[TypeTree]): Term =
         !universe.TermApplyType(!fun, !args)
     }
-    type Block <: Term
+
     object Block {
       def apply(stats: List[Stat]): Term =
         !universe.TermBlock(!stats)
@@ -95,7 +79,7 @@ package object macros {
     object Param {
       def apply(
           mods: List[Mod],
-          name: Name,
+          name: String,
           decltpe: Option[Type],
           default: Option[Term]
       ): Term.Param =
@@ -118,57 +102,50 @@ package object macros {
       def apply(value: scala.Int): Lit.Int = !universe.LitInt(value)
     }
   }
-  type Type
-  implicit class XtensionType(val tpe: Type) extends AnyVal {
-    def caseFields: List[Denotation] = !universe.caseFields(!tpe)
-  }
-  object Type {
-    type Ref <: Type
-    type Name <: Type.Ref
+
+  type TypeTree <: Tree
+  object TypeTree {
     object Name {
-      def apply(value: String): Type.Name = !universe.TypeName(value)
+      def apply(value: String): TypeTree = !universe.TypeName(value)
     }
-    type Select <: Type.Ref
-    object Select {
-      def apply(qual: Term, name: Type.Name): Type.Select =
-        !universe.TypeSelect(!qual, !name)
-    }
-    type Apply <: Type
-    object Apply {
-      def apply(fun: Type, args: List[Type]): Type.Apply =
-        !universe.TypeApply(!fun, !args)
-    }
-    type Bounds
-    type Param
+
+    type Bounds <: Tree
+    type Param  <: Tree
     object Param {
       def apply(
           mods: List[Mod],
-          name: Name,
-          tparams: List[Type.Param],
-          tbounds: Type.Bounds,
+          name: String,
+          tparams: List[Param],
+          tbounds: Bounds,
           vbounds: List[Type],
           cbounds: List[Type]
-      ): Type.Param =
+      ): Param =
         !universe.TypeParam(!mods, !name, !tparams, !tbounds, !vbounds, !cbounds)
     }
   }
+
+  type Type
+  object Type {
+    type TypeRef <: Type
+
+    def typeRef(path: String): TypeRef = !universe.typeRef(path)
+  }
+  implicit class XtensionType(val tpe: Type) extends AnyVal {
+    def caseFields: List[Denotation] = !universe.caseFields(!tpe)
+    def toTypeTree: TypeTree = !universe.typeTreeOf(!tpe)
+    def appliedTo(args: List[Type]): Type = !universe.appliedType(!tpe, !args)
+  }
+
   type Self
   object Self {
-    def apply(name: Name, decltpe: Option[Type]): Self = !universe.Self(!name, !decltpe)
+    def apply(name: String, decltpe: Option[Type]): Self = !universe.Self(!name, !decltpe)
   }
   type Init
   object Init {
-    def apply(tpe: Type, name: Name, argss: List[List[Term]]): Init =
-      !universe.Init(!tpe, !name, !argss)
+    def apply(tpe: TypeTree, argss: List[List[Term]]): Init =
+      !universe.Init(!tpe, !argss)
   }
-  type Pat
-  object Pat {
-    type Var <: Pat
-    object Var {
-      def apply(name: Term.Name): Pat.Var =
-        !universe.PatVar(!name)
-    }
-  }
+
   type Mod
   type Defn <: Stat
   object Defn {
@@ -176,20 +153,20 @@ package object macros {
     object Val {
       def apply(
           mods: List[Mod],
-          pats: List[Pat],
-          decltpe: Option[Type],
+          name: String,
+          decltpe: Option[TypeTree],
           rhs: Term
       ): Defn.Val =
-        !universe.DefnVal(!mods, !pats, !decltpe, !rhs)
+        !universe.DefnVal(!mods, name, !decltpe, !rhs)
     }
     type Def <: Defn
     object Def {
       def apply(
           mods: List[Mod],
-          name: Term.Name,
-          tparams: List[Type.Param],
+          name: String,
+          tparams: List[TypeTree.Param],
           paramss: List[List[Term.Param]],
-          decltpe: Option[Type],
+          decltpe: Option[TypeTree],
           body: Term
       ): Defn.Def =
         !universe.DefnDef(!mods, !name, !tparams, !paramss, !decltpe, !body)
@@ -198,10 +175,49 @@ package object macros {
     object Object {
       def apply(
           mods: List[Mod],
-          name: Term.Name,
+          name: String,
           templ: Template
       ): Defn.Object =
         !universe.DefnObject(!mods, !name, !templ)
     }
+  }
+
+  object tpd {
+    type Tree
+    type Stat
+    type Term <: Stat
+    type Ref <: Term
+
+    def root: Term = !universe.tpd.ref(!universe.root)
+    def typeOf(tree: Term): Type  = !universe.tpd.typeOf(!tree)
+    def ref(sym: Symbol): Ref = !universe.tpd.ref(!sym)
+
+    object Name {
+      def unapply(tree: Tree): Option[Denotation] = !universe.tpd.NameUnapply(!tree)
+    }
+
+    object Select {
+      def apply(qual: Term, name: String): Term = !universe.tpd.Select(!qual, name)
+      def unapply(tree: Tree): Option[(Term, Symbol)] = !universe.tpd.SelectUnapply(!tree)
+    }
+
+    object Apply {
+      def apply(qual: Term, args: List[Term]): Term = !universe.tpd.Apply(!qual, !args)
+      def unapply(tree: Tree): Option[(Term, List[Term])] = !universe.tpd.ApplyUnapply(!tree)
+    }
+  }
+
+  implicit def tpd2splice(term: tpd.Stat): Stat = !universe.Splice(!term)
+  implicit class XtensionTypedStatTree(val tree: tpd.Stat) extends AnyVal {
+    def splice: Stat = !universe.Splice(!tree)
+  }
+
+  implicit class XtensionTypedTermTree(val tree: tpd.Term) extends AnyVal {
+    def tpe: Type = !universe.tpd.typeOf(!tree)
+    def select(name: String): tpd.Term = tpd.Select(tree, name)
+    def select(name: List[String]): tpd.Term = name.foldLeft(tree) {
+      case (qual, name) => tpd.Select(qual, name)
+    }
+    def apply(args: List[tpd.Term]): tpd.Term = tpd.Apply(tree, args)
   }
 }
