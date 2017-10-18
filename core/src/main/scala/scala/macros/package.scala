@@ -1,5 +1,7 @@
 package scala
 
+import scala.language.implicitConversions
+
 package object macros {
   import scala.language.implicitConversions
 
@@ -77,7 +79,8 @@ package object macros {
       def apply(init: Init): Term = !universe.TermNew(!init)
     }
     object If {
-      def apply(cond: Term, truep: Term, elsep: Term): Term = !universe.TermIf(!cond, !truep, !elsep)
+      def apply(cond: Term, truep: Term, elsep: Term): Term =
+        !universe.TermIf(!cond, !truep, !elsep)
     }
 
     type Param
@@ -115,9 +118,15 @@ package object macros {
     object Name {
       def apply(value: String): TypeTree = !universe.TypeName(value)
     }
+    object Select {
+      def apply(qual: Term, name: String): TypeTree = !universe.TypeSelect(!qual, name)
+    }
+    object Apply {
+      def apply(fun: TypeTree, args: List[TypeTree]): TypeTree = !universe.TypeApply(!fun, !args)
+    }
 
     type Bounds <: Tree
-    type Param  <: Tree
+    type Param <: Tree
     object Param {
       def apply(
           mods: List[Mod],
@@ -196,6 +205,7 @@ package object macros {
     type Def <: Tree
 
     def root: Term = !universe.typed.ref(!universe.root)
+    def typeOf(tree: Term): Type = !universe.typed.typeOf(!tree)
     def ref(sym: Symbol): Ref = !universe.typed.ref(!sym)
 
     object Name {
@@ -217,7 +227,8 @@ package object macros {
     }
 
     object If {
-      def apply(cond: Term, truep: Term, elsep: Term): Term = !universe.typed.If(!cond, !truep, !elsep)
+      def apply(cond: Term, truep: Term, elsep: Term): Term =
+        !universe.typed.If(!cond, !truep, !elsep)
     }
 
     object ValDef {

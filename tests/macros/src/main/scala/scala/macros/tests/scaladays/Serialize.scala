@@ -20,12 +20,17 @@ object Serialize {
     val instance = Term.fresh("instance")
     val param = Term.fresh("x")
     val buf = Term.fresh("buf")
-    val serializeTpe = Type.typeRef("scala.macros.tests.scaladays.Serialize")
+    val root =
+      Term
+        .Name("_root_")
+        .select("scala" :: "macros" :: "tests" :: "scaladays" :: Nil)
+    val serializeTpe = TypeTree.Select(root, "Serialize")
+    val append = "append"
 
     val fieldSerialization: List[Stat] = {
       val serializerss = T.caseFields.map { f =>
         val namePart = Lit.String("\"" + f.name + "\": ")
-        val appendName = Term.Apply(Term.Select(Term.Name(buf), "++="), namePart :: Nil)
+        val appendName = Term.Apply(Term.Select(Term.Name(buf), append), namePart :: Nil)
         val valueRef = Term.Select(Term.Name(param), f.name)
         val valuePart =
           Term
@@ -33,14 +38,14 @@ object Serialize {
             .select("scala")
             .select("Predef")
             .select("implicitly")
-            .applyType(serializeTpe.appliedTo(f.info :: Nil).toTypeTree :: Nil)
+            .applyType(TypeTree.Apply(serializeTpe, f.info.toTypeTree :: Nil) :: Nil)
             .select("apply")
             .apply(valueRef :: Nil)
-        val appendValue = Term.Name(buf).select("++=").apply(valuePart :: Nil)
+        val appendValue = Term.Name(buf).select(append).apply(valuePart :: Nil)
         List(appendName, appendValue)
       }
       val separators = serializerss.map(
-        _ => Term.Apply(Term.Select(Term.Name(buf), "++="), Lit.String(", ") :: Nil)
+        _ => Term.Apply(Term.Select(Term.Name(buf), append), Lit.String(", ") :: Nil)
       )
       serializerss.zip(separators).map({ case (ss, s) => ss :+ s }).flatten.dropRight(1)
     }
@@ -51,20 +56,22 @@ object Serialize {
       None,
       Term.New(
         Init(
-          Type.typeRef("scala.StringBuilder").toTypeTree,
+          TypeTree.Select(Term.Name("_root_").select("scala"), "StringBuilder"),
           Nil
         )
       )
     )
-    stats += Term.Apply(Term.Select(Term.Name(buf), "++="), List(Lit.String("{ ")))
+    val x = new StringBuilder
+    x ++= "a"
+    stats += Term.Apply(Term.Select(Term.Name(buf), append), List(Lit.String("{ ")))
     stats ++= fieldSerialization
-    stats += Term.Apply(Term.Select(Term.Name(buf), "++="), List(Lit.String(" }")))
+    stats += Term.Apply(Term.Select(Term.Name(buf), append), List(Lit.String(" }")))
     stats += Term.Select(Term.Name(buf), "toString")
     val defnObject: Stat = Defn.Object(
       List(),
       instance,
       Template(
-        List(Init(serializeTpe.appliedTo(T :: Nil).toTypeTree, Nil)),
+        List(Init(TypeTree.Apply(serializeTpe, T.toTypeTree :: Nil), Nil)),
         Self("", None),
         List(
           Defn.Def(
