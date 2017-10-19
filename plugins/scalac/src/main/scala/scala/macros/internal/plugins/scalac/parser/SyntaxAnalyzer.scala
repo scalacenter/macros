@@ -257,11 +257,11 @@ abstract class SyntaxAnalyzer extends NscSyntaxAnalyzer with ReflectToolkit {
         DefDef(mods4, name4, tparams4, vparamss4, tpt4, rhs4)
       }
       if (implDef.name.decoded.startsWith("getOrElse")) {
-        pprint.log(showRaw(shimDef))
-        pprint.log(showCode(implDef))
-        pprint.log(showCode(macroDef))
-        pprint.log(showCode(abiDef))
-        pprint.log(showCode(shimDef))
+//        pprint.log(showRaw(shimDef))
+//        pprint.log(showCode(implDef))
+//        pprint.log(showCode(macroDef))
+//        pprint.log(showCode(abiDef))
+//        pprint.log(showCode(shimDef))
       }
       val stats = List(macroDef)
       val mstats = List(shimDef, implDef, abiDef)

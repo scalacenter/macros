@@ -24,7 +24,9 @@ object Serialize {
       Term
         .Name("_root_")
         .select("scala" :: "macros" :: "tests" :: "scaladays" :: Nil)
-    val serializeTpe = TypeTree.Select(root, "Serialize")
+    val serializeTpe = Type.typeRef("scala.macros.tests.scaladays.Serialize")
+    val stringBuilderTpe = Type.typeRef("scala.collection.mutable.StringBuilder").toTypeTree
+    TypeTree.Select(Term.Name("_root_").select("scala"), "StringBuilder")
     val append = "append"
 
     val fieldSerialization: List[Stat] = {
@@ -38,7 +40,7 @@ object Serialize {
             .select("scala")
             .select("Predef")
             .select("implicitly")
-            .applyType(TypeTree.Apply(serializeTpe, f.info.toTypeTree :: Nil) :: Nil)
+            .applyType(serializeTpe.appliedTo(f.info :: Nil).toTypeTree :: Nil)
             .select("apply")
             .apply(valueRef :: Nil)
         val appendValue = Term.Name(buf).select(append).apply(valuePart :: Nil)
@@ -56,7 +58,7 @@ object Serialize {
       None,
       Term.New(
         Init(
-          TypeTree.Select(Term.Name("_root_").select("scala"), "StringBuilder"),
+          stringBuilderTpe,
           Nil
         )
       )
@@ -71,7 +73,7 @@ object Serialize {
       List(),
       instance,
       Template(
-        List(Init(TypeTree.Apply(serializeTpe, T.toTypeTree :: Nil), Nil)),
+        List(Init(serializeTpe.appliedTo(T :: Nil).toTypeTree, Nil)),
         Self("", None),
         List(
           Defn.Def(
@@ -85,10 +87,11 @@ object Serialize {
         )
       )
     )
-    Term.Block(
+    val result = Term.Block(
       defnObject ::
         Term.Name(instance) ::
         Nil
     )
+    result
   }
 }

@@ -276,20 +276,29 @@ case class ScalacUniverse(ctx: Context) extends macros.core.Universe with Flags 
   ): TypeParam = ???
 
   override def caseFields(tpe: Type): List[Denotation] =
-    typeMembers(tpe, sym => hasFlags(sym, CASE | VAL))
+    tpe.typeSymbol.caseFieldAccessors.map(sym => Denotation(tpe, sym))
   override def typeRef(path: String): Type = {
     // TODO(olafur) this will crash when path is not a class.
     val sym = ctx.mirror.staticClass(path)
     ctx.universe.TypeRef(ctx.universe.NoPrefix, sym, Nil)
   }
-  override def appliedType(tp: Type, args: List[Type]): Type =
-    ctx.universe.TypeRef(tp, tp.termSymbol, args)
+  override def appliedType(tp: Type, args: List[Type]): Type = {
+    ctx.universe.TypeRef(NoPrefix, tp.typeSymbol, args)
+  }
   override def typeTreeOf(tp: Type): TypeTree =
     ctx.universe.TypeTree(tp)
 
   override def denotSym(denot: Denotation): Symbol = denot.sym
-  override def denotInfo(denot: Denotation): Type =
-    denot.pre.memberInfo(denot.sym)
+  override def denotInfo(denot: Denotation): Type = {
+    val result = denot.pre.memberInfo(denot.sym)
+    result match {
+      // HACK(olafur): info for case fields return their nullary method type,
+      // here we unwrap the result type of the nullary method type to hide
+      // away this detail from users.
+      case NullaryMethodType(tpe) if denot.sym.isCaseAccessor => tpe
+      case _ => result
+    }
+  }
 
   def typeMembers(tpe: Type, f0: Symbol => Boolean): List[Denotation] = {
     val f1: Symbol => Boolean = sym =>
