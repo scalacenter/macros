@@ -1,5 +1,4 @@
 package scala.macros.tests
-package scaladays
 
 import scala.macros._
 
@@ -23,8 +22,8 @@ object Serialize {
     val root =
       Term
         .Name("_root_")
-        .select("scala" :: "macros" :: "tests" :: "scaladays" :: Nil)
-    val serializeTpe = Type.typeRef("scala.macros.tests.scaladays.Serialize")
+        .select("scala" :: "macros" :: "tests" :: Nil)
+    val serializeTpe = Type.typeRef("scala.macros.tests.Serialize")
     val stringBuilderTpe = Type.typeRef("scala.collection.mutable.StringBuilder").toTypeTree
     TypeTree.Select(Term.Name("_root_").select("scala"), "StringBuilder")
     val append = "append"

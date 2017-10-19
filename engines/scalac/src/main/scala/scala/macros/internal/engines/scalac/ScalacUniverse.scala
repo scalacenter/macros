@@ -111,61 +111,6 @@ case class ScalacUniverse(ctx: Context) extends macros.core.Universe with Flags 
       // TODO(olafur) is .setType(sym.tpe) correct?
       new c.TermName(sym.name.decoded).setSymbol(sym).setType(sym.tpe)
     }
-
-    def NameUnapply(tree: Tree): Option[Denotation] = tree match {
-      case id: ctx.universe.Ident
-          if id.name.isTermName
-            && id.tpe != null =>
-        Some(Denotation(id.tpe, id.tpe.termSymbol))
-      case _ => None
-    }
-
-    def Select(qual: Term, name: String): Term = {
-      val select = ctx.universe.Select(qual, ctx.universe.TermName(name))
-      // TODO(olafur) is .setType(...) correct here?
-      select.setType(
-        ctx.universe.TypeRef(qual.tpe, qual.tpe.member(ctx.universe.TermName(name)), Nil)
-      )
-    }
-    def SelectUnapply(tree: Tree): Option[(Term, Symbol)] = tree match {
-      case ctx.universe.Select(qual, name)
-          if name.isTermName
-            && tree.tpe != null =>
-        Some((qual, tree.tpe.termSymbol))
-      case _ => None
-    }
-
-    def Apply(fun: Term, args: List[Term]): Term = ctx.universe.Apply(fun, args)
-    def ApplyUnapply(tree: Tree): Option[(Term, List[Term])] = tree match {
-      case ctx.universe.Apply(fun, args) if tree.tpe != null => Some((fun, args))
-      case _ => None
-    }
-
-    def typed(tree: ctx.universe.Tree): Option[Tree] =
-      if (tree.tpe != null) Some(tree)
-      else None
-    override def FunctionUnapply(tree: Tree): Option[(List[Symbol], Term)] = typed(tree).collect {
-      case ctx.universe.Function(vparams, body) =>
-        vparams.map(_.symbol) -> body
-    }
-    override def If(cond: Term, trueb: Term, falseb: Term): Term =
-      ctx.universe.If(cond, trueb, falseb)
-    override def ValDef(rhs: Term, tpOpt: Option[Type], mutable: Boolean): Tree = {
-      require(rhs.tpe != null, s"rhs.tpe was null! rhs=$rhs")
-      val gsym = ctx.internal.enclosingOwner
-        .newTermSymbol(ctx.universe.TermName(ctx.freshName()))
-        .setInfo(rhs.tpe)
-      ctx.internal.valDef(gsym, ctx.internal.changeOwner(rhs, ctx.internal.enclosingOwner, gsym))
-    }
-    override def transform(tree: Tree)(pf: PartialFunction[Tree, Tree]): Tree = {
-      object transformer extends ctx.universe.Transformer {
-        override def transform(tree: ctx.universe.Tree): ctx.universe.Tree = {
-          // TODO(olafur) fix owner chains on matched tree nodes.
-          pf.lift(tree).getOrElse(super.transform(tree))
-        }
-      }
-      transformer.transform(tree)
-    }
   }
 
   // =====
@@ -337,7 +282,6 @@ case class ScalacUniverse(ctx: Context) extends macros.core.Universe with Flags 
   override def enclosingOwner: ctx.universe.Symbol =
     ctx.internal.enclosingOwner
   case class Mirror(c: Context)
-
   // ========================
   // Semantic
   // ========================

@@ -201,7 +201,7 @@ case class DottyUniverse(prefix: untpd.Tree)(implicit ctx: Context) extends macr
   object typed extends typedApi {
     type Tree = tpd.Tree
     type Term = tpd.Tree
-    type Def  = tpd.Tree
+    type Def = tpd.Tree
 
     def treePosition(tree: Tree): Position = Position(tree.pos)
     def treeSyntax(tree: Tree): String = tree.show
@@ -231,7 +231,7 @@ case class DottyUniverse(prefix: untpd.Tree)(implicit ctx: Context) extends macr
 
     def FunctionUnapply(tree: Tree): Option[(List[Symbol], Term)] = tree match {
       case tpd.Block(Nil, body) => FunctionUnapply(body)
-      case tpd.Block((meth : tpd.DefDef) :: Nil, _ : tpd.Closure) if meth.name == nme.ANON_FUN =>
+      case tpd.Block((meth: tpd.DefDef) :: Nil, _: tpd.Closure) if meth.name == nme.ANON_FUN =>
         Some((meth.vparamss.head.map(_.symbol), meth.rhs))
       case _ => None
     }
@@ -304,7 +304,6 @@ case class DottyUniverse(prefix: untpd.Tree)(implicit ctx: Context) extends macr
   }
   override def enclosingPosition: Position = Position(prefix.pos)
   override def enclosingOwner: Symbol = ctx.owner
-
 
   // =========
   // utilities

@@ -6,13 +6,8 @@ trait Universe extends UntypedTrees with TypedTrees {
 
   def fresh(prefix: String): String
 
- // =========
-  // Semantic
-  // =========
-  type Mirror
-
   type Symbol
-  def root: Symbol                     // root package symbol
+  def root: Symbol // _root_ package symbol
   def symName(sym: Symbol): String
   def symOwner(sym: Symbol): Option[Symbol]
 
@@ -26,19 +21,19 @@ trait Universe extends UntypedTrees with TypedTrees {
   def appliedType(tp: Type, args: List[Type]): Type
   def typeTreeOf(tp: Type): TypeTree
 
-  // =========
-  // Expansion
-  // =========
-  type Expansion
   def enclosingPosition: Position
   def enclosingOwner: Symbol
+
+  // For compilers
+  type Mirror
+  type Expansion
 }
 
-trait Input extends Any {
+trait Input {
   def path: Path
 }
 
-trait Position extends Any {
+trait Position {
   def line: Int
   def input: Input
 }

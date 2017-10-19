@@ -1,4 +1,4 @@
-package scala.macros.tests.sourcecode
+package scala.macros.tests
 
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -33,7 +33,7 @@ class SourcecodeSuite {
 
   @Test def fullName(): Unit = {
     val a = FullName.generate.value
-    val prefix = "scala.macros.tests.sourcecode.SourcecodeSuite.fullName"
+    val prefix = "scala.macros.tests.SourcecodeSuite.fullName"
     assertEquals(s"$prefix.a", a)
     def b = FullName.generate.value
     assertEquals(s"$prefix.b", b)
