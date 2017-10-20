@@ -18,7 +18,6 @@ import Symbols.NoSymbol
 case class DottyUniverse(prefix: untpd.Tree)(implicit ctx: Context) extends macros.core.Universe {
 
   type Tree = untpd.Tree
-  type Stat = untpd.Tree
   type Type = untpd.Tree
   type Term = untpd.Tree
   type Name = untpd.Tree
@@ -104,7 +103,7 @@ case class DottyUniverse(prefix: untpd.Tree)(implicit ctx: Context) extends macr
   def TermApplyType(fun: Term, targs: List[Type]): Term =
     untpd.TypeApply(fun, targs).autoPos
 
-  def TermBlock(stats: List[Stat]): Term = stats match {
+  def TermBlock(stats: List[Tree]): Term = stats match {
     case Nil => untpd.Block(stats, untpd.EmptyTree)
     case _ => untpd.Block(stats.init, stats.last)
   }
@@ -123,7 +122,7 @@ case class DottyUniverse(prefix: untpd.Tree)(implicit ctx: Context) extends macr
   def Template(
       inits: List[Init],
       self: Self,
-      stats: List[Stat]
+      stats: List[Tree]
   ): Template = {
     val constr = untpd.DefDef(nme.CONSTRUCTOR, Nil, Nil, untpd.TypeTree(), untpd.EmptyTree)
     untpd.Template(constr, inits, untpd.EmptyValDef, stats)
@@ -209,7 +208,7 @@ case class DottyUniverse(prefix: untpd.Tree)(implicit ctx: Context) extends macr
       name: TermName,
       init: List[Init],
       self: Self,
-      stats: List[Stat]
+      stats: List[Tree]
   ): Defn = {
     val templ = Template(init, self, stats)
     untpd

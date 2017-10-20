@@ -7,7 +7,7 @@ trait Universe {
   // Trees
   // =========
   type Tree
-  type Stat
+  type Defn
   type Type
   type Term
   type Name
@@ -21,7 +21,6 @@ trait Universe {
   type TypeBounds
   type TypeParam
   type Pat
-  type Defn
 
   def fresh(prefix: String): String
 
@@ -39,7 +38,7 @@ trait Universe {
   def TermApply(fun: Term, args: List[Term]): Term
   def TermApplyUnapply(arg: Any): Option[(Term, List[Term])]
   def TermApplyType(fun: Term, args: List[Type]): Term
-  def TermBlock(stats: List[Stat]): Term
+  def TermBlock(stats: List[Tree]): Term
   def LitString(value: String): Lit
   def LitInt(value: Int): Lit
   def Self(name: Name, decltpe: Option[Type]): Self
@@ -68,7 +67,7 @@ trait Universe {
       name: TermName,
       init: List[Init],
       self: Self,
-      stats: List[Stat]
+      stats: List[Tree]
   ): Defn
   def DefnVal(mods: List[Mod], name: TermName, decltpe: Option[Type], rhs: Term): Defn
   def DefnDef(

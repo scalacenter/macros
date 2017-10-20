@@ -120,7 +120,6 @@ case class ScalacUniverse(ctx: Context) extends macros.core.Universe with Flags 
 
   def fresh(prefix: String): String = g.freshTermName(prefix)(g.globalFreshNameCreator).toString
 
-  override type Stat = g.Tree
   implicit class XtensionStats(stats: List[g.Tree]) {
     // NOTE(xeno-by): The methods below are supposed to take care of statement-level desugaring/resugaring.
     // For more information, see this code from the early days of scalahost:
@@ -192,7 +191,7 @@ case class ScalacUniverse(ctx: Context) extends macros.core.Universe with Flags 
     }
   }
 
-  override def TermBlock(stats: List[Stat]): Term =
+  override def TermBlock(stats: List[Tree]): Term =
     g.gen.mkBlock(stats.toGStats)
 
   override type TermParam = g.ValDef
@@ -263,7 +262,7 @@ case class ScalacUniverse(ctx: Context) extends macros.core.Universe with Flags 
       name: TermName,
       init: List[Init],
       self: Self,
-      stats: List[Stat]
+      stats: List[Tree]
   ): Defn = {
     val templ = Template(init, self, stats)
     g.ModuleDef(mods.toGModifiers, name.toGTermName, templ.toGTemplate(g.Modifiers(), Nil))
@@ -285,7 +284,7 @@ case class ScalacUniverse(ctx: Context) extends macros.core.Universe with Flags 
   def Template(
       inits: List[Init],
       self: Self,
-      stats: List[Stat]
+      stats: List[Tree]
   ): Template =
     c.Template(Nil, inits, self, stats)
   override type Init = c.Init
@@ -409,7 +408,7 @@ case class ScalacUniverse(ctx: Context) extends macros.core.Universe with Flags 
       def name: g.Name = mname.name
     }
 
-    case class Template(early: List[Stat], inits: List[Init], self: Self, stats: List[Stat])
+    case class Template(early: List[Tree], inits: List[Init], self: Self, stats: List[Tree])
         extends g.Tree
 
     sealed trait Mod extends g.Tree
