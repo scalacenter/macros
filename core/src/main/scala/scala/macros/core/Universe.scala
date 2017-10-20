@@ -17,7 +17,6 @@ trait Universe {
   type Mod
   type Self
   type Init
-  type Template
   type TypeName
   type TypeBounds
   type TypeParam
@@ -45,7 +44,6 @@ trait Universe {
   def LitInt(value: Int): Lit
   def Self(name: Name, decltpe: Option[Type]): Self
   def Init(tpe: Type, name: Name, argss: List[List[Term]]): Init
-  def Template(inits: List[Init], self: Self, stats: List[Stat]): Template
   def TermNew(init: Init): Term
   def TermParam(
       mods: List[Mod],
@@ -65,7 +63,13 @@ trait Universe {
       vbounds: List[Type],
       cbounds: List[Type]
   ): TypeParam
-  def DefnObject(mods: List[Mod], name: TermName, templ: Template): Defn
+  def DefnObject(
+      mods: List[Mod],
+      name: TermName,
+      init: List[Init],
+      self: Self,
+      stats: List[Stat]
+  ): Defn
   def DefnVal(mods: List[Mod], name: TermName, decltpe: Option[Type], rhs: Term): Defn
   def DefnDef(
       mods: List[Mod],

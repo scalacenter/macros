@@ -207,14 +207,18 @@ case class DottyUniverse(prefix: untpd.Tree)(implicit ctx: Context) extends macr
   def DefnObject(
       mods: List[Mod],
       name: TermName,
-      templ: Template
-  ): Defn =
+      init: List[Init],
+      self: Self,
+      stats: List[Stat]
+  ): Defn = {
+    val templ = Template(init, self, stats)
     untpd
       .ModuleDef(
         name.asInstanceOf[untpd.Ident].name.asTermName,
         templ
       )
       .autoPos
+  }
 
   // =========
   // Semantic

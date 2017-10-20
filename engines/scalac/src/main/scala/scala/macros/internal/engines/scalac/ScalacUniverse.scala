@@ -261,14 +261,18 @@ case class ScalacUniverse(ctx: Context) extends macros.core.Universe with Flags 
   override def DefnObject(
       mods: List[Mod],
       name: TermName,
-      templ: Template
-  ): Defn =
+      init: List[Init],
+      self: Self,
+      stats: List[Stat]
+  ): Defn = {
+    val templ = Template(init, self, stats)
     g.ModuleDef(mods.toGModifiers, name.toGTermName, templ.toGTemplate(g.Modifiers(), Nil))
+  }
 
   // ========
   // Template
   // ========
-  override type Template = c.Template
+  type Template = c.Template
   implicit class XtensionTemplate(tree: Template) {
     def toGTemplate(gctorMods: g.Modifiers, gctorParamss: List[List[g.ValDef]]): g.Template = {
       val gearly = tree.early.toGStats
@@ -278,7 +282,7 @@ case class ScalacUniverse(ctx: Context) extends macros.core.Universe with Flags 
       g.gen.mkTemplate(gparents, gself, gctorMods, gctorParamss, gstats).setPos(tree.pos)
     }
   }
-  override def Template(
+  def Template(
       inits: List[Init],
       self: Self,
       stats: List[Stat]
