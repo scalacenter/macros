@@ -288,8 +288,8 @@ case class ScalacUniverse(ctx: Context) extends macros.core.Universe with Flags 
   ): Template =
     c.Template(Nil, inits, self, stats)
   override type Init = c.Init
-  override def Init(tpe: g.Tree, name: c.Name, argss: List[List[g.Tree]]): c.Init =
-    c.Init(tpe, name, argss)
+  override def Init(tpe: g.Tree, argss: List[List[g.Tree]]): c.Init =
+    c.Init(tpe, c.NameAnonymous(), argss)
   override type Self = c.Self
   override def Self(name: Name, decltpe: Option[Type]): Self =
     c.Self(name, decltpe)

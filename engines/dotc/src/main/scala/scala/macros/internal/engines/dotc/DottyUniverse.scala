@@ -116,7 +116,7 @@ case class DottyUniverse(prefix: untpd.Tree)(implicit ctx: Context) extends macr
       .ValDef(name.asInstanceOf[untpd.Ident].name.asTermName, decltpe.getOrElse(untpd.TypeTree()), untpd.EmptyTree)
       .autoPos
 
-  def Init(tpe: Type, name: Name, argss: List[List[Term]]): Init =
+  def Init(tpe: Type, argss: List[List[Term]]): Init =
     argss.foldLeft(tpe)(untpd.Apply)
 
   def Template(

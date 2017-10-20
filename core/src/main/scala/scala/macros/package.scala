@@ -153,8 +153,8 @@ package object macros {
   }
   type Init
   object Init {
-    def apply(tpe: Type, name: Name, argss: List[List[Term]]): Init =
-      !universe.Init(!tpe, !name, !argss)
+    def apply(tpe: Type, argss: List[List[Term]]): Init =
+      !universe.Init(!tpe, !argss)
   }
   type Mod
   type Defn <: Stat

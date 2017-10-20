@@ -54,7 +54,6 @@ object Serialize {
             Term.Name("_root_").select("scala"),
             Type.Name("StringBuilder")
           ),
-          Name(""),
           Nil
         )
       )
@@ -66,7 +65,7 @@ object Serialize {
     val defnObject: Stat = Defn.Object(
       List(),
       instance,
-      List(Init(Type.Apply(Type.Name("Serialize"), List(T)), Name(""), Nil)),
+      List(Init(Type.Apply(Type.Name("Serialize"), List(T)),  Nil)),
       Self(Name(""), None),
       List(
         Defn.Def(

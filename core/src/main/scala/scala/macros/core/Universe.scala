@@ -47,7 +47,7 @@ trait Universe {
   def LitString(value: String): Lit
   def LitInt(value: Int): Lit
   def Self(name: Name, decltpe: Option[Type]): Self
-  def Init(tpe: Type, name: Name, argss: List[List[Term]]): Init
+  def Init(tpe: Type, argss: List[List[Term]]): Init
   def TermNew(init: Init): Term
   def TermParam(
       mods: List[Mod],
