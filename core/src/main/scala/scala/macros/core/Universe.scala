@@ -7,20 +7,25 @@ trait Universe {
   // Trees
   // =========
   type Tree
-  type Defn
-  type Type
+
   type Term
-  type Name
   type TermName
   type TermParam
+
+  type Defn
+
+  type Type
+  type TypeName
+  type TypeParam
+  type TypeBounds
+
+  type Name
+
+  type Pat
   type Lit
   type Mod
   type Self
   type Init
-  type TypeName
-  type TypeBounds
-  type TypeParam
-  type Pat
 
   def fresh(prefix: String): String
 
