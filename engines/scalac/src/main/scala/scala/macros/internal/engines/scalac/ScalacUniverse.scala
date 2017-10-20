@@ -120,7 +120,6 @@ case class ScalacUniverse(ctx: Context) extends macros.core.Universe with Flags 
 
   def fresh(prefix: String): String = g.freshTermName(prefix)(g.globalFreshNameCreator).toString
 
-  override type Stat = g.Tree
   implicit class XtensionStats(stats: List[g.Tree]) {
     // NOTE(xeno-by): The methods below are supposed to take care of statement-level desugaring/resugaring.
     // For more information, see this code from the early days of scalahost:
@@ -153,7 +152,6 @@ case class ScalacUniverse(ctx: Context) extends macros.core.Universe with Flags 
   override def Name(value: String): Name =
     if (value.isEmpty) c.NameAnonymous()
     else c.NameIndeterminate(value)
-  type TermRef = g.Tree
 
   override type TermName = c.TermName
   override def TermName(value: String): TermName =
@@ -167,7 +165,7 @@ case class ScalacUniverse(ctx: Context) extends macros.core.Universe with Flags 
 
   override def TermSelect(qual: Term, name: TermName): Term =
     g.Select(qual, name.toGTermName)
-  override def TermSelectUnapply(arg: Any): Option[(TermRef, TermName)] = arg match {
+  override def TermSelectUnapply(arg: Any): Option[(Term, TermName)] = arg match {
     case g.Select(qual, name) => Some(qual -> new c.TermName(name.decoded))
     case _ => None
   }
@@ -193,7 +191,7 @@ case class ScalacUniverse(ctx: Context) extends macros.core.Universe with Flags 
     }
   }
 
-  override def TermBlock(stats: List[Stat]): Term =
+  override def TermBlock(stats: List[Tree]): Term =
     g.gen.mkBlock(stats.toGStats)
 
   override type TermParam = g.ValDef
@@ -221,15 +219,12 @@ case class ScalacUniverse(ctx: Context) extends macros.core.Universe with Flags 
   override def TypeNameSymbol(sym: Symbol): TypeName =
     TypeName(sym.name.decoded).setSymbol(sym)
 
-  override def TypeSelect(qual: TermRef, name: TypeName): Type =
+  override def TypeSelect(qual: Term, name: TypeName): Type =
     g.Select(qual, name.toGTypeName)
   override def TypeApply(tpe: Type, targs: List[Type]): Type =
     g.AppliedTypeTree(tpe, targs)
 
   type Pat = g.Tree
-  type PatVar = g.Bind
-  override def PatVar(name: c.TermName): PatVar =
-    g.Bind(name.toGTermName, g.Ident(g.nme.WILDCARD))
 
   // =====
   // Lit
@@ -244,20 +239,11 @@ case class ScalacUniverse(ctx: Context) extends macros.core.Universe with Flags 
   override type Defn = g.Tree
   override def DefnVal(
       mods: List[Mod],
-      pats: List[Pat],
+      name: TermName,
       decltpe: Option[Type],
       rhs: Term
   ): Defn = {
-    pats match {
-      case List(name @ g.Ident(_: g.TermName)) =>
-        val cname: TermName = name.toTermName
-        DefnVal(mods, List(PatVar(cname).setPos(name.pos)), decltpe, rhs)
-      case List(bind: g.Bind) =>
-        val name = bind.toTermName
-        g.ValDef(mods.toGModifiers, name.toGTermName, decltpe.getOrElse(g.TypeTree()), rhs)
-      case _ =>
-        ???
-    }
+    g.ValDef(mods.toGModifiers, name.toGTermName, decltpe.getOrElse(g.TypeTree()), rhs)
   }
   override def DefnDef(
       mods: List[Mod],
@@ -274,14 +260,18 @@ case class ScalacUniverse(ctx: Context) extends macros.core.Universe with Flags 
   override def DefnObject(
       mods: List[Mod],
       name: TermName,
-      templ: Template
-  ): Defn =
+      init: List[Init],
+      self: Self,
+      stats: List[Tree]
+  ): Defn = {
+    val templ = Template(init, self, stats)
     g.ModuleDef(mods.toGModifiers, name.toGTermName, templ.toGTemplate(g.Modifiers(), Nil))
+  }
 
   // ========
   // Template
   // ========
-  override type Template = c.Template
+  type Template = c.Template
   implicit class XtensionTemplate(tree: Template) {
     def toGTemplate(gctorMods: g.Modifiers, gctorParamss: List[List[g.ValDef]]): g.Template = {
       val gearly = tree.early.toGStats
@@ -291,15 +281,15 @@ case class ScalacUniverse(ctx: Context) extends macros.core.Universe with Flags 
       g.gen.mkTemplate(gparents, gself, gctorMods, gctorParamss, gstats).setPos(tree.pos)
     }
   }
-  override def Template(
+  def Template(
       inits: List[Init],
       self: Self,
-      stats: List[Stat]
+      stats: List[Tree]
   ): Template =
     c.Template(Nil, inits, self, stats)
   override type Init = c.Init
-  override def Init(tpe: g.Tree, name: c.Name, argss: List[List[g.Tree]]): c.Init =
-    c.Init(tpe, name, argss)
+  override def Init(tpe: g.Tree, argss: List[List[g.Tree]]): c.Init =
+    c.Init(tpe, c.NameAnonymous(), argss)
   override type Self = c.Self
   override def Self(name: Name, decltpe: Option[Type]): Self =
     c.Self(name, decltpe)
@@ -418,7 +408,7 @@ case class ScalacUniverse(ctx: Context) extends macros.core.Universe with Flags 
       def name: g.Name = mname.name
     }
 
-    case class Template(early: List[Stat], inits: List[Init], self: Self, stats: List[Stat])
+    case class Template(early: List[Tree], inits: List[Init], self: Self, stats: List[Tree])
         extends g.Tree
 
     sealed trait Mod extends g.Tree
@@ -461,7 +451,7 @@ case class ScalacUniverse(ctx: Context) extends macros.core.Universe with Flags 
 
     case class EnumeratorGuard(cond: Term) extends Enumerator
 
-    case class Importer(ref: TermRef, importees: List[Importee]) extends g.Tree
+    case class Importer(ref: Term, importees: List[Importee]) extends g.Tree
 
     sealed trait Importee extends g.RefTree
 

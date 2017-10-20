@@ -46,7 +46,7 @@ object Serialize {
     var stats = List.newBuilder[Stat]
     stats += Defn.Val(
       Nil,
-      List(Pat.Var(buf)),
+      buf,
       None,
       Term.New(
         Init(
@@ -54,7 +54,6 @@ object Serialize {
             Term.Name("_root_").select("scala"),
             Type.Name("StringBuilder")
           ),
-          Name(""),
           Nil
         )
       )
@@ -66,23 +65,21 @@ object Serialize {
     val defnObject: Stat = Defn.Object(
       List(),
       instance,
-      Template(
-        List(Init(Type.Apply(Type.Name("Serialize"), List(T)), Name(""), Nil)),
-        Self(Name(""), None),
-        List(
-          Defn.Def(
-            Nil,
-            Term.Name("apply"),
-            Nil,
-            List(List(Term.Param.apply(Nil, param, Some(T), None))),
-            Some(
-              Type.Select(
-                Term.Name("_root_").select("java").select("lang"),
-                Type.Name("String")
-              )
-            ),
-            Term.Block(stats.result())
-          )
+      List(Init(Type.Apply(Type.Name("Serialize"), List(T)),  Nil)),
+      Self(Name(""), None),
+      List(
+        Defn.Def(
+          Nil,
+          Term.Name("apply"),
+          Nil,
+          List(List(Term.Param.apply(Nil, param, Some(T), None))),
+          Some(
+            Type.Select(
+              Term.Name("_root_").select("java").select("lang"),
+              Type.Name("String")
+            )
+          ),
+          Term.Block(stats.result())
         )
       )
     )

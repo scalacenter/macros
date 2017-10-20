@@ -18,11 +18,9 @@ import Symbols.NoSymbol
 case class DottyUniverse(prefix: untpd.Tree)(implicit ctx: Context) extends macros.core.Universe {
 
   type Tree = untpd.Tree
-  type Stat = untpd.Tree
   type Type = untpd.Tree
   type Term = untpd.Tree
   type Name = untpd.Tree
-  type TermRef = untpd.Tree
   type TermName = untpd.Tree
   type Lit = untpd.Tree
   type Mod
@@ -37,7 +35,6 @@ case class DottyUniverse(prefix: untpd.Tree)(implicit ctx: Context) extends macr
   type TypeParam = untpd.TypeDef
 
   type Pat
-  type PatVar = untpd.Tree
 
   // =========
   // Utilities
@@ -91,7 +88,7 @@ case class DottyUniverse(prefix: untpd.Tree)(implicit ctx: Context) extends macr
     case ident: untpd.Ident =>
       untpd.Select(qual, ident.name).autoPos
   }
-  def TermSelectUnapply(arg: Any): Option[(TermRef, TermName)] = arg match {
+  def TermSelectUnapply(arg: Any): Option[(Term, TermName)] = arg match {
     case untpd.Select(t, name) if name.isTermName =>
       Some((t, untpd.Ident(name)))
     case _ => None
@@ -106,7 +103,7 @@ case class DottyUniverse(prefix: untpd.Tree)(implicit ctx: Context) extends macr
   def TermApplyType(fun: Term, targs: List[Type]): Term =
     untpd.TypeApply(fun, targs).autoPos
 
-  def TermBlock(stats: List[Stat]): Term = stats match {
+  def TermBlock(stats: List[Tree]): Term = stats match {
     case Nil => untpd.Block(stats, untpd.EmptyTree)
     case _ => untpd.Block(stats.init, stats.last)
   }
@@ -119,13 +116,13 @@ case class DottyUniverse(prefix: untpd.Tree)(implicit ctx: Context) extends macr
       .ValDef(name.asInstanceOf[untpd.Ident].name.asTermName, decltpe.getOrElse(untpd.TypeTree()), untpd.EmptyTree)
       .autoPos
 
-  def Init(tpe: Type, name: Name, argss: List[List[Term]]): Init =
+  def Init(tpe: Type, argss: List[List[Term]]): Init =
     argss.foldLeft(tpe)(untpd.Apply)
 
   def Template(
       inits: List[Init],
       self: Self,
-      stats: List[Stat]
+      stats: List[Tree]
   ): Template = {
     val constr = untpd.DefDef(nme.CONSTRUCTOR, Nil, Nil, untpd.TypeTree(), untpd.EmptyTree)
     untpd.Template(constr, inits, untpd.EmptyValDef, stats)
@@ -159,7 +156,7 @@ case class DottyUniverse(prefix: untpd.Tree)(implicit ctx: Context) extends macr
   def TypeNameSymbol(sym: Symbol): TypeName =
     tpd.ref(sym).asInstanceOf[TypeName].autoPos
 
-  def TypeSelect(qual: TermRef, name: TypeName): Type =
+  def TypeSelect(qual: Term, name: TypeName): Type =
     untpd.Select(qual, name.asInstanceOf[untpd.Ident].name.asTypeName)
 
   def TypeApply(tpe: Term, args: List[Type]): Type =
@@ -176,19 +173,13 @@ case class DottyUniverse(prefix: untpd.Tree)(implicit ctx: Context) extends macr
 
   def DefnVal(
       mods: List[Mod],
-      pats: List[Pat],
+      name: TermName,
       decltpe: Option[Type],
       rhs: Term
   ): Defn = {
-    val name = pats match {
-      case untpd.Ident(name) :: Nil =>
-        name.asTermName
-      case els => sys.error(els.toString())
-    }
-
     untpd
       .ValDef(
-        name,
+        name.asInstanceOf[untpd.Ident].name.asTermName,
         decltpe.getOrElse(untpd.TypeTree()),
         rhs
       )
@@ -215,16 +206,18 @@ case class DottyUniverse(prefix: untpd.Tree)(implicit ctx: Context) extends macr
   def DefnObject(
       mods: List[Mod],
       name: TermName,
-      templ: Template
-  ): Defn =
+      init: List[Init],
+      self: Self,
+      stats: List[Tree]
+  ): Defn = {
+    val templ = Template(init, self, stats)
     untpd
       .ModuleDef(
         name.asInstanceOf[untpd.Ident].name.asTermName,
         templ
       )
       .autoPos
-
-  def PatVar(name: TermName): PatVar = name
+  }
 
   // =========
   // Semantic

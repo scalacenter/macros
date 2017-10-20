@@ -102,11 +102,6 @@ package object macros {
         !universe.TermParam(!mods, !name, !decltpe, !default)
     }
   }
-  type Template
-  object Template {
-    def apply(inits: List[Init], self: Self, stats: List[Stat]): Template =
-      !universe.Template(!inits, !self, !stats)
-  }
   type Lit <: Term
   object Lit {
     type String <: Lit
@@ -158,16 +153,8 @@ package object macros {
   }
   type Init
   object Init {
-    def apply(tpe: Type, name: Name, argss: List[List[Term]]): Init =
-      !universe.Init(!tpe, !name, !argss)
-  }
-  type Pat
-  object Pat {
-    type Var <: Pat
-    object Var {
-      def apply(name: Term.Name): Pat.Var =
-        !universe.PatVar(!name)
-    }
+    def apply(tpe: Type, argss: List[List[Term]]): Init =
+      !universe.Init(!tpe, !argss)
   }
   type Mod
   type Defn <: Stat
@@ -176,11 +163,11 @@ package object macros {
     object Val {
       def apply(
           mods: List[Mod],
-          pats: List[Pat],
+          name: Term.Name,
           decltpe: Option[Type],
           rhs: Term
       ): Defn.Val =
-        !universe.DefnVal(!mods, !pats, !decltpe, !rhs)
+        !universe.DefnVal(!mods, !name, !decltpe, !rhs)
     }
     type Def <: Defn
     object Def {
@@ -199,9 +186,11 @@ package object macros {
       def apply(
           mods: List[Mod],
           name: Term.Name,
-          templ: Template
+          init: List[Init],
+          self: Self,
+          stats: List[Stat]
       ): Defn.Object =
-        !universe.DefnObject(!mods, !name, !templ)
+        !universe.DefnObject(!mods, !name, !init, !self, !stats)
     }
   }
 }
