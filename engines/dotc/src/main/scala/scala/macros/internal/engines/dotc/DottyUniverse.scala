@@ -22,7 +22,6 @@ case class DottyUniverse(prefix: untpd.Tree)(implicit ctx: Context) extends macr
   type Type = untpd.Tree
   type Term = untpd.Tree
   type Name = untpd.Tree
-  type TermRef = untpd.Tree
   type TermName = untpd.Tree
   type Lit = untpd.Tree
   type Mod
@@ -91,7 +90,7 @@ case class DottyUniverse(prefix: untpd.Tree)(implicit ctx: Context) extends macr
     case ident: untpd.Ident =>
       untpd.Select(qual, ident.name).autoPos
   }
-  def TermSelectUnapply(arg: Any): Option[(TermRef, TermName)] = arg match {
+  def TermSelectUnapply(arg: Any): Option[(Term, TermName)] = arg match {
     case untpd.Select(t, name) if name.isTermName =>
       Some((t, untpd.Ident(name)))
     case _ => None
@@ -159,7 +158,7 @@ case class DottyUniverse(prefix: untpd.Tree)(implicit ctx: Context) extends macr
   def TypeNameSymbol(sym: Symbol): TypeName =
     tpd.ref(sym).asInstanceOf[TypeName].autoPos
 
-  def TypeSelect(qual: TermRef, name: TypeName): Type =
+  def TypeSelect(qual: Term, name: TypeName): Type =
     untpd.Select(qual, name.asInstanceOf[untpd.Ident].name.asTypeName)
 
   def TypeApply(tpe: Term, args: List[Type]): Type =

@@ -11,7 +11,6 @@ trait Universe {
   type Type
   type Term
   type Name
-  type TermRef // NOTE(olafur) subject for removal
   type TermName // NOTE(olafur) subject for removal
   type TermParam
   type Lit
@@ -38,7 +37,7 @@ trait Universe {
   def TermNameSymbol(symbol: Symbol): TermName
   def TermNameUnapply(arg: Any): Option[String]
   def TermSelect(qual: Term, name: TermName): Term
-  def TermSelectUnapply(arg: Any): Option[(TermRef, TermName)]
+  def TermSelectUnapply(arg: Any): Option[(Term, TermName)]
   def TermApply(fun: Term, args: List[Term]): Term
   def TermApplyUnapply(arg: Any): Option[(Term, List[Term])]
   def TermApplyType(fun: Term, args: List[Type]): Term
@@ -57,7 +56,7 @@ trait Universe {
   ): TermParam
   def TypeName(value: String): TypeName
   def TypeNameSymbol(sym: Symbol): TypeName
-  def TypeSelect(qual: TermRef, name: TypeName): Type
+  def TypeSelect(qual: Term, name: TypeName): Type
   def TypeApply(tpe: Term, args: List[Type]): Type
   def TypeParam(
       mods: List[Mod],
