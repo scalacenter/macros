@@ -153,7 +153,6 @@ case class ScalacUniverse(ctx: Context) extends macros.core.Universe with Flags 
   override def Name(value: String): Name =
     if (value.isEmpty) c.NameAnonymous()
     else c.NameIndeterminate(value)
-  type Term = g.Tree
 
   override type TermName = c.TermName
   override def TermName(value: String): TermName =
@@ -227,9 +226,6 @@ case class ScalacUniverse(ctx: Context) extends macros.core.Universe with Flags 
     g.AppliedTypeTree(tpe, targs)
 
   type Pat = g.Tree
-  type PatVar = g.Bind
-  override def PatVar(name: c.TermName): PatVar =
-    g.Bind(name.toGTermName, g.Ident(g.nme.WILDCARD))
 
   // =====
   // Lit
@@ -244,20 +240,11 @@ case class ScalacUniverse(ctx: Context) extends macros.core.Universe with Flags 
   override type Defn = g.Tree
   override def DefnVal(
       mods: List[Mod],
-      pats: List[Pat],
+      name: TermName,
       decltpe: Option[Type],
       rhs: Term
   ): Defn = {
-    pats match {
-      case List(name @ g.Ident(_: g.TermName)) =>
-        val cname: TermName = name.toTermName
-        DefnVal(mods, List(PatVar(cname).setPos(name.pos)), decltpe, rhs)
-      case List(bind: g.Bind) =>
-        val name = bind.toTermName
-        g.ValDef(mods.toGModifiers, name.toGTermName, decltpe.getOrElse(g.TypeTree()), rhs)
-      case _ =>
-        ???
-    }
+    g.ValDef(mods.toGModifiers, name.toGTermName, decltpe.getOrElse(g.TypeTree()), rhs)
   }
   override def DefnDef(
       mods: List[Mod],

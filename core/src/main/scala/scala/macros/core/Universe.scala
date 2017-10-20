@@ -11,7 +11,7 @@ trait Universe {
   type Type
   type Term
   type Name
-  type TermName // NOTE(olafur) subject for removal
+  type TermName
   type TermParam
   type Lit
   type Mod
@@ -22,7 +22,6 @@ trait Universe {
   type TypeBounds
   type TypeParam
   type Pat
-  type PatVar // NOTE(olafur) subject for removal
   type Defn
 
   def fresh(prefix: String): String
@@ -67,7 +66,7 @@ trait Universe {
       cbounds: List[Type]
   ): TypeParam
   def DefnObject(mods: List[Mod], name: TermName, templ: Template): Defn
-  def DefnVal(mods: List[Mod], pats: List[Pat], decltpe: Option[Type], rhs: Term): Defn
+  def DefnVal(mods: List[Mod], name: TermName, decltpe: Option[Type], rhs: Term): Defn
   def DefnDef(
       mods: List[Mod],
       name: TermName,
@@ -76,7 +75,6 @@ trait Universe {
       decltpe: Option[Type],
       body: Term
   ): Defn
-  def PatVar(name: TermName): PatVar
 
   // =========
   // Semantic

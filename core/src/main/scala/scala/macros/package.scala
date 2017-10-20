@@ -161,14 +161,6 @@ package object macros {
     def apply(tpe: Type, name: Name, argss: List[List[Term]]): Init =
       !universe.Init(!tpe, !name, !argss)
   }
-  type Pat
-  object Pat {
-    type Var <: Pat
-    object Var {
-      def apply(name: Term.Name): Pat.Var =
-        !universe.PatVar(!name)
-    }
-  }
   type Mod
   type Defn <: Stat
   object Defn {
@@ -176,11 +168,11 @@ package object macros {
     object Val {
       def apply(
           mods: List[Mod],
-          pats: List[Pat],
+          name: Term.Name,
           decltpe: Option[Type],
           rhs: Term
       ): Defn.Val =
-        !universe.DefnVal(!mods, !pats, !decltpe, !rhs)
+        !universe.DefnVal(!mods, !name, !decltpe, !rhs)
     }
     type Def <: Defn
     object Def {

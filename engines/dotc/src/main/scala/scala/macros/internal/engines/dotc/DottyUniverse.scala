@@ -36,7 +36,6 @@ case class DottyUniverse(prefix: untpd.Tree)(implicit ctx: Context) extends macr
   type TypeParam = untpd.TypeDef
 
   type Pat
-  type PatVar = untpd.Tree
 
   // =========
   // Utilities
@@ -175,19 +174,13 @@ case class DottyUniverse(prefix: untpd.Tree)(implicit ctx: Context) extends macr
 
   def DefnVal(
       mods: List[Mod],
-      pats: List[Pat],
+      name: TermName,
       decltpe: Option[Type],
       rhs: Term
   ): Defn = {
-    val name = pats match {
-      case untpd.Ident(name) :: Nil =>
-        name.asTermName
-      case els => sys.error(els.toString())
-    }
-
     untpd
       .ValDef(
-        name,
+        name.asInstanceOf[untpd.Ident].name.asTermName,
         decltpe.getOrElse(untpd.TypeTree()),
         rhs
       )
@@ -222,8 +215,6 @@ case class DottyUniverse(prefix: untpd.Tree)(implicit ctx: Context) extends macr
         templ
       )
       .autoPos
-
-  def PatVar(name: TermName): PatVar = name
 
   // =========
   // Semantic

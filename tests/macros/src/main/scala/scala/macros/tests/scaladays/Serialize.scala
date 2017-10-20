@@ -46,7 +46,7 @@ object Serialize {
     var stats = List.newBuilder[Stat]
     stats += Defn.Val(
       Nil,
-      List(Pat.Var(buf)),
+      buf,
       None,
       Term.New(
         Init(
