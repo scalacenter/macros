@@ -1,5 +1,4 @@
 package scala.macros.tests
-package scaladays
 
 import scala.macros._
 
@@ -20,76 +19,78 @@ object Serialize {
     val instance = Term.fresh("instance")
     val param = Term.fresh("x")
     val buf = Term.fresh("buf")
+    val root =
+      Term
+        .Name("_root_")
+        .select("scala" :: "macros" :: "tests" :: Nil)
+    val serializeTpe = Type.typeRef("scala.macros.tests.Serialize")
+    val stringBuilderTpe = Type.typeRef("scala.collection.mutable.StringBuilder").toTypeTree
+    TypeTree.Select(Term.Name("_root_").select("scala"), "StringBuilder")
+    val append = "append"
 
     val fieldSerialization: List[Stat] = {
       val serializerss = T.caseFields.map { f =>
-        val namePart = Lit.String("\"" + f.name.value + "\": ")
-        val appendName = Term.Apply(Term.Select(buf, Term.Name("++=")), namePart :: Nil)
-        val valueRef = Term.Select(param, Term.Name(f.sym))
+        val namePart = Lit.String("\"" + f.name + "\": ")
+        val appendName = Term.Apply(Term.Select(Term.Name(buf), append), namePart :: Nil)
+        val valueRef = Term.Select(Term.Name(param), f.name)
         val valuePart =
           Term
             .Name("_root_")
             .select("scala")
             .select("Predef")
             .select("implicitly")
-            .applyType(Type.Apply(Type.Name("Serialize"), List(f.info)) :: Nil)
+            .applyType(serializeTpe.appliedTo(f.info :: Nil).toTypeTree :: Nil)
             .select("apply")
             .apply(valueRef :: Nil)
-        val appendValue = buf.select("++=").apply(valuePart :: Nil)
+        val appendValue = Term.Name(buf).select(append).apply(valuePart :: Nil)
         List(appendName, appendValue)
       }
       val separators = serializerss.map(
-        _ => Term.Apply(Term.Select(buf, Term.Name("++=")), Lit.String(", ") :: Nil)
+        _ => Term.Apply(Term.Select(Term.Name(buf), append), Lit.String(", ") :: Nil)
       )
       serializerss.zip(separators).map({ case (ss, s) => ss :+ s }).flatten.dropRight(1)
     }
     var stats = List.newBuilder[Stat]
     stats += Defn.Val(
       Nil,
-      List(Pat.Var(buf)),
+      buf,
       None,
       Term.New(
         Init(
-          Type.Select(
-            Term.Name("_root_").select("scala"),
-            Type.Name("StringBuilder")
-          ),
-          Name(""),
+          stringBuilderTpe,
           Nil
         )
       )
     )
-    stats += Term.Apply(Term.Select(buf, Term.Name("++=")), List(Lit.String("{ ")))
+    val x = new StringBuilder
+    x ++= "a"
+    stats += Term.Apply(Term.Select(Term.Name(buf), append), List(Lit.String("{ ")))
     stats ++= fieldSerialization
-    stats += Term.Apply(Term.Select(buf, Term.Name("++=")), List(Lit.String(" }")))
-    stats += Term.Select(buf, Term.Name("toString"))
+    stats += Term.Apply(Term.Select(Term.Name(buf), append), List(Lit.String(" }")))
+    stats += Term.Select(Term.Name(buf), "toString")
     val defnObject: Stat = Defn.Object(
       List(),
       instance,
       Template(
-        List(Init(Type.Apply(Type.Name("Serialize"), List(T)), Name(""), Nil)),
-        Self(Name(""), None),
+        List(Init(serializeTpe.appliedTo(T :: Nil).toTypeTree, Nil)),
+        Self("", None),
         List(
           Defn.Def(
             Nil,
-            Term.Name("apply"),
+            "apply",
             Nil,
-            List(List(Term.Param.apply(Nil, param, Some(T), None))),
-            Some(
-              Type.Select(
-                Term.Name("_root_").select("java").select("lang"),
-                Type.Name("String")
-              )
-            ),
+            List(List(Term.Param.apply(Nil, param, Some(T.toTypeTree), None))),
+            Some(TypeTree.Name("String")),
             Term.Block(stats.result())
           )
         )
       )
     )
-    Term.Block(
+    val result = Term.Block(
       defnObject ::
-        instance ::
+        Term.Name(instance) ::
         Nil
     )
+    result
   }
 }

@@ -93,8 +93,11 @@ trait Definitions { self: ReflectToolkit =>
     }
 
     private def apiRef(name: String): Tree = Select(scalaDot(TermName("macros")), TypeName(name))
+    private def tpdRef(name: String): Tree =
+      Select(Select(scalaDot(TermName("macros")), TermName("tpd")), TypeName(name))
     lazy val MacrosStat: Tree = apiRef("Stat")
     lazy val MacrosTerm: Tree = apiRef("Term")
+    lazy val MacrosTypedTerm: Tree = tpdRef("Term")
     lazy val MacrosType: Tree = apiRef("Type")
     lazy val MacrosMirror: Tree = apiRef("Mirror")
     lazy val MacrosExpansion: Tree = apiRef("Expansion")

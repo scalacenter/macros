@@ -80,7 +80,7 @@ object Expander {
                 .asInstanceOf[NamedType]
             )
           else prefix
-        val paramss: List[Object] = prefix2 :: targs ++ (argss.flatten :+ ctx)
+        val paramss: List[Object] = prefix2 :: targs.map(_.tpe) ++ (argss.flatten :+ ctx)
         try {
           val res = macros.internal.withUniverse(tb) {
             impl.invoke(null, paramss: _*).asInstanceOf[untpd.Tree]

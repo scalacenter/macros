@@ -18,26 +18,25 @@ import Symbols.NoSymbol
 case class DottyUniverse(prefix: untpd.Tree)(implicit ctx: Context) extends macros.core.Universe {
 
   type Tree = untpd.Tree
+
   type Stat = untpd.Tree
-  type Type = untpd.Tree
   type Term = untpd.Tree
-  type Name = untpd.Tree
-  type TermRef = untpd.Tree
-  type TermName = untpd.Tree
-  type Lit = untpd.Tree
+  type Lit = untpd.Literal
+
+  type Defn = untpd.Tree
+  type TermParam = untpd.ValDef
   type Mod
   type Self = untpd.ValDef
   type Init = untpd.Tree
   type Template = untpd.Template
-  type Defn = untpd.Tree
-  type TermParam = untpd.ValDef
 
-  type TypeName = untpd.Tree
-  type TypeBounds = untpd.Tree
+  type TypeTree = untpd.Tree
+  type TypeBounds = untpd.TypeBoundsTree
   type TypeParam = untpd.TypeDef
 
   type Pat
-  type PatVar = untpd.Tree
+
+  type Splice = untpd.TypedSplice
 
   // =========
   // Utilities
@@ -73,37 +72,19 @@ case class DottyUniverse(prefix: untpd.Tree)(implicit ctx: Context) extends macr
   // Trees
   // =========
 
-  def nameValue(name: Name): String = name.asInstanceOf[untpd.Ident].name.toString
-  def Name(value: String): Name = untpd.Ident(value.toTermName).autoPos
+  def Splice(term: typed.Tree): Splice = untpd.TypedSplice(term)
 
-  def TermName(value: String): TermName = untpd.Ident(value.toTermName).autoPos
-  def TermNameSymbol(symbol: Symbol): TermName = tpd.ref(symbol).asInstanceOf[TermName].autoPos
-  def TermNameUnapply(arg: Any): Option[String] = arg match {
-    case untpd.Ident(name) => Some(name.toString)
-    case _ => None
-  }
+  def TermName(value: String): Term = untpd.Ident(value.toTermName).autoPos
 
-  def TermSelect(qual: Term, name: TermName): Term = name match {
-    case untpd.Select(_, name) =>
-      // NOTE(olafur) TermName can sometimes be a Term.Select when
-      // tpd.ref(Symbol) is used to construct a TermName
-      untpd.Select(qual, name)
-    case ident: untpd.Ident =>
-      untpd.Select(qual, ident.name).autoPos
-  }
-  def TermSelectUnapply(arg: Any): Option[(TermRef, TermName)] = arg match {
-    case untpd.Select(t, name) if name.isTermName =>
-      Some((t, untpd.Ident(name)))
-    case _ => None
-  }
+  def TermSelect(qual: Term, name: String): Term =
+    untpd.Select(qual, name.toTermName).autoPos
+
+  def TermIf(cond: Term, thenp: Term, elsep: Term): Term =
+    untpd.If(cond, thenp, elsep).autoPos
 
   def TermApply(fun: Term, args: List[Term]): Term = untpd.Apply(fun, args).autoPos
-  def TermApplyUnapply(arg: Any): Option[(Term, List[Term])] = arg match {
-    case untpd.Apply(fun, args) => Some((fun, args))
-    case _ => None
-  }
 
-  def TermApplyType(fun: Term, targs: List[Type]): Term =
+  def TermApplyType(fun: Term, targs: List[TypeTree]): Term =
     untpd.TypeApply(fun, targs).autoPos
 
   def TermBlock(stats: List[Stat]): Term = stats match {
@@ -113,13 +94,14 @@ case class DottyUniverse(prefix: untpd.Tree)(implicit ctx: Context) extends macr
 
   def LitString(value: String): Lit = untpd.Literal(Constant(value)).autoPos
   def LitInt(value: Int): Lit = untpd.Literal(Constant(value)).autoPos
+  def LitNull: Lit = untpd.Literal(Constant(null)).autoPos
 
-  def Self(name: Name, decltpe: Option[Type]): Self =
+  def Self(name: String, decltpe: Option[TypeTree]): Self =
     untpd
-      .ValDef(name.asInstanceOf[untpd.Ident].name.asTermName, decltpe.getOrElse(untpd.TypeTree()), untpd.EmptyTree)
+      .ValDef(name.toTermName, decltpe.getOrElse(untpd.TypeTree()), untpd.EmptyTree)
       .autoPos
 
-  def Init(tpe: Type, name: Name, argss: List[List[Term]]): Init =
+  def Init(tpe: TypeTree, argss: List[List[Term]]): Init =
     argss.foldLeft(tpe)(untpd.Apply)
 
   def Template(
@@ -138,13 +120,13 @@ case class DottyUniverse(prefix: untpd.Tree)(implicit ctx: Context) extends macr
 
   def TermParam(
       mods: List[Mod],
-      name: Name,
-      decltpe: Option[Type],
+      name: String,
+      decltpe: Option[TypeTree],
       default: Option[Term]
   ): TermParam =
     untpd
       .ValDef(
-        name.asInstanceOf[untpd.Ident].name.asTermName,
+        name.toTermName,
         decltpe.getOrElse(untpd.TypeTree()),
         default.getOrElse(untpd.EmptyTree)
       )
@@ -153,85 +135,126 @@ case class DottyUniverse(prefix: untpd.Tree)(implicit ctx: Context) extends macr
       )
       .autoPos
 
-  def TypeName(value: String): TypeName =
-    untpd.Ident(value.toTypeName).autoPos
+  def TypeName(name: String): TypeTree =
+    untpd.Ident(name.toTypeName).autoPos
 
-  def TypeNameSymbol(sym: Symbol): TypeName =
-    tpd.ref(sym).asInstanceOf[TypeName].autoPos
+  def TypeSelect(qual: Term, name: String): TypeTree =
+    untpd.Select(qual, name.toTypeName)
 
-  def TypeSelect(qual: TermRef, name: TypeName): Type =
-    untpd.Select(qual, name.asInstanceOf[untpd.Ident].name.asTypeName)
-
-  def TypeApply(tpe: Term, args: List[Type]): Type =
+  def TypeApply(tpe: TypeTree, args: List[TypeTree]): TypeTree =
     untpd.AppliedTypeTree(tpe, args).autoPos
 
   def TypeParam(
       mods: List[Mod],
-      name: Name,
+      name: String,
       tparams: List[TypeParam],
       tbounds: TypeBounds,
-      vbounds: List[Type],
-      cbounds: List[Type]
+      vbounds: List[TypeTree],
+      cbounds: List[TypeTree]
   ): TypeParam = ???
 
   def DefnVal(
       mods: List[Mod],
-      pats: List[Pat],
-      decltpe: Option[Type],
+      name: String,
+      decltpe: Option[TypeTree],
       rhs: Term
-  ): Defn = {
-    val name = pats match {
-      case untpd.Ident(name) :: Nil =>
-        name.asTermName
-      case els => sys.error(els.toString())
-    }
-
+  ): Defn =
     untpd
       .ValDef(
-        name,
+        name.toTermName,
         decltpe.getOrElse(untpd.TypeTree()),
         rhs
       )
       .autoPos
-  }
 
   def DefnDef(
       mods: List[Mod],
-      name: TermName,
+      name: String,
       tparams: List[TypeParam],
       paramss: List[List[TermParam]],
-      decltpe: Option[Type],
+      decltpe: Option[TypeTree],
       body: Term
-  ): Defn = {
+  ): Defn =
     untpd.DefDef(
-      name.asInstanceOf[untpd.Ident].name.asTermName,
+      name.toTermName,
       tparams,
       paramss,
       decltpe.getOrElse(untpd.TypeTree()),
       body
     )
-  }
 
   def DefnObject(
       mods: List[Mod],
-      name: TermName,
+      name: String,
       templ: Template
   ): Defn =
     untpd
       .ModuleDef(
-        name.asInstanceOf[untpd.Ident].name.asTermName,
+        name.toTermName,
         templ
       )
       .autoPos
 
-  def PatVar(name: TermName): PatVar = name
-
   // =========
+  // typed trees
+  // =========
+  object typed extends typedApi {
+    type Tree = tpd.Tree
+    type Term = tpd.Tree
+    type Def = tpd.Tree
+
+    def treePosition(tree: Tree): Position = Position(tree.pos)
+    def treeSyntax(tree: Tree): String = tree.show
+    def treeStructure(tree: Tree): String = unsupported
+
+    def symOf(tree: Def): Symbol = tree.symbol
+    def typeOf(tree: Term): Type = tree.tpe
+    def ref(sym: Symbol): Term = tpd.ref(sym)
+
+    // only for terms, no extractor for type trees
+    def NameUnapply(tree: Tree): Option[Denotation] = tree match {
+      case id: tpd.Ident if id.name.isTermName => Some(id.tpe.asInstanceOf[Types.NamedType].denot)
+      case _ => None
+    }
+
+    def Select(qual: Term, name: String): Term = tpd.Select(qual, name.toTermName)
+    def SelectUnapply(tree: Tree): Option[(Term, Symbol)] = tree match {
+      case tpd.Select(qual, name) if name.isTermName => Some((qual, tree.tpe.termSymbol))
+      case _ => None
+    }
+
+    def Apply(fun: Term, args: List[Term]): Term = tpd.Apply(fun, args)
+    def ApplyUnapply(tree: Tree): Option[(Term, List[Term])] = tree match {
+      case tpd.Apply(fun, args) => Some((fun, args))
+      case _ => None
+    }
+
+    def FunctionUnapply(tree: Tree): Option[(List[Symbol], Term)] = tree match {
+      case tpd.Block(Nil, body) => FunctionUnapply(body)
+      case tpd.Block((meth: tpd.DefDef) :: Nil, _: tpd.Closure) if meth.name == nme.ANON_FUN =>
+        Some((meth.vparamss.head.map(_.symbol), meth.rhs))
+      case _ => None
+    }
+
+    def If(cond: Term, thenp: Term, elsep: Term): Term = tpd.If(cond, thenp, elsep)
+    def ValDef(rhs: Term, tpOpt: Option[Type], mutable: Boolean): Tree = {
+      val flags = if (mutable) Flags.Mutable else Flags.EmptyFlags
+      val vsym = ctx.newSymbol(
+        ctx.owner,
+        NameKinds.UniqueName.fresh("temp".toTermName),
+        flags,
+        tpOpt.getOrElse(rhs.tpe)
+      )
+      tpd.ValDef(vsym, rhs)
+    }
+  }
+
   // Semantic
   // =========
   type Mirror = Context
   type Symbol = Symbols.Symbol
-  def symName(sym: Symbol): Name = untpd.Ident(sym.name)
+  def root: Symbol = ctx.definitions.RootClass
+  def symName(sym: Symbol): String = sym.name.show
   def symOwner(sym: Symbol): Option[Symbol] = {
     val owner = sym.maybeOwner
     if (owner == NoSymbol) None
@@ -239,12 +262,11 @@ case class DottyUniverse(prefix: untpd.Tree)(implicit ctx: Context) extends macr
   }
 
   type Denotation = Denotations.Denotation
-  def denotInfo(denot: Denotation): Type = untpd.TypeTree(denot.info)
-  def denotName(denot: Denotation): Name = untpd.Ident(denot.symbol.name)
+  def denotInfo(denot: Denotation): Type = denot.info
   def denotSym(denot: Denotation): Symbol = denot.symbol
 
-  def caseFields(tpe: Type): List[Denotation] = {
-    val tp = tpe.asInstanceOf[tpd.Tree].tpe
+  type Type = Types.Type
+  def caseFields(tp: Type): List[Denotation] = {
     tp.memberDenots(
         Types.fieldFilter,
         (name, buf) => {
@@ -253,6 +275,9 @@ case class DottyUniverse(prefix: untpd.Tree)(implicit ctx: Context) extends macr
       )
       .toList
   }
+  def typeRef(path: String): Type = ctx.staticRef(path.toTypeName, false).symbol.typeRef
+  def appliedType(tp: Type, args: List[Type]): Type = Types.AppliedType(tp, args)
+  def typeTreeOf(tp: Type): TypeTree = untpd.TypedSplice(tpd.TypeTree(tp))
 
   // =========
   // Expansion
@@ -270,4 +295,30 @@ case class DottyUniverse(prefix: untpd.Tree)(implicit ctx: Context) extends macr
   }
   override def enclosingPosition: Position = Position(prefix.pos)
   override def enclosingOwner: Symbol = ctx.owner
+
+  // =========
+  // utilities
+  // =========
+  def ensureOwner(tree: tpd.Tree, owner: Symbol): tpd.Tree = {
+    val froms = getOwners(tree)
+    froms.foldRight(tree) { (from, acc) =>
+      if (from eq owner) acc
+      else new tpd.TreeOps(acc).changeOwner(from, owner)
+    }
+  }
+
+  def getOwners(tree: tpd.Tree): List[Symbol] = {
+    import scala.collection.mutable.Set
+    val owners = Set.empty[Symbol]
+    new tpd.TreeTraverser {
+      def traverse(tree: tpd.Tree)(implicit ctx: Context): Unit = tree match {
+        case tree: tpd.DefTree if tree.symbol.exists =>
+          owners += tree.symbol.owner
+        case _ =>
+          traverseChildren(tree)
+      }
+    }.traverse(tree)
+
+    owners.toList
+  }
 }

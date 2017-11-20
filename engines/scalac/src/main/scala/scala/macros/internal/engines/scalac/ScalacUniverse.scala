@@ -7,8 +7,266 @@ import scala.reflect.internal.{Flags => gf}
 import scala.reflect.macros.contexts.Context
 
 case class ScalacUniverse(ctx: Context) extends macros.core.Universe with Flags {
-  val g = ctx.universe
+  self =>
   import ctx.universe._
+
+  // ========================
+  // Trees
+  // ========================
+  override type Tree = ctx.universe.Tree
+  override type Splice = ctx.universe.Tree
+  override type Stat = ctx.universe.Tree
+  override type Term = ctx.universe.Tree
+  type Ref = ctx.universe.RefTree
+  override type TermParam = ctx.universe.ValDef
+  type Pat = ctx.universe.Tree
+
+  override def treeStructure(tree: Tree): String = ctx.universe.showRaw(tree)
+  override def treeSyntax(tree: Tree): String = ctx.universe.showCode(tree)
+  override def treePosition(tree: Tree): Position = Position(tree.pos)
+
+  def fresh(prefix: String): String =
+    ctx.universe.freshTermName(prefix)(ctx.universe.globalFreshNameCreator).toString
+
+  implicit class XtensionStats(stats: List[ctx.universe.Tree]) {
+    // NOTE(xeno-by): The methods below are supposed to take care of statement-level desugaring/resugaring.
+    // For more information, see this code from the early days of scalahost:
+    // https://github.com/xeno-by/scalahost/blob/4ca12dfa3f204b91efe2eba3e5991dbb6ea1879d/interface/src/main/scala/scala/meta/internal/hosts/scalac/converters/ToMtree.scala#L131-L284.
+    // For even more information, check out this code from even earlier days:
+    // TreeInfo.untypecheckedTemplBody (from the Scala compiler).
+    def toGStats: List[ctx.universe.Tree] = {
+      // TODO: implement me
+      stats
+    }
+    def toStats: List[ctx.universe.Tree] = {
+      // TODO: implement me
+      stats
+    }
+  }
+  implicit class XtensionGTermName(gtree: ctx.universe.SymTree with ctx.universe.NameTree) {
+    def toTermName: Term = TermName(gtree.name.decoded).copyAttrs(gtree)
+  }
+
+  override def Splice(term: typed.Tree): Splice = term //untpd.TypedSplice(term)
+
+  override def TermName(value: String): Term =
+    new c.TermName(value)
+
+  override def TermSelect(qual: Term, name: String): Term =
+    ctx.universe.Select(qual, name)
+
+  override def TermApply(fun: Term, args: List[Term]): Term =
+    ctx.universe.Apply(fun, args)
+
+  override def TermApplyType(fun: Term, targs: List[TypeTree]): Term =
+    ctx.universe.TypeApply(fun, targs)
+
+  override def TermNew(init: Init): Term =
+    ctx.universe.New(init.mtpe, init.argss).setPos(init.pos)
+
+  override def TermIf(cond: Term, truep: Term, elsep: Term): Term =
+    ctx.universe.If(cond, truep, elsep)
+
+  override def LitNull: Lit = ctx.universe.Literal(ctx.universe.Constant(null))
+
+  implicit class XtensionInit(tree: Init) {
+    def toGParent: ctx.universe.Tree = {
+      ctx.universe.build.SyntacticApplied(tree.mtpe, tree.argss).setPos(tree.pos)
+    }
+    def toGNew: ctx.universe.Tree = {
+      ctx.universe.New(tree.mtpe, tree.argss).setPos(tree.pos)
+    }
+  }
+
+  override def TermBlock(stats: List[Stat]): Term =
+    ctx.universe.gen.mkBlock(stats.toGStats)
+
+  override def TermParam(
+      mods: List[Mod],
+      name: String,
+      decltpe: Option[TypeTree],
+      default: Option[Term]
+  ): TermParam = {
+    val gname = ctx.universe.TermName(name)
+    val gtpt = decltpe.getOrElse(ctx.universe.TypeTree())
+    val gdefault = default.getOrElse(ctx.universe.EmptyTree)
+    ctx.universe.ValDef(mods.toGModifiers | gf.PARAM, gname, gtpt, gdefault)
+  }
+
+  // ===========
+  // Typed trees
+  // ===========
+  object typed extends typedApi {
+    type Tree = ctx.universe.Tree
+    type Term = ctx.universe.Tree
+    type Def = ctx.universe.Tree
+
+    def treePosition(tree: Tree): Position = Position(tree.pos)
+    def treeSyntax(tree: Tree): String = self.treeSyntax(tree)
+    def treeStructure(tree: Tree): String = self.treeStructure(tree)
+
+    def symOf(tree: Def): Symbol = tree.symbol
+    def typeOf(tree: Term): Type = tree.tpe
+    def ref(sym: Symbol): Term = {
+      // TODO(olafur) is .setType(sym.tpe) correct?
+      new c.TermName(sym.name.decoded).setSymbol(sym).setType(sym.tpe)
+    }
+  }
+
+  // =====
+  // Lit
+  // =====
+  override type Lit = ctx.universe.Literal
+  override def LitString(value: String): Lit = ctx.universe.Literal(ctx.universe.Constant(value))
+  override def LitInt(value: Int): Lit = ctx.universe.Literal(ctx.universe.Constant(value))
+
+  // =====
+  // Defn
+  // =====
+  override type Defn = ctx.universe.Tree
+  override def DefnVal(
+      mods: List[Mod],
+      name: String,
+      decltpe: Option[TypeTree],
+      rhs: Term
+  ): Defn = {
+    val gname = ctx.universe.TermName(name)
+    ctx.universe.ValDef(mods.toGModifiers, gname, decltpe.getOrElse(ctx.universe.TypeTree()), rhs)
+  }
+  override def DefnDef(
+      mods: List[Mod],
+      name: String,
+      tparams: List[TypeParam],
+      paramss: List[List[TermParam]],
+      decltpe: Option[TypeTree],
+      body: Term
+  ): Defn = {
+    val gparamss = paramss // TODO: view bounds, context bounds
+    val gtpt = decltpe.getOrElse(ctx.universe.TypeTree())
+    val gname = ctx.universe.TermName(name)
+    ctx.universe.DefDef(mods.toGModifiers, gname, tparams, gparamss, gtpt, body)
+  }
+  override def DefnObject(
+      mods: List[Mod],
+      name: String,
+      templ: Template
+  ): Defn = {
+    val gname = ctx.universe.TermName(name)
+    ctx.universe.ModuleDef(
+      mods.toGModifiers,
+      gname,
+      templ.toGTemplate(ctx.universe.Modifiers(), Nil)
+    )
+  }
+
+  // ========
+  // Template
+  // ========
+  override type Template = c.Template
+  implicit class XtensionTemplate(tree: Template) {
+    def toGTemplate(
+        gctorMods: ctx.universe.Modifiers,
+        gctorParamss: List[List[ctx.universe.ValDef]]
+    ): ctx.universe.Template = {
+      val gearly = tree.early.toGStats
+      val gparents = tree.inits.map(_.toGParent)
+      val gself = tree.self.toGSelf
+      val gstats = gearly ++ tree.stats.toGStats
+      ctx.universe.gen.mkTemplate(gparents, gself, gctorMods, gctorParamss, gstats).setPos(tree.pos)
+    }
+  }
+  override def Template(
+      inits: List[Init],
+      self: Self,
+      stats: List[Stat]
+  ): Template =
+    c.Template(Nil, inits, self, stats)
+  override type Init = c.Init
+  override def Init(tpe: ctx.universe.Tree, argss: List[List[ctx.universe.Tree]]): c.Init =
+    c.Init(tpe, c.NameAnonymous(), argss)
+  override type Self = c.Self
+  override def Self(name: String, decltpe: Option[TypeTree]): Self =
+    c.Self(new c.TermName(name), decltpe)
+  implicit class XtensionSelf(self: Self) {
+    def toGSelf: ctx.universe.ValDef = {
+      val gname = self.mname match {
+        case name: c.TermName => name.name.toTermName
+        case _ => ctx.universe.nme.WILDCARD
+      }
+      val gmods = ctx.universe.Modifiers(gf.PRIVATE)
+      val gtpt = self.decltpe.getOrElse(ctx.universe.TypeTree())
+      ctx.universe.ValDef(gmods, gname, gtpt, ctx.universe.EmptyTree).setPos(self.pos)
+    }
+  }
+
+  // =====
+  // Types
+  // =====
+  override type Type = ctx.universe.Type
+  override type TypeTree = ctx.universe.Tree
+  override type TypeParam = ctx.universe.TypeDef
+  override def TypeName(value: String): TypeTree =
+    new c.TypeName(value)
+  override def TypeSelect(qual: Term, name: String): TypeTree =
+    ctx.universe.Select(qual, ctx.universe.TypeName(name))
+  override def TypeApply(tpe: TypeTree, targs: List[TypeTree]): TypeTree =
+    ctx.universe.AppliedTypeTree(tpe, targs)
+  override def TypeParam(
+      mods: List[Mod],
+      name: String,
+      tparams: List[TypeParam],
+      tbounds: TypeBounds,
+      vbounds: List[TypeTree],
+      cbounds: List[TypeTree]
+  ): TypeParam = ???
+
+  override def caseFields(tpe: Type): List[Denotation] =
+    tpe.typeSymbol.caseFieldAccessors.map(sym => Denotation(tpe, sym))
+  override def typeRef(path: String): Type = {
+    // TODO(olafur) this will crash when path is not a class.
+    val sym = ctx.mirror.staticClass(path)
+    ctx.universe.TypeRef(ctx.universe.NoPrefix, sym, Nil)
+  }
+  override def appliedType(tp: Type, args: List[Type]): Type = {
+    ctx.universe.TypeRef(NoPrefix, tp.typeSymbol, args)
+  }
+  override def typeTreeOf(tp: Type): TypeTree =
+    ctx.universe.TypeTree(tp)
+
+  override def denotSym(denot: Denotation): Symbol = denot.sym
+  override def denotInfo(denot: Denotation): Type = {
+    val result = denot.pre.memberInfo(denot.sym)
+    result match {
+      // HACK(olafur): info for case fields return their nullary method type,
+      // here we unwrap the result type of the nullary method type to hide
+      // away this detail from users.
+      case NullaryMethodType(tpe) if denot.sym.isCaseAccessor => tpe
+      case _ => result
+    }
+  }
+
+  def typeMembers(tpe: Type, f0: Symbol => Boolean): List[Denotation] = {
+    val f1: Symbol => Boolean = sym =>
+      f0(sym) && !sym.name.endsWith(ctx.universe.nme.LOCAL_SUFFIX_STRING)
+    tpe.members.sorted.withFilter(f1).map(sym => Denotation(tpe, sym))
+  }
+
+  def typeMembers(tpe: Type, name: String, f: Symbol => Boolean): List[Denotation] = {
+    // TODO. Leveraging tpe.members(Name) may be more efficient.
+    typeMembers(tpe, sym => f(sym) && sym.name.decoded == name)
+  }
+
+  // ====
+  // Mods
+  // ====
+  type Mod = ctx.universe.Tree
+  implicit class XtensionMods(mods: List[Mod]) {
+    def toGModifiers: ctx.universe.Modifiers = {
+      // TODO: implement me
+      ctx.universe.Modifiers()
+    }
+  }
+
   // =========
   // Expansion
   // =========
@@ -16,26 +274,26 @@ case class ScalacUniverse(ctx: Context) extends macros.core.Universe with Flags 
   case class Input(underlying: SourceFile) extends macros.core.Input {
     def path: Path = underlying.file.file.toPath
   }
-  case class Position(underlying: g.Position) extends macros.core.Position {
+  case class Position(underlying: ctx.universe.Position) extends macros.core.Position {
     override def input: Input = Input(underlying.source)
     override def line: Int = underlying.line
   }
   override def enclosingPosition: Position = Position(ctx.enclosingPosition)
-  override def enclosingOwner: g.Symbol = ctx.internal.enclosingOwner.asInstanceOf[g.Symbol]
+  override def enclosingOwner: ctx.universe.Symbol =
+    ctx.internal.enclosingOwner
   case class Mirror(c: Context)
-
   // ========================
   // Semantic
   // ========================
-  override type Symbol = g.Symbol
+  override type Symbol = ctx.universe.Symbol
+  override def root: Symbol = ctx.universe.rootMirror.RootClass
   override def symOwner(sym: Symbol): Option[Symbol] = {
     val owner = sym.owner
     if (owner == NoSymbol) None
     else Some(owner)
   }
-  override def symName(sym: Symbol): Name =
-    if (sym.isTerm) TermNameSymbol(sym)
-    else TypeNameSymbol(sym)
+  override def symName(sym: Symbol): String =
+    sym.name.decoded
   private def symFlags(sym0: Symbol): Long = {
     val sym = {
       if (sym0.isModuleClass) sym0.asClass.module
@@ -44,7 +302,7 @@ case class ScalacUniverse(ctx: Context) extends macros.core.Universe with Flags 
     }
 
     def has(flag: Long): Boolean = sym.hasFlag(flag)
-    val isObject = sym.isModule && !has(gf.PACKAGE) && sym.name != g.nme.PACKAGE
+    val isObject = sym.isModule && !has(gf.PACKAGE) && sym.name != ctx.universe.nme.PACKAGE
     val isAccessor = has(gf.ACCESSOR) || has(gf.PARAMACCESSOR)
 
     val definitionFlags = {
@@ -59,10 +317,11 @@ case class ScalacUniverse(ctx: Context) extends macros.core.Universe with Flags 
       if (sym.isType && has(gf.PARAM)) flags |= TYPEPARAM
       if (isObject) flags |= OBJECT
       if (has(gf.PACKAGE)) flags |= PACKAGE
-      if (sym.isModule && sym.name == g.nme.PACKAGE) flags |= PACKAGEOBJECT
+      if (sym.isModule && sym.name == ctx.universe.nme.PACKAGE) flags |= PACKAGEOBJECT
       if (sym.isClass && !has(gf.TRAIT)) flags |= CLASS
       if (sym.isClass && has(gf.TRAIT)) flags |= TRAIT
-      if (maybeValOrVar && (has(gf.MUTABLE) || g.nme.isSetterName(sym.name))) flags |= VAR
+      if (maybeValOrVar && (has(gf.MUTABLE) || ctx.universe.nme.isSetterName(sym.name)))
+        flags |= VAR
       if (maybeValOrVar && !(has(gf.LOCAL) && has(gf.PARAMACCESSOR))) flags |= VAL
       flags
     }
@@ -78,7 +337,8 @@ case class ScalacUniverse(ctx: Context) extends macros.core.Universe with Flags 
         if (has(gf.PRIVATE) && !has(gf.PARAMACCESSOR)) flags |= PRIVATE
         // TODO: `private[pkg] class C` doesn't have PRIVATE in its flags,
         // so we need to account for that!
-        if (sym.hasAccessBoundary && gpriv != g.NoSymbol && !has(gf.PROTECTED)) flags |= PRIVATE
+        if (sym.hasAccessBoundary && gpriv != ctx.universe.NoSymbol && !has(gf.PROTECTED))
+          flags |= PRIVATE
       }
       flags
     }
@@ -105,285 +365,22 @@ case class ScalacUniverse(ctx: Context) extends macros.core.Universe with Flags 
     val symFlag = symFlags(sym)
     (symFlag & flags) == flags
   }
-  case class Denotation(pre: g.Type, sym: g.Symbol) {
+  case class Denotation(pre: ctx.universe.Type, sym: ctx.universe.Symbol) {
     final override def toString = s"$sym in $pre"
   }
-
-  // ========================
-  // Trees
-  // ========================
-
-  override type Tree = g.Tree
-  override def treeStructure(tree: Tree): String = g.showRaw(tree)
-  override def treeSyntax(tree: Tree): String = g.showCode(tree)
-  override def treePosition(tree: Tree): Position = Position(tree.pos)
-
-  def fresh(prefix: String): String = g.freshTermName(prefix)(g.globalFreshNameCreator).toString
-
-  override type Stat = g.Tree
-  implicit class XtensionStats(stats: List[g.Tree]) {
-    // NOTE(xeno-by): The methods below are supposed to take care of statement-level desugaring/resugaring.
-    // For more information, see this code from the early days of scalahost:
-    // https://github.com/xeno-by/scalahost/blob/4ca12dfa3f204b91efe2eba3e5991dbb6ea1879d/interface/src/main/scala/scala/meta/internal/hosts/scalac/converters/ToMtree.scala#L131-L284.
-    // For even more information, check out this code from even earlier days:
-    // TreeInfo.untypecheckedTemplBody (from the Scala compiler).
-    def toGStats: List[g.Tree] = {
-      // TODO: implement me
-      stats
-    }
-    def toStats: List[g.Tree] = {
-      // TODO: implement me
-      stats
-    }
-  }
-  override type Term = g.Tree
-  type Ref = g.RefTree
-  override type Name = c.Name
-  implicit class XtensionGTermName(gtree: g.SymTree with g.NameTree) {
-    def toTermName: TermName = TermName(gtree.name.decoded).copyAttrs(gtree)
-  }
-  implicit class XtensionTermName(tree: TermName) {
-    // TODO(olafur) attribute name with same type as parent select.
-    def toGTermName: g.TermName = tree.name.toTermName
-  }
-  implicit class XtensionTypeName(tree: TypeName) {
-    def toGTypeName: g.TypeName = tree.name.toTypeName
-  }
-  override def nameValue(name: Name): String = name.value
-  override def Name(value: String): Name =
-    if (value.isEmpty) c.NameAnonymous()
-    else c.NameIndeterminate(value)
-  type TermRef = g.Tree
-
-  override type TermName = c.TermName
-  override def TermName(value: String): TermName =
-    new c.TermName(value)
-  override def TermNameSymbol(sym: Symbol): TermName =
-    TermName(sym.name.decoded).setSymbol(sym)
-  override def TermNameUnapply(arg: Any): Option[String] = arg match {
-    case t: c.TermName => Some(t.value)
-    case _ => None
-  }
-
-  override def TermSelect(qual: Term, name: TermName): Term =
-    g.Select(qual, name.toGTermName)
-  override def TermSelectUnapply(arg: Any): Option[(TermRef, TermName)] = arg match {
-    case g.Select(qual, name) => Some(qual -> new c.TermName(name.decoded))
-    case _ => None
-  }
-
-  override def TermApply(fun: Term, args: List[Term]): Term =
-    g.Apply(fun, args)
-  override def TermApplyUnapply(arg: Any): Option[(Term, List[Term])] = arg match {
-    case g.Apply(fun, args) => Some(fun -> args)
-    case _ => None
-  }
-
-  override def TermApplyType(fun: Term, targs: List[Type]): Term =
-    g.TypeApply(fun, targs)
-
-  override def TermNew(init: Init): Term =
-    g.New(init.mtpe, init.argss).setPos(init.pos)
-  implicit class XtensionInit(tree: Init) {
-    def toGParent: g.Tree = {
-      g.build.SyntacticApplied(tree.mtpe, tree.argss).setPos(tree.pos)
-    }
-    def toGNew: g.Tree = {
-      g.New(tree.mtpe, tree.argss).setPos(tree.pos)
-    }
-  }
-
-  override def TermBlock(stats: List[Stat]): Term =
-    g.gen.mkBlock(stats.toGStats)
-
-  override type TermParam = g.ValDef
-  override def TermParam(
-      mods: List[Mod],
-      name: Name,
-      decltpe: Option[Type],
-      default: Option[Term]
-  ): TermParam = {
-    val gname = name match {
-      case name: c.TermName => name.toGTermName
-      case _ => g.nme.WILDCARD
-    }
-    val gtpt = decltpe.getOrElse(g.TypeTree())
-    val gdefault = default.getOrElse(g.EmptyTree)
-    g.ValDef(mods.toGModifiers | gf.PARAM, gname, gtpt, gdefault)
-  }
-
-  // =====
-  // Types
-  // =====
-  override type TypeName = c.TypeName
-  override def TypeName(value: String): TypeName =
-    new c.TypeName(value)
-  override def TypeNameSymbol(sym: Symbol): TypeName =
-    TypeName(sym.name.decoded).setSymbol(sym)
-
-  override def TypeSelect(qual: TermRef, name: TypeName): Type =
-    g.Select(qual, name.toGTypeName)
-  override def TypeApply(tpe: Type, targs: List[Type]): Type =
-    g.AppliedTypeTree(tpe, targs)
-
-  type Pat = g.Tree
-  type PatVar = g.Bind
-  override def PatVar(name: c.TermName): PatVar =
-    g.Bind(name.toGTermName, g.Ident(g.nme.WILDCARD))
-
-  // =====
-  // Lit
-  // =====
-  override type Lit = g.Literal
-  override def LitString(value: String): Lit = g.Literal(g.Constant(value))
-  override def LitInt(value: Int): Lit = g.Literal(g.Constant(value))
-
-  // =====
-  // Defn
-  // =====
-  override type Defn = g.Tree
-  override def DefnVal(
-      mods: List[Mod],
-      pats: List[Pat],
-      decltpe: Option[Type],
-      rhs: Term
-  ): Defn = {
-    pats match {
-      case List(name @ g.Ident(_: g.TermName)) =>
-        val cname: TermName = name.toTermName
-        DefnVal(mods, List(PatVar(cname).setPos(name.pos)), decltpe, rhs)
-      case List(bind: g.Bind) =>
-        val name = bind.toTermName
-        g.ValDef(mods.toGModifiers, name.toGTermName, decltpe.getOrElse(g.TypeTree()), rhs)
-      case _ =>
-        ???
-    }
-  }
-  override def DefnDef(
-      mods: List[Mod],
-      name: TermName,
-      tparams: List[TypeParam],
-      paramss: List[List[TermParam]],
-      decltpe: Option[Type],
-      body: Term
-  ): Defn = {
-    val gparamss = paramss // TODO: view bounds, context bounds
-    val gtpt = decltpe.getOrElse(g.TypeTree())
-    g.DefDef(mods.toGModifiers, name.toGTermName, tparams, gparamss, gtpt, body)
-  }
-  override def DefnObject(
-      mods: List[Mod],
-      name: TermName,
-      templ: Template
-  ): Defn =
-    g.ModuleDef(mods.toGModifiers, name.toGTermName, templ.toGTemplate(g.Modifiers(), Nil))
-
-  // ========
-  // Template
-  // ========
-  override type Template = c.Template
-  implicit class XtensionTemplate(tree: Template) {
-    def toGTemplate(gctorMods: g.Modifiers, gctorParamss: List[List[g.ValDef]]): g.Template = {
-      val gearly = tree.early.toGStats
-      val gparents = tree.inits.map(_.toGParent)
-      val gself = tree.self.toGSelf
-      val gstats = gearly ++ tree.stats.toGStats
-      g.gen.mkTemplate(gparents, gself, gctorMods, gctorParamss, gstats).setPos(tree.pos)
-    }
-  }
-  override def Template(
-      inits: List[Init],
-      self: Self,
-      stats: List[Stat]
-  ): Template =
-    c.Template(Nil, inits, self, stats)
-  override type Init = c.Init
-  override def Init(tpe: g.Tree, name: c.Name, argss: List[List[g.Tree]]): c.Init =
-    c.Init(tpe, name, argss)
-  override type Self = c.Self
-  override def Self(name: Name, decltpe: Option[Type]): Self =
-    c.Self(name, decltpe)
-  implicit class XtensionSelf(self: Self) {
-    def toGSelf: g.ValDef = {
-      val gname = self.mname match {
-        case name: c.TermName => name.toGTermName
-        case _ => g.nme.WILDCARD
-      }
-      val gmods = g.Modifiers(gf.PRIVATE)
-      val gtpt = self.decltpe.getOrElse(g.TypeTree())
-      g.ValDef(gmods, gname, gtpt, g.EmptyTree).setPos(self.pos)
-    }
-  }
-
-  // =====
-  // Types
-  // =====
-  override type TypeParam = g.TypeDef
-  def TypeParam(
-      mods: List[Mod],
-      name: Name,
-      tparams: List[TypeParam],
-      tbounds: TypeBounds,
-      vbounds: List[Type],
-      cbounds: List[Type]
-  ): TypeParam = ???
-  override type Type = g.Tree
-  implicit class XtensionToType(gtpe: g.Type) {
-    def toType: Type = {
-      gtpe match {
-        case g.NullaryMethodType(gtpe) => gtpe.toType
-        case tpe => g.TypeTree(gtpe)
-      }
-    }
-  }
-  implicit class XtensionToGType(tpe: Type) {
-    def toGType: g.Type = tpe match {
-      case gtpt: g.TypeTree => gtpt.tpe
-      case _ => ???
-    }
-  }
-
-  override def caseFields(tpe: Type): List[Denotation] =
-    typeMembers(tpe, sym => hasFlags(sym, CASE | VAL))
-
-  override def denotName(denot: Denotation): Name = symName(denot.sym)
-  override def denotSym(denot: Denotation): Symbol = denot.sym
-  override def denotInfo(denot: Denotation): Type =
-    denot.pre.memberInfo(denot.sym).toType
-
-  def typeMembers(tpe: Type, f0: Symbol => Boolean): List[Denotation] = {
-    val f1: Symbol => Boolean = sym => f0(sym) && !sym.name.endsWith(g.nme.LOCAL_SUFFIX_STRING)
-    tpe.toGType.members.sorted.withFilter(f1).map(sym => Denotation(tpe.toGType, sym))
-  }
-
-  def typeMembers(tpe: Type, name: String, f: Symbol => Boolean): List[Denotation] = {
-    // TODO. Leveraging tpe.members(Name) may be more efficient.
-    typeMembers(tpe, sym => f(sym) && sym.name.decoded == name)
-  }
-
-  type Mod = g.Tree
-  implicit class XtensionMods(mods: List[Mod]) {
-    def toGModifiers: g.Modifiers = {
-      // TODO: implement me
-      g.Modifiers()
-    }
-  }
-
-  // ==========
-  // Extensions
-  // ==========
 
   // ========================
   // Custom trees
   // ========================
   val c: customTrees.type = customTrees
   object customTrees {
-    sealed trait Name extends g.RefTree {
+    type TypedSplice
+    sealed trait Name extends ctx.universe.RefTree {
       def value: String
-      def qualifier: g.Tree = g.EmptyTree
-      def name: g.Name = {
-        if (this.isInstanceOf[TypeName]) g.TypeName(value).encode
-        else g.TermName(value).encode
+      def qualifier: ctx.universe.Tree = ctx.universe.EmptyTree
+      def name: ctx.universe.Name = {
+        if (this.isInstanceOf[TypeName]) ctx.universe.TypeName(value).encode
+        else ctx.universe.TermName(value).encode
       }
     }
 
@@ -397,31 +394,36 @@ case class ScalacUniverse(ctx: Context) extends macros.core.Universe with Flags 
     // that are stats, i.e. they can be returned from macros.
     // As a result, we can't define them as completely unrelated classes, because then
     // scalac will be confused should the metaprogrammer decided to return those trees in expansion.
-    // Luckily, not only g.Tree is not sealed, but also g.Ident is not final.
+    // Luckily, not only ctx.universe.Tree is not sealed, but also ctx.universe.Ident is not final.
 
-    class TermName(val value: String) extends g.Ident(g.TermName(value).encode) with Name {
-      override def qualifier: g.Tree = super[Name].qualifier
-      override val name: g.Name = super[Name].name
+    class TermName(val value: String)
+        extends ctx.universe.Ident(ctx.universe.TermName(value).encode)
+        with Name {
+      override def qualifier: ctx.universe.Tree = super[Name].qualifier
+      override val name: ctx.universe.Name = super[Name].name
     }
 
-    class TypeName(val value: String) extends g.Ident(g.TypeName(value).encode) with Name {
-      override def qualifier: g.Tree = super[Name].qualifier
-      override val name: g.Name = super[Name].name
+    class TypeName(val value: String)
+        extends ctx.universe.Ident(ctx.universe.TypeName(value).encode)
+        with Name {
+      override def qualifier: ctx.universe.Tree = super[Name].qualifier
+      override val name: ctx.universe.Name = super[Name].name
     }
 
-    case class Init(mtpe: Type, mname: Name, argss: List[List[Term]]) extends g.RefTree {
-      def qualifier: g.Tree = g.EmptyTree
-      def name: g.Name = mname.name
+    case class Init(mtpe: TypeTree, mname: Name, argss: List[List[Term]])
+        extends ctx.universe.RefTree {
+      def qualifier: ctx.universe.Tree = ctx.universe.EmptyTree
+      def name: ctx.universe.Name = mname.name
     }
 
-    case class Self(mname: Name, decltpe: Option[Type]) extends g.DefTree {
-      def name: g.Name = mname.name
+    case class Self(mname: Name, decltpe: Option[TypeTree]) extends ctx.universe.DefTree {
+      def name: ctx.universe.Name = mname.name
     }
 
     case class Template(early: List[Stat], inits: List[Init], self: Self, stats: List[Stat])
-        extends g.Tree
+        extends ctx.universe.Tree
 
-    sealed trait Mod extends g.Tree
+    sealed trait Mod extends ctx.universe.Tree
 
     case class ModAnnot(init: Init) extends Mod
 
@@ -453,7 +455,7 @@ case class ScalacUniverse(ctx: Context) extends macros.core.Universe with Flags 
 
     case class ModMacro() extends Mod
 
-    sealed trait Enumerator extends g.Tree
+    sealed trait Enumerator extends ctx.universe.Tree
 
     case class EnumeratorGenerator(pat: Pat, rhs: Term) extends Enumerator
 
@@ -461,28 +463,28 @@ case class ScalacUniverse(ctx: Context) extends macros.core.Universe with Flags 
 
     case class EnumeratorGuard(cond: Term) extends Enumerator
 
-    case class Importer(ref: TermRef, importees: List[Importee]) extends g.Tree
+    case class Importer(ref: ctx.universe.Tree, importees: List[Importee]) extends ctx.universe.Tree
 
-    sealed trait Importee extends g.RefTree
+    sealed trait Importee extends ctx.universe.RefTree
 
     case class ImporteeWildcard() extends Importee {
-      def qualifier: g.Tree = g.EmptyTree
-      def name: g.Name = g.nme.WILDCARD
+      def qualifier: ctx.universe.Tree = ctx.universe.EmptyTree
+      def name: ctx.universe.Name = ctx.universe.nme.WILDCARD
     }
 
     case class ImporteeName(mname: Name) extends Importee {
-      def qualifier: g.Tree = g.EmptyTree
-      def name: g.Name = mname.name
+      def qualifier: ctx.universe.Tree = ctx.universe.EmptyTree
+      def name: ctx.universe.Name = mname.name
     }
 
     case class ImporteeRename(mname: Name, mrename: Name) extends Importee {
-      def qualifier: g.Tree = g.EmptyTree
-      def name: g.Name = mrename.name
+      def qualifier: ctx.universe.Tree = ctx.universe.EmptyTree
+      def name: ctx.universe.Name = mrename.name
     }
 
     case class ImporteeUnimport(mname: Name) extends Importee {
-      def qualifier: g.Tree = g.EmptyTree
-      def name: g.Name = g.nme.WILDCARD
+      def qualifier: ctx.universe.Tree = ctx.universe.EmptyTree
+      def name: ctx.universe.Name = ctx.universe.nme.WILDCARD
     }
   }
 }

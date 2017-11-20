@@ -1,5 +1,4 @@
 package scala.macros.tests
-package scaladays
 
 import org.junit._
 import org.junit.runner._

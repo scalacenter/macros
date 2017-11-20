@@ -152,7 +152,7 @@ abstract class SyntaxAnalyzer extends NscSyntaxAnalyzer with ReflectToolkit {
             case AppliedTypeTree(fun2 @ Select(_, tpnme.REPEATED_PARAM_CLASS_NAME), List(tpt2)) =>
               AppliedTypeTree(fun2, List(cExprOf(tpt2)))
             case _ =>
-              AppliedTypeTree(Select(Ident(cname2), TypeName("Expr")), List(tpt2))
+              Select(Ident(cname2), TypeName("Tree"))
           }
         }
         def cWeakTypeTagOf(tpt2: Tree): Tree = atPos(tpt2.pos) {
@@ -201,9 +201,10 @@ abstract class SyntaxAnalyzer extends NscSyntaxAnalyzer with ReflectToolkit {
         val tparams3 = Nil
         val thisParamName3 = unit.freshTermName("prefix$")
         val vparamss3 = {
-          val thisParam3 = atPos(tree.pos)(ValDef(NoMods, thisParamName3, MacrosTerm, EmptyTree))
+          val thisParam3 =
+            atPos(tree.pos)(ValDef(NoMods, thisParamName3, MacrosTypedTerm, EmptyTree))
           val vvparams3 = vparamss.flatten.map(p => {
-            val tpt3 = if (isMacroAnnotation) MacrosStat else MacrosTerm
+            val tpt3 = if (isMacroAnnotation) MacrosStat else MacrosTypedTerm
             atPos(p.pos)(ValDef(NoMods, p.name, tpt3, EmptyTree))
           })
           val vtparams3 = tparams.map(p => {
@@ -275,7 +276,7 @@ abstract class SyntaxAnalyzer extends NscSyntaxAnalyzer with ReflectToolkit {
           val defnArgDef = q"""
             val $defnArgName = {
               try {
-                annottees.map(_.tree.asInstanceOf[_root_.scala.macros.Stat]) match {
+                annottees.map(_.asInstanceOf[_root_.scala.macros.Stat]) match {
                   case _root_.scala.Seq(tree) => tree
                   case trees => _root_.scala.macros.Term.Block(trees.toList)
                 }
@@ -291,7 +292,7 @@ abstract class SyntaxAnalyzer extends NscSyntaxAnalyzer with ReflectToolkit {
             q"""
               val $argName = {
                 try {
-                  ${vvparam.name}.tree.asInstanceOf[_root_.scala.macros.Term]
+                  ${vvparam.name}.asInstanceOf[_root_.scala.macros.tpd.Term]
                 } catch {
                   case ex: _root_.java.lang.ClassCastException => failMacroEngine(ex)
                 }
@@ -303,7 +304,7 @@ abstract class SyntaxAnalyzer extends NscSyntaxAnalyzer with ReflectToolkit {
             q"""
               val $argName = {
                 try {
-                  val tpt = $cName.universe.TypeTree(${vtparam.name}.tpe)
+                  val tpt = ${vtparam.name}.tpe
                   tpt.asInstanceOf[_root_.scala.macros.Type]
                 } catch {
                   case ex: _root_.java.lang.ClassCastException => failMacroEngine(ex)
@@ -371,7 +372,7 @@ abstract class SyntaxAnalyzer extends NscSyntaxAnalyzer with ReflectToolkit {
         val scalacUniverse = invokeEngineMethod(ScalacUniverse, "apply", $cName)
         _root_.scala.macros.internal.withUniverse(scalacUniverse) {
           val $thisArgName = {
-            try $cName.macroApplication.asInstanceOf[_root_.scala.macros.Term]
+            try $cName.prefix.tree.asInstanceOf[_root_.scala.macros.tpd.Term]
             catch { case ex: _root_.java.lang.ClassCastException => failMacroEngine(ex) }
           }
           ..$otherArgDefs
@@ -388,7 +389,7 @@ abstract class SyntaxAnalyzer extends NscSyntaxAnalyzer with ReflectToolkit {
             catch { case ex: _root_.java.lang.ClassCastException => failMacroEngine(ex) }
           }
           val result = $implName($thisArgName, ..$otherArgNames)(..$capabilityArgNames)
-          $cName.Expr[_root_.scala.Nothing](result.asInstanceOf[$cName.Tree])
+          result.asInstanceOf[$cName.Tree]
         }
       """
     }
