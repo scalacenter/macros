@@ -1,7 +1,7 @@
 package scala.macros.internal
 package trees
 
-import scala.macros.internal.prettyprinters.EOL
+import scala.compat.Platform.EOL
 
 object Errors {
   final val QuasiquotesRequireCompilerSupport =

@@ -2,6 +2,7 @@ package scala.macros.internal
 package plugins.scalac
 package parser
 
+import scala.compat.Platform.EOL
 import scala.reflect.internal.Flags // no wildcard import because of ambiguity with Tokens._
 import scala.tools.nsc.ast.parser.{SyntaxAnalyzer => NscSyntaxAnalyzer, BracePatch}
 import scala.tools.nsc.Phase
@@ -328,8 +329,8 @@ abstract class SyntaxAnalyzer extends NscSyntaxAnalyzer with ReflectToolkit {
         def failMacroEngine(ex: Exception): _root_.scala.Nothing = {
           val requiredEngine = ${"new-style " + engineVersion.toString}
           var msg = "macro cannot be expanded, because it was compiled by an incompatible engine"
-          msg += (_root_.scala.macros.internal.prettyprinters.EOL + " found   : " + foundEngine)
-          msg += (_root_.scala.macros.internal.prettyprinters.EOL + " required: " + requiredEngine)
+          msg += (_root_.scala.compat.Platform.EOL + " found   : " + foundEngine)
+          msg += (_root_.scala.compat.Platform.EOL + " required: " + requiredEngine)
           ex.printStackTrace
           $cName.abort($cName.enclosingPosition, msg)
         }

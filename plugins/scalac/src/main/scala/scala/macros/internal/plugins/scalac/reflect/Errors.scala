@@ -3,7 +3,7 @@ package plugins.scalac
 package reflect
 
 import scala.macros.internal.config.BuildInfo
-import scala.macros.internal.prettyprinters.EOL
+import scala.compat.Platform.EOL
 
 trait Errors { self: ReflectToolkit =>
   import global._

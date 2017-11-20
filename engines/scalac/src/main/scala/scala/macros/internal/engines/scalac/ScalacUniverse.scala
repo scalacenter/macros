@@ -1,7 +1,6 @@
 package scala.macros.internal.engines.scalac
 
 import java.nio.file.Path
-import scala.macros.semantic.Flags
 import scala.reflect.internal.util.SourceFile
 import scala.reflect.internal.{Flags => gf}
 import scala.reflect.macros.contexts.Context

@@ -1,8 +1,6 @@
 package scala.macros
 package config
 
-import scala.macros.internal.prettyprinters._
-
 // NOTE: This class models the versioning strategy of Scala macros.
 // It is important to have Version in core to have an explicitly defined
 // and programmatically accessible compatibility story.
@@ -24,11 +22,13 @@ final case class Version(
     patch: Int,
     snapshot: String,
     build: String
-) extends Pretty {
-  protected def syntax(p: Prettyprinter): Unit = {
-    p.raw(s"$major.$minor.$patch")
-    if (snapshot.nonEmpty) p.raw(s"-$snapshot")
-    if (build.nonEmpty) p.raw(s"+$build")
+) {
+  override def toString: String = {
+    val sb = new StringBuilder
+    sb.append(s"$major.$minor.$patch")
+    if (snapshot.nonEmpty) sb.append(s"-$snapshot")
+    if (build.nonEmpty) sb.append(s"+$build")
+    sb.toString()
   }
 }
 
