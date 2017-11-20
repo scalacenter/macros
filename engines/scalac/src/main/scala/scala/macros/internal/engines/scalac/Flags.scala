@@ -1,5 +1,4 @@
-package scala.macros
-package semantic
+package scala.macros.internal.engines.scalac
 
 private[macros] trait Flags {
   final val VAL: Long = 1 << 0
