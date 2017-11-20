@@ -152,7 +152,6 @@ abstract class SyntaxAnalyzer extends NscSyntaxAnalyzer with ReflectToolkit {
             case AppliedTypeTree(fun2 @ Select(_, tpnme.REPEATED_PARAM_CLASS_NAME), List(tpt2)) =>
               AppliedTypeTree(fun2, List(cExprOf(tpt2)))
             case _ =>
-              val tpe = TypeTree(NothingTpe)
               Select(Ident(cname2), TypeName("Tree"))
           }
         }
@@ -255,13 +254,6 @@ abstract class SyntaxAnalyzer extends NscSyntaxAnalyzer with ReflectToolkit {
           atPos(rhs.pos)(vargss4.foldLeft(core4: Tree)((curr, args) => Apply(curr, args)))
         }
         DefDef(mods4, name4, tparams4, vparamss4, tpt4, rhs4)
-      }
-      if (implDef.name.decoded.startsWith("getOrElse")) {
-//        pprint.log(showRaw(shimDef))
-//        pprint.log(showCode(implDef))
-//        pprint.log(showCode(macroDef))
-//        pprint.log(showCode(abiDef))
-//        pprint.log(showCode(shimDef))
       }
       val stats = List(macroDef)
       val mstats = List(shimDef, implDef, abiDef)

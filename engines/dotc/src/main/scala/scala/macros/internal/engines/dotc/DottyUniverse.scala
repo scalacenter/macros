@@ -247,15 +247,6 @@ case class DottyUniverse(prefix: untpd.Tree)(implicit ctx: Context) extends macr
       )
       tpd.ValDef(vsym, rhs)
     }
-
-    def transform(tree: Tree)(pf: PartialFunction[Tree, Tree]): Tree = {
-      new tpd.TreeMap() {
-        override def transform(tree: tpd.Tree)(implicit ctx: Context) = {
-          def updateOwner(subtree: tpd.Tree) = ensureOwner(subtree, ctx.owner)
-          pf.lift(tree).map(updateOwner(_)).getOrElse(super.transform(tree))
-        }
-      }.transform(tree)
-    }
   }
 
   // Semantic
