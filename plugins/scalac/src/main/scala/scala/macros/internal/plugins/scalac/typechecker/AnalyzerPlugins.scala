@@ -68,16 +68,8 @@ trait AnalyzerPlugins extends ReflectToolkit {
       }
     }
 
-    private val quasiquoteRuntimesCache = perRunCaches.newWeakMap[Symbol, MacroRuntime]
-    private def quasiquoteRuntime(expandee: Tree): Option[MacroRuntime] = {
-      macroLogVerbose(s"looking for macro implementation: ${expandee.symbol}")
-      def mkResolver = new PluginRuntimeResolver(expandee.symbol).resolveRuntime()
-      Some(quasiquoteRuntimesCache.getOrElseUpdate(expandee.symbol, mkResolver))
-    }
-
     override def pluginsMacroRuntime(expandee: Tree): Option[MacroRuntime] = {
       if (expandee.symbol.newMacroMetadata.nonEmpty) newMacroRuntime(expandee)
-      else if (QuasiquoteMethods.contains(expandee.symbol)) quasiquoteRuntime(expandee)
       else None
     }
   }
