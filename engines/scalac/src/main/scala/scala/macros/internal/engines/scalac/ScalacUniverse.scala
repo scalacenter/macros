@@ -202,8 +202,12 @@ case class ScalacUniverse(ctx: Context) extends macros.core.Universe with Flags 
   // Types
   // =====
   override type Type = ctx.universe.Type
+  override type WeakTypeTag[T] = ctx.universe.WeakTypeTag[T]
   override type TypeTree = ctx.universe.Tree
   override type TypeParam = ctx.universe.TypeDef
+
+  override def weakTypeTagType[T](tt: ctx.universe.WeakTypeTag[T]): Type =
+    tt.tpe
   override def TypeName(value: String): TypeTree =
     new c.TypeName(value)
   override def TypeSelect(qual: Term, name: String): TypeTree =

@@ -1,5 +1,6 @@
 package scala
 
+import scala.language.higherKinds
 import scala.language.implicitConversions
 
 package object macros {
@@ -15,8 +16,6 @@ package object macros {
     def unary_![B]: B = a.asInstanceOf[B]
   }
 
-  def enclosingOwner: Symbol = !universe.enclosingOwner
-  def enclosingPosition: Position = !universe.enclosingPosition
   type Input = core.Input
   type Position = core.Position
   type Symbol <: AnyRef
@@ -32,7 +31,11 @@ package object macros {
     def sym: Symbol = !universe.denotSym(!denot)
   }
   type Mirror
-  type Expansion
+  trait Expansion
+  implicit class XtensionExpansion(val expansion: Expansion) extends AnyVal {
+    def enclosingOwner: Symbol = !universe.enclosingOwner
+    def enclosingPosition: Position = !universe.enclosingPosition
+  }
   type Tree
   implicit class XtensionTree(val tree: Tree) extends AnyVal {
     def pos: Position = !universe.treePosition(!tree)
@@ -139,6 +142,11 @@ package object macros {
     }
   }
 
+  type WeakTypeTag[T]
+  def weakTypeTag[T](implicit ev: WeakTypeTag[T]): WeakTypeTag[T] = ev
+  implicit class XtensionTypeTag[T](val typeTag: WeakTypeTag[T]) extends AnyVal {
+    def tpe: Type = !universe.weakTypeTagType(!typeTag)
+  }
   type Type
   object Type {
     type TypeRef <: Type

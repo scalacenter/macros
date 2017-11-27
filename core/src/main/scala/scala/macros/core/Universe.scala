@@ -1,5 +1,7 @@
 package scala.macros.core
 
+import scala.language.higherKinds
+
 import java.nio.file.Path
 
 trait Universe extends UntypedTrees with TypedTrees {
@@ -20,6 +22,9 @@ trait Universe extends UntypedTrees with TypedTrees {
   def typeRef(path: String): Type
   def appliedType(tp: Type, args: List[Type]): Type
   def typeTreeOf(tp: Type): TypeTree
+
+  type WeakTypeTag[T]
+  def weakTypeTagType[T](tt: WeakTypeTag[T]): Type
 
   def enclosingPosition: Position
   def enclosingOwner: Symbol

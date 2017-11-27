@@ -3,7 +3,7 @@ package scala.macros.tests
 import scala.macros._
 import scala.language.implicitConversions
 
-// Unification of macro impl/defn forces us to put utilities in separate object
+//// Unification of macro impl/defn forces us to put utilities in separate object
 object SourceCodeUtil {
   // TODO(olafur) replace with more typesafe typeOf[Line]
   private def root: Term =
@@ -13,52 +13,60 @@ object SourceCodeUtil {
 
   // Should this be handled by engines? I would claim that this is application specific
   // for sourcecode.
-  def isSynthetic(s: Symbol)(implicit m: Mirror): Boolean = {
+  def isSynthetic(s: Symbol): Boolean = {
     val name = s.name
     name == "<init>" ||
     name == "<root>" ||
     (name.startsWith("<local ") && name.endsWith(">"))
   }
 
-  def symbolName(s: Symbol)(implicit m: Mirror): String = s.name.stripSuffix("$")
+  def symbolName(s: Symbol): String = s.name.stripSuffix("$")
 }
 
 case class File(value: String)
 object File {
-  implicit def generate: File = macro {
-    val path = enclosingPosition.input.path.toAbsolutePath.toString
+  @scala.macros.socrates
+  implicit def generate: File = macro impl
+  def impl(c: Expansion): Term = {
+    val path = c.enclosingPosition.input.path.toAbsolutePath.toString
     SourceCodeUtil.prefix("File").apply(Lit.String(path) :: Nil)
   }
 }
 
 case class Line(value: Int)
 object Line {
-  implicit def generate: Line = macro {
-    SourceCodeUtil.prefix("Line").apply(Lit.Int(enclosingPosition.line) :: Nil)
+  @scala.macros.socrates
+  implicit def generate: Line = macro impl
+  def impl(c: Expansion): Term = {
+    SourceCodeUtil.prefix("Line").apply(Lit.Int(c.enclosingPosition.line) :: Nil)
   }
 }
 
 case class Name(value: String)
 object Name {
-  implicit def generate: Name = macro {
+  @scala.macros.socrates
+  implicit def generate: Name = macro impl
+  def impl(c: Expansion): Term = {
     def loop(s: Symbol): Symbol =
       if (SourceCodeUtil.isSynthetic(s)) s.owner.fold(s)(loop)
       else s
-    val owner = loop(enclosingOwner)
+    val owner = loop(c.enclosingOwner)
     SourceCodeUtil.prefix("Name").apply(Lit.String(SourceCodeUtil.symbolName(owner)) :: Nil)
   }
 }
 
 case class FullName(value: String)
 object FullName {
-  implicit def generate: FullName = macro {
+  @scala.macros.socrates
+  implicit def generate: FullName = macro impl
+  def impl(c: Expansion): Term = {
     def loop(sym: Symbol): Vector[Symbol] = {
       val owner = sym.owner.fold(Vector.empty[Symbol])(loop)
       if (!SourceCodeUtil.isSynthetic(sym)) {
         owner :+ sym
       } else owner
     }
-    val names = loop(enclosingOwner)
+    val names = loop(c.enclosingOwner)
     val fullName = names.map(SourceCodeUtil.symbolName).mkString(".")
     SourceCodeUtil.prefix("FullName").apply(Lit.String(fullName) :: Nil)
   }
@@ -66,7 +74,9 @@ object FullName {
 
 case class Text[T](source: String, value: T)
 object Text {
-  implicit def generate[T](e: T): Text[T] = macro {
+  @scala.macros.socrates
+  implicit def generate[T](e: T): Text[T] = macro impl
+  def impl(c: Expansion)(e: tpd.Term): Term = {
     // NOTE(olafur): lihaoyi/sourcecode uses unit parser and slices
     // start/end offsets from input.content:
     // https://github.com/lihaoyi/sourcecode/blob/420bea7941d3219e2f1200b14b11010843aea39c/sourcecode/shared/src/main/scala/sourcecode/SourceContext.scala#L137-L140
