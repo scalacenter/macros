@@ -1,22 +1,6 @@
-### Scala Macros
-[![Build Status](https://travis-ci.org/scalacenter/macros.svg?branch=master)](https://travis-ci.org/scalacenter/macros)
+# Archived - Scala Macros
 
-This repository is the home for the Scala Center Advisory Board proposal
-[SCP-014](https://github.com/scalacenter/advisoryboard/blob/master/proposals/014-production-ready-scalamacros.md):
-production ready macros.
-A write-up of the project's roadmap is in progress.
-Please stay tuned for further updates by watching this repository and
-subscribing to the
-[Scala Contributors](https://contributors.scala-lang.org/) forum.
-
-### Team
-
-The current maintainers (people who can merge pull requests) are:
-
-* Eugene Burmako - [`@xeno-by`](https://github.com/xeno-by)
-* Liu Fengyun - [`@liufengyun`](https://github.com/liufengyun)
-* Mikhail Muticanco - [`@mutcianm`](https://github.com/mutcianm)
-* Ólafur Páll Geirsson - [`@olafurpg`](https://github.com/olafurpg)
-
-An up-to-date list of contributors is available here:
-https://github.com/scalacenter/macros/graphs/contributors.
+This project is no longer under development.
+If you need to write macros today use scala-reflect, the macro system that is included with the Scala compiler, is used by most major libraries and is documented here https://docs.scala-lang.org/overviews/macros/overview.html.
+Stay tuned for updates on macro support in Dotty, 
+http://www.scala-lang.org/blog/2018/04/19/scala-3.html.
